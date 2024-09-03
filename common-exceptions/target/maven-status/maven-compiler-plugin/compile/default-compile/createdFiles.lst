@@ -1,0 +1,5 @@
+com/example/common/exceptions/GlobalExceptionHandler$ValidationErrorResponse.class
+com/example/common/exceptions/GlobalExceptionHandler$ErrorResponse.class
+com/example/common/CommonExceptionsApplication.class
+com/example/common/exceptions/ResourceNotFoundException.class
+com/example/common/exceptions/GlobalExceptionHandler.class

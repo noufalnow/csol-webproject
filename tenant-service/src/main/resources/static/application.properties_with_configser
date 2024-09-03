@@ -1,0 +1,51 @@
+spring.application.name=user-service
+#server.port=8091
+
+spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/jsb_csol_realest
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.jpa.show-sql=true
+
+# Hibernate Properties
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+
+#logging.level.root=INFO
+#logging.level.org.springframework.web=DEBUG
+#logging.level.com.example=DEBUG
+
+management.endpoints.web.exposure.include=*
+management.endpoint.httptrace.enabled=true
+
+
+# OAuth2 Resource Server Configuration
+#spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://dev-4cvow35oer0svxrn.jp.auth0.com/.well-known/jwks.json
+
+
+#spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://your-auth0-domain/.well-known/jwks.json
+#spring.security.oauth2.resourceserver.jwt.secret-key=AjBmNt37QTOz2oGjx3OnzuxA5d2VG-bea138tn8WO23GvsbkLzf2Tuuoj8dWyZ7H
+
+# OAuth2 Client Configuration for Auth0
+#spring.security.oauth2.client.registration.auth0.client-id=iOnR2kemlXbLUmBfqlIfMIkhBcaqIvz8
+#spring.security.oauth2.client.registration.auth0.client-secret=AjBmNt37QTOz2oGjx3OnzuxA5d2VG-bea138tn8WO23GvsbkLzf2Tuuoj8dWyZ7H
+#spring.security.oauth2.client.registration.auth0.authorization-grant-type=authorization_code
+#spring.security.oauth2.client.registration.auth0.redirect-uri=http://localhost:8091/login/oauth2/code/auth0
+#spring.security.oauth2.client.registration.auth0.scope=openid,profile,email
+#spring.security.oauth2.client.provider.auth0.issuer-uri=https://dev-4cvow35oer0svxrn.jp.auth0.com/
+
+
+# Enable debug logging for OAuth2
+#logging.level.org.springframework.security.oauth2=DEBUG
+
+#logging.level.org.springframework.security=DEBUG
+logging.file.name=application.log
+
+eureka.client.service-url.defaultZone=http://localhost:8094/eureka/
+eureka.instance.prefer-ip-address=true
+
+#spring.cloud.config.import-check.enabled=false
+spring.config.import=configserver:http://localhost:8818
+
+
+#logging.level.org.springframework=DEBUG
+
