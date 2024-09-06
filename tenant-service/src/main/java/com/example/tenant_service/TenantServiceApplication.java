@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-@ComponentScan(basePackages = {"com.example.tenant_service", "com.example.common.exceptions"})
+@ComponentScan(basePackages = {"com.example.tenant_service"})
 public class TenantServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(TenantServiceApplication.class, args);

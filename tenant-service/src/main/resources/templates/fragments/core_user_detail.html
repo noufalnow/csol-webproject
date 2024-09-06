@@ -1,0 +1,7 @@
+    <h1>User Detail</h1>
+    <p>ID: <span th:text="${user.userId}"></span></p>
+    <p>First Name: <span th:text="${user.userFname}"></span></p>
+    <p>Last Name: <span th:text="${user.userLname}"></span></p>
+    <p>Username: <span th:text="${user.userUname}"></span></p>
+    <p>Email: <span th:text="${user.userEmail}"></span></p>
+    <a class="ajax-link" th:href="@{/users/html}">Back to List</a>

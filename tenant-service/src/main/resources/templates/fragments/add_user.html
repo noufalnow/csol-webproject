@@ -1,0 +1,51 @@
+<div class="container">
+    <h1>Add User</h1>
+    <form id="addUserForm" action="/users/html/add" method="post">
+        <label for="user_email">Email:</label>
+        <input type="email" id="user_email" name="userEmail" required>
+
+        <label for="user_emp_id">Employee ID:</label>
+        <input type="number" id="user_emp_id" name="userEmpId" required>
+
+        <label for="user_fname">First Name:</label>
+        <input type="text" id="user_fname" name="userFname" required>
+
+        <label for="user_lname">Last Name:</label>
+        <input type="text" id="user_lname" name="userLname" required>
+
+        <label for="user_uname">Username:</label>
+        <input type="text" id="user_uname" name="userUname" required>
+
+        <label for="user_password">Password:</label>
+        <input type="password" id="user_password" name="userPassword" required>
+
+        <label for="user_password_conf">Confirm Password:</label>
+        <input type="password" id="user_password_conf" name="userPasswordConf" required>
+
+        <label for="user_desig">Designation:</label>
+        <select id="user_desig" name="userDesig">
+            <option value="1">Manager</option>
+            <option value="2">Developer</option>
+            <option value="3">Analyst</option>
+            <!-- Add other designations here -->
+        </select>
+
+        <label for="user_dept">Department:</label>
+        <select id="user_dept" name="userDept">
+            <option value="1">HR</option>
+            <option value="2">IT</option>
+            <option value="3">Finance</option>
+            <!-- Add other departments here -->
+        </select>
+
+        <label>Status:</label>
+        <input type="radio" id="active" name="userStatus" value="1"> Active
+        <input type="radio" id="inactive" name="userStatus" value="0"> Inactive
+
+        <button type="button" onclick="submitUserForm()">Add User</button>
+
+
+        <div id="error-messages" class="error-message"></div>
+    </form>
+    <a class="ajax-link" href="/users/html">Back to List</a>
+</div>

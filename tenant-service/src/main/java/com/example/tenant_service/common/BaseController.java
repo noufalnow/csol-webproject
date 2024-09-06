@@ -3,9 +3,14 @@ package com.example.tenant_service.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class BaseController<DTO, S extends BaseService<DTO>> {
 
@@ -46,9 +51,6 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         }
     }
 
-    
-    
-    
 
     @PutMapping("/{id}")
     public ResponseEntity<DTO> update(@PathVariable Long id, @RequestBody DTO dto) {
@@ -61,5 +63,23 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         logger.debug("Received DELETE request for resource with id: {}", id);
         service.softDeleteById(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    
+    protected Map<String, String> isValid(BindingResult result) {
+        Map<String, String> validationErrors = new HashMap<>();
+        result.getAllErrors().forEach(error -> {
+            if (error instanceof FieldError) {
+                FieldError fieldError = (FieldError) error;
+                String fieldName = fieldError.getField();
+                String errorMessage = fieldError.getDefaultMessage();
+                validationErrors.put(fieldName, errorMessage);
+            } else if (error instanceof ObjectError) {
+                // Handle global object errors
+                String errorMessage = error.getDefaultMessage();
+                validationErrors.put("global", errorMessage); // Use a specific key for global errors
+            }
+        });
+        return validationErrors;
     }
 }

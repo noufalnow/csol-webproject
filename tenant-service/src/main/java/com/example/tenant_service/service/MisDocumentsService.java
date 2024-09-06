@@ -1,6 +1,6 @@
 package com.example.tenant_service.service;
 
-import com.example.common.exceptions.ResourceNotFoundException;
+import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.DocumentDTO;
 import com.example.tenant_service.entity.MisDocuments;

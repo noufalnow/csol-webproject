@@ -1,4 +1,4 @@
-package com.example.common.exceptions;
+package com.example.tenant_service.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     private String resourceName;

@@ -9,7 +9,7 @@
 
     <modules>
         <module>common-exceptions</module>
-        <module>tenant-service</module>
+        <!--<module>tenant-service</module> -->
     </modules>
 
     <dependencyManagement>

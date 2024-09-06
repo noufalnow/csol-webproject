@@ -20,37 +20,31 @@ public class CoreUser extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @NotBlank(message = "First name is mandatory")
-    @Column(name = "user_fname", nullable = false)
+    @Column(name = "user_fname")
     private String userFname;
 
     @Column(name = "user_lname")
     private String userLname;
 
-    @NotBlank(message = "Username is mandatory")
     @Column(name = "user_uname", nullable = false)
     private String userUname;
 
     @Column(name = "user_status", nullable = false)
     private Short userStatus = 1;
 
-    @NotBlank(message = "Password is mandatory")
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @NotNull(message = "Designation ID is mandatory")
-    @Column(name = "user_desig", nullable = false)
+    @Column(name = "user_desig")
     private Long userDesig;
 
     @Column(name = "user_dept")
     private Long userDept;
 
-    @NotNull(message = "Employee ID is mandatory")
-    @Column(name = "user_emp_id", nullable = false)
+    @Column(name = "user_emp_id")
     private Long userEmpId;
 
-    @Email(message = "Email should be valid")
-    @NotBlank(message = "Email is mandatory")
     @Column(name = "user_email", nullable = false)
     private String userEmail;
 }
+
