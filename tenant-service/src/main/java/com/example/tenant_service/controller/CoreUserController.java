@@ -1,8 +1,9 @@
 package com.example.tenant_service.controller;
 
-import com.example.tenant_service.dto.CoreUserDTO;
 import com.example.tenant_service.service.CoreUserService;
 import com.example.tenant_service.common.BaseController;
+import com.example.tenant_service.dto.users.CoreUserDTO;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

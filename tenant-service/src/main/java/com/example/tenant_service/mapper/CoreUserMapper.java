@@ -1,7 +1,7 @@
 package com.example.tenant_service.mapper;
 
 import com.example.tenant_service.common.BaseMapper;
-import com.example.tenant_service.dto.CoreUserDTO;
+import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.entity.CoreUser;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

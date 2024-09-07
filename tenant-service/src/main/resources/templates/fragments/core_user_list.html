@@ -3,25 +3,42 @@
     <h1>User List</h1>
     <a class="ajax-link" href="/users/html/add">Add New User</a>
     <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="user : ${users}">
-                <td th:text="${user.userId}"></td>
-                <td th:text="${user.userFname}"></td>
-                <td th:text="${user.userLname}"></td>
-                <td th:text="${user.userUname}"></td>
-                <td th:text="${user.userEmail}"></td>
-                <td><a class="ajax-link" th:href="@{/users/html/{id}(id=${user.userId})}">View</a></td>
-            </tr>
-        </tbody>
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody>
+    <tr th:each="user : ${users}">
+        <td th:text="${user.userId}"></td>
+        <td th:text="${user.userFname}"></td>
+        <td th:text="${user.userLname}"></td>
+        <td th:text="${user.userUname}"></td>
+        <td th:text="${user.userEmail}"></td>
+        <td>
+            <!-- View User Details -->
+            <a class="ajax-link" th:href="@{/users/html/{id}(id=${user.userId})}">View</a>
+            <!-- Update User -->
+            <a class="ajax-link" th:href="@{/users/html/edit/{id}(id=${user.userId})}">Update</a>
+            <!-- Enable/Disable User -->
+		    <a th:if="${user.userStatus}" 
+		       th:href="@{/users/html/toggleStatus/{id}(id=${user.userId})}">
+		        Disable
+		    </a>
+		    <a th:unless="${user.userStatus}" 
+		       th:href="@{/users/html/toggleStatus/{id}(id=${user.userId})}">
+		        Enable
+		    </a>
+            <!-- Reset Password -->
+            <a class="ajax-link" th:href="@{/users/html/resetPassword/{id}(id=${user.userId})}">Reset Password</a>
+        </td>
+    </tr>
+</tbody>
+
     </table>
 </div>

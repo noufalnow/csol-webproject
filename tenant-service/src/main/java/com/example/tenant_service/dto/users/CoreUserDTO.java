@@ -1,4 +1,4 @@
-package com.example.tenant_service.dto;
+package com.example.tenant_service.dto.users;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -56,6 +56,6 @@ public class CoreUserDTO extends BaseDTO {
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
-
-
 }
+
+

@@ -1,15 +1,13 @@
 package com.example.tenant_service.controller_html;
 
-import com.example.tenant_service.dto.CoreUserDTO;
 import com.example.tenant_service.service.CoreUserService;
-
 import jakarta.validation.Valid;
-
 import com.example.tenant_service.common.BaseController;
+import com.example.tenant_service.dto.users.CoreUserDTO;
+import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/users")
 public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUserService> {
 
+    // Constructor injection is handled by BaseController
     public CoreUserHtmlController(CoreUserService coreUserService) {
         super(coreUserService);
     }
@@ -70,6 +69,7 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
             
             Map<String, Object> successResponse = new HashMap<>();
             successResponse.put("message", "User added successfully");
+            successResponse.put("loadnext", "/users/html");
             successResponse.put("status", "success");
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
@@ -79,6 +79,59 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    @PostMapping("/html/update/{refId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateUser(@PathVariable("refId") Long userId, @Valid @ModelAttribute CoreUserUpdateDTO coreUserUpdateDTO, BindingResult result) {
+        Map<String, String> validationErrors = isValid(result);
+
+        if (!validationErrors.isEmpty()) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Validation failed - Error occurred");
+            response.put("errors", validationErrors);
+            response.put("status", "error");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Proceed with updating user details if no validation errors
+        try {
+            CoreUserDTO updatedUserDTO = service.updateUser(userId, coreUserUpdateDTO); // Update user using the service layer
+
+            Map<String, Object> successResponse = new HashMap<>();
+            successResponse.put("message", "User updated successfully");
+            successResponse.put("loadnext", "/users/html");
+            successResponse.put("status", "success");
+            return ResponseEntity.ok(successResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "An error occurred while updating the user: " + e.getMessage());
+            errorResponse.put("status", "error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
 
+
+    
+    // Edit User
+    @GetMapping("/html/edit/{id}")
+    public String editUser(@PathVariable("id") Long id, Model model) {
+        CoreUserDTO user = service.findById(id); // Use the service instance
+        model.addAttribute("userDTO", user);
+        return "fragments/edit_user"; // View for updating user details
+    }
+
+    // Toggle User Status (Enable/Disable)
+    @GetMapping("/html/toggleStatus/{id}")
+    public String toggleUserStatus(@PathVariable("id") Long id) {
+        service.toggleUserStatus(id); // Use the service instance
+        return "redirect:/users"; // Redirect to user list after action
+    }
+
+    // Reset User Password
+    @GetMapping("/html/resetPassword/{id}")
+    public String resetPassword(@PathVariable("id") Long id) {
+        service.resetUserPassword(id); // Use the service instance
+        return "redirect:/users"; // Redirect to user list after action
+    }
 }
