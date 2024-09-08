@@ -24,16 +24,19 @@
             <!-- View User Details -->
             <a class="ajax-link" th:href="@{/users/html/{id}(id=${user.userId})}">View</a>
             <!-- Update User -->
-            <a class="ajax-link" th:href="@{/users/html/edit/{id}(id=${user.userId})}">Update</a>
-            <!-- Enable/Disable User -->
-		    <a th:if="${user.userStatus}" 
-		       th:href="@{/users/html/toggleStatus/{id}(id=${user.userId})}">
-		        Disable
-		    </a>
-		    <a th:unless="${user.userStatus}" 
-		       th:href="@{/users/html/toggleStatus/{id}(id=${user.userId})}">
-		        Enable
-		    </a>
+			<a class="ajax-link" th:href="@{/users/html/edit/{id}(id=${user.userId})}">Update</a>
+			
+			<a href="javascript:void(0);" 
+			   class="status-toggle"
+			   th:attr="data-id=${user.userId}, data-url=@{/users/html/toggleStatus}"
+			   th:text="${user.userStatus == 1 ? 'Disable' : 'Enable'}">
+			</a>
+			
+			<!-- Flag element to indicate active/inactive status -->
+			<span th:id="'flag_' + ${user.userId}" 
+			      th:classappend="${user.userStatus == 1 ? 'active_green' : 'inactive_red'}">
+			</span>
+
             <!-- Reset Password -->
             <a class="ajax-link" th:href="@{/users/html/resetPassword/{id}(id=${user.userId})}">Reset Password</a>
         </td>
@@ -42,3 +45,8 @@
 
     </table>
 </div>
+
+<script>
+
+status_toggle();
+</script>

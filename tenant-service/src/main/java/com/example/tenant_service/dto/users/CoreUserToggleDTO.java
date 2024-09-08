@@ -12,9 +12,12 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CoreUserToggleDTO {
 
+    @NotNull(message = "Reference ID is required")
+    private Long userId;
+
     @NotNull(message = "Status is required")
     @Min(value = 1, message = "Status must be at least 1")
     @Max(value = 2, message = "Status must be at most 2")
-    private Short userStatus = 1;
+    private Short userStatus;
 }
 

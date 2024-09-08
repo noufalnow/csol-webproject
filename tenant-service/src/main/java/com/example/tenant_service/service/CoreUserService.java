@@ -13,6 +13,7 @@ import com.example.tenant_service.repository.CoreUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -95,6 +96,28 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         CoreUser updatedUser = coreUserRepository.save(existingUser);
         return coreUserMapper.toDTO(updatedUser);
     }
+    
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public CoreUserDTO resetPassword(Long userId, CoreUserPasswordDTO passwordDTO) {
+        CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+
+        if (!passwordDTO.getNewPassword().equals(passwordDTO.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
+        }
+
+        existingUser.setUserPassword(passwordEncoder.encode(passwordDTO.getNewPassword()));
+
+        existingUser.setTModified(LocalDateTime.now());
+        CoreUser updatedUser = coreUserRepository.save(existingUser);
+
+        return coreUserMapper.toDTO(updatedUser);
+    }
+
+
 
 
     // Method to change user password
@@ -111,15 +134,6 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         }
     }
 
-    // Method to toggle user status
-    public void toggleUserStatus(Long userId, CoreUserToggleDTO toggleStatusDTO) {
-        CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
-
-        // Update user status
-        existingUser.setUserStatus(toggleStatusDTO.getUserStatus());
-        coreUserRepository.save(existingUser);
-    }
     
     
     
@@ -159,16 +173,30 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     }
 
     // Toggle User Status (Enable/Disable)
-    public void toggleUserStatus(Long id) {
-        Optional<CoreUser> userOptional = coreUserRepository.findByIdAndNotDeleted(id);
-        if (userOptional.isPresent()) {
-            CoreUser user = userOptional.get();
-            //user.setEnabled(!user.getUserStatus()); // Toggle the enabled status
-            coreUserRepository.save(user);
-        } else {
-            throw new ResourceNotFoundException("CoreUser", id);
+    public boolean toggleUserStatus(Long userId, Short userStatus) {
+        // Fetch user from the database using userId
+        Optional<CoreUser> userOpt = coreUserRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            // Handle user not found scenario
+            return false;
         }
+
+        CoreUser user = userOpt.get();
+        // Update the user's status based on userStatus
+        user.setUserStatus(userStatus);
+
+        // Save the updated user entity
+        coreUserRepository.save(user);
+
+        // Return true if the user is active, false if inactive
+        return user.getUserStatus() == 1;  // Assuming 1 means active
     }
+
+
+
+
+
+
 
     // Reset User Password
     public void resetUserPassword(Long id) {

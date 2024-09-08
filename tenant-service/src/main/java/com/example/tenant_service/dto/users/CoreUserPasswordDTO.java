@@ -17,8 +17,8 @@ import com.example.tenant_service.dto.validation.PasswordMatches;
 @PasswordMatches
 public class CoreUserPasswordDTO {
 
-    @NotBlank(message = "Old password is required")
-    private String oldPassword;
+    /*@NotBlank(message = "Old password is required")
+    private String oldPassword;*/
 
     @NotBlank(message = "New password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
