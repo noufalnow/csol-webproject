@@ -28,7 +28,7 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
     @PostMapping(value = "/html/add", produces = "application/json")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addUser(@Valid @RequestBody CoreUserDTO userDTO, BindingResult result) {
-        Map<String, String> validationErrors = isValid(result);
+        Map<String, String> validationErrors = validate(result);
         
         if (!validationErrors.isEmpty()) {
             Map<String, Object> errorResponse = new HashMap<>();
