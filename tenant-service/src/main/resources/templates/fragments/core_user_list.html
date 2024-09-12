@@ -1,52 +1,105 @@
-<!-- src/main/resources/templates/fragments/core_user_list.html -->
 <div th:fragment="content">
     <h1>User List</h1>
-    <a class="ajax-link" href="/users/html/add">Add New User</a>
+    
+    <!-- Filter/Search Input -->
+    <form id="search-form" method="GET">
+        <input type="text" name="search" placeholder="Search..." th:value="${search}">
+        <button type="button" onclick="searchEntities('/users/html', '#content', 'userId')">Search</button>
+    </form>
+
+    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('/users/html/add', '#content')">Add New User</a>
+
     <table>
-<thead>
-    <tr>
-        <th>ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-<tbody>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.userId}"></td>
-        <td th:text="${user.userFname}"></td>
-        <td th:text="${user.userLname}"></td>
-        <td th:text="${user.userUname}"></td>
-        <td th:text="${user.userEmail}"></td>
-        <td>
-            <!-- View User Details -->
-            <a class="ajax-link" th:href="@{/users/html/{id}(id=${user.userId})}">View</a>
-            <!-- Update User -->
-			<a class="ajax-link" th:href="@{/users/html/edit/{id}(id=${user.userId})}">Update</a>
-			
-			<a href="javascript:void(0);" 
-			   class="status-toggle"
-			   th:attr="data-id=${user.userId}, data-url=@{/users/html/toggleStatus}"
-			   th:text="${user.userStatus == 1 ? 'Disable' : 'Enable'}">
-			</a>
-			
-			<!-- Flag element to indicate active/inactive status -->
-			<span th:id="'flag_' + ${user.userId}" 
-			      th:classappend="${user.userStatus == 1 ? 'active_green' : 'inactive_red'}">
-			</span>
-
-            <!-- Reset Password -->
-            <a class="ajax-link" th:href="@{/users/html/resetPassword/{id}(id=${user.userId})}">Reset Password</a>
-        </td>
-    </tr>
-</tbody>
-
+        <thead>
+            <tr>
+         <th>
+                <a href="#" class="sort" data-field="userId" th:attr="data-dir=${sortStatus['userId'] != null ? sortStatus['userId'] : 'asc'}" onclick="sortEntities('userId')">ID</a>
+            </th>
+            <th>
+                <a href="#" class="sort" data-field="userFname" th:attr="data-dir=${sortStatus['userFname'] != null ? sortStatus['userFname'] : 'asc'}" onclick="sortEntities('userFname')">First Name</a>
+            </th>
+            <th>
+                <a href="#" class="sort" data-field="userLname" th:attr="data-dir=${sortStatus['userLname'] != null ? sortStatus['userLname'] : 'asc'}" onclick="sortEntities('userLname')">Last Name</a>
+            </th>
+            <th>
+                <a href="#" class="sort" data-field="userUname" th:attr="data-dir=${sortStatus['userUname'] != null ? sortStatus['userUname'] : 'asc'}" onclick="sortEntities('userUname')">Username</a>
+            </th>
+            <th>
+                <a href="#" class="sort" data-field="userEmail" th:attr="data-dir=${sortStatus['userEmail'] != null ? sortStatus['userEmail'] : 'asc'}" onclick="sortEntities('userEmail')">Email</a>
+            </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.userId}"></td>
+                <td th:text="${user.userFname}"></td>
+                <td th:text="${user.userLname}"></td>
+                <td th:text="${user.userUname}"></td>
+                <td th:text="${user.userEmail}"></td>
+                <td>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/users/html/' + ${user.userId} + '\', \'#content\')'">View</a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/users/html/edit/' + ${user.userId} + '\', \'#content\')'">Update</a>
+                    <a href="javascript:void(0);" 
+                        class="status-toggle"
+                        th:attr="data-id=${user.userId}, data-url=@{/users/html/toggleStatus}"
+                        th:text="${user.userStatus == 1 ? 'Disable' : 'Enable'}">
+                    </a>
+                    <span th:id="'flag_' + ${user.userId}" 
+                          th:classappend="${user.userStatus == 1 ? 'active_green' : 'inactive_red'}">
+                    </span>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/users/html/resetPassword/' + ${user.userId} + '\', \'#content\')'">Reset Password</a>
+                </td>
+            </tr>
+        </tbody>
     </table>
+
+    <!-- Pagination Controls -->
+<div class="pagination">
+    <ul>
+        <!-- First page link -->
+        <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
+            <a href="javascript:void(0);" th:if="${currentPage != 0}"
+               th:onclick="'loadContent(\'' + @{/users/html(page=0, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">First</a>
+            <span th:if="${currentPage == 0}">First</span>
+        </li>
+
+        <!-- Previous page link -->
+        <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
+            <a href="javascript:void(0);" th:if="${currentPage != 0}"
+               th:onclick="'loadContent(\'' + @{/users/html(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Previous</a>
+            <span th:if="${currentPage == 0}">Previous</span>
+        </li>
+
+        <!-- Page numbers -->
+<li th:each="i : ${#numbers.sequence(startPage, endPage)}"
+    th:classappend="${i == currentPage} ? 'active' : ''">
+    
+    <!-- If it's the current page, render a disabled span -->
+    <span th:if="${i == currentPage}" th:text="${i + 1}" class="disabled-page"></span>
+
+    <!-- If it's not the current page, render the link with onclick action -->
+    <a th:if="${i != currentPage}" href="javascript:void(0);"
+       th:onclick="'loadContent(\'' + @{/users/html(page=${i}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'"
+       th:text="${i + 1}"></a>
+</li>
+
+        <!-- Next page link -->
+        <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+            <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
+               th:onclick="'loadContent(\'' + @{/users/html(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Next</a>
+            <span th:if="${currentPage == totalPages - 1}">Next</span>
+        </li>
+
+        <!-- Last page link -->
+        <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+            <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
+               th:onclick="'loadContent(\'' + @{/users/html(page=${totalPages - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Last</a>
+            <span th:if="${currentPage == totalPages - 1}">Last</span>
+        </li>
+    </ul>
 </div>
 
-<script>
 
-status_toggle();
-</script>
+
+</div>

@@ -11,6 +11,9 @@ import com.example.tenant_service.repository.CoreUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -81,13 +84,21 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         coreUserRepository.save(user); // Save the status change
         return user.getUserStatus() == 1; // Return true if active, otherwise false
     }
-
+    
+    
     @Override
     public List<CoreUserDTO> findAll() {
         // Find all users that are not deleted and convert to DTOs
         return coreUserRepository.findAllNotDeleted().stream()
                 .map(coreUserMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+    
+
+    public Page<CoreUserDTO> findAllPaginate(Pageable pageable, String search) {
+        // Find paginated and filtered users, then map to DTOs
+        return coreUserRepository.findAllNotDeleted(search == null ? "" : search, pageable)
+                                 .map(coreUserMapper::toDTO);
     }
 
     @Override

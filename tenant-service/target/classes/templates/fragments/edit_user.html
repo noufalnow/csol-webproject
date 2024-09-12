@@ -36,9 +36,9 @@
 
         <label>Status:</label>
 		<input type="radio" id="active" name="userStatus" value="1" 
-		       th:checked="${user.userStatus == 1}"> Active
+		       th:checked="${userDTO.userStatus == 1}"> Active
 		<input type="radio" id="inactive" name="userStatus" value="2" 
-		       th:checked="${user.userStatus == 2}"> Inactive
+		       th:checked="${userDTO.userStatus == 2}"> Inactive
 
 		<button type="button" onclick="submitHtmlForm('editUserForm')">Update User</button>
 
