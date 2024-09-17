@@ -100,8 +100,8 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserRepository.findAllNotDeleted(search == null ? "" : search, pageable)
                                  .map(coreUserMapper::toDTO);
     }
-
-    @Override
+    
+    
     public CoreUserDTO findById(Long userId) {
         // Find the user by ID and return as DTO
         return coreUserRepository.findByIdAndNotDeleted(userId)

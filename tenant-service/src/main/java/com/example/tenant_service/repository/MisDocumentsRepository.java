@@ -1,6 +1,9 @@
 package com.example.tenant_service.repository;
 
 import com.example.tenant_service.entity.MisDocuments;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.tenant_service.common.BaseRepository;
@@ -15,5 +18,5 @@ public interface MisDocumentsRepository extends BaseRepository<MisDocuments, Lon
     Optional<MisDocuments> findByIdAndNotDeleted(Long docId);
 
     @Query("SELECT d FROM MisDocuments d WHERE d.deleted = false")
-    List<MisDocuments> findAllNotDeleted();
+    Page<MisDocuments> findAllNotDeleted(String search, Pageable pageable);
 }

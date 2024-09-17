@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-09-11T14:19:47+0530",
+    date = "2024-09-17T14:09:38+0530",
     comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
 )
 @Component
@@ -31,7 +31,6 @@ public class CoreUserMapperImpl implements CoreUserMapper {
         coreUserDTO.setUDeleted( entity.getUDeleted() );
         coreUserDTO.setUModified( entity.getUModified() );
         coreUserDTO.setUserDept( entity.getUserDept() );
-        coreUserDTO.setUserDesig( entity.getUserDesig() );
         coreUserDTO.setUserEmail( entity.getUserEmail() );
         coreUserDTO.setUserEmpId( entity.getUserEmpId() );
         coreUserDTO.setUserFname( entity.getUserFname() );
@@ -61,7 +60,6 @@ public class CoreUserMapperImpl implements CoreUserMapper {
         coreUser.setUDeleted( dto.getUDeleted() );
         coreUser.setUModified( dto.getUModified() );
         coreUser.setUserDept( dto.getUserDept() );
-        coreUser.setUserDesig( dto.getUserDesig() );
         coreUser.setUserEmail( dto.getUserEmail() );
         coreUser.setUserEmpId( dto.getUserEmpId() );
         coreUser.setUserFname( dto.getUserFname() );
@@ -106,9 +104,6 @@ public class CoreUserMapperImpl implements CoreUserMapper {
         }
         if ( coreUserUpdateDTO.getUserDept() != null ) {
             coreUser.setUserDept( coreUserUpdateDTO.getUserDept() );
-        }
-        if ( coreUserUpdateDTO.getUserDesig() != null ) {
-            coreUser.setUserDesig( coreUserUpdateDTO.getUserDesig() );
         }
         if ( coreUserUpdateDTO.getUserEmail() != null ) {
             coreUser.setUserEmail( coreUserUpdateDTO.getUserEmail() );

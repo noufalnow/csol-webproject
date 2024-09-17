@@ -33,43 +33,29 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
     @GetMapping("/html")
     public String listUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size,
-            @RequestParam(defaultValue = "userId") String sortField,
-            @RequestParam(defaultValue = "asc") String sortDir,
-            @RequestParam(required = false) String search,
-            Model model) {
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "3") int size,
+        @RequestParam(defaultValue = "userId") String sortField,
+        @RequestParam(defaultValue = "asc") String sortDir,
+        @RequestParam(required = false) String search,
+        Model model) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
+
+        logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}",
+                page, size, sortField, sortDir, search);
+
         Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
 
-        int totalPages = userPage.getTotalPages();
-        model.addAttribute("users", userPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("totalItems", userPage.getTotalElements());
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
+        logInfo("User Page - Total Elements: {}, Total Pages: {}", userPage.getTotalElements(), userPage.getTotalPages());
+        logInfo("Users: {}", userPage.getContent());
+
+        // Use the reusable method for setting up pagination
+        setupPagination(model, userPage, sortField, sortDir);
+
         model.addAttribute("search", search);
-        Map<String, String> sortStatus = new HashMap<>();
-        sortStatus.put(sortField, sortDir);
-        model.addAttribute("sortStatus", sortStatus);
-        
-        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
-        
-        
-        model.asMap().forEach((key, value) -> {
-            System.out.println("Model attribute key: " + key + ", value: " + value);
-        });
-
-
-        // Determine page range for display (e.g., show 2 pages before and 2 pages after the current page)
-        int startPage = Math.max(0, page - 2);
-        int endPage = Math.min(totalPages - 1, page + 2);
-        model.addAttribute("startPage", startPage);
-        model.addAttribute("endPage", endPage);
-
         model.addAttribute("pageTitle", "User List - My Application");
+
         return "fragments/core_user_list";
     }
 

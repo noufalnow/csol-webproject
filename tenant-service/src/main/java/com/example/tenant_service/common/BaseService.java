@@ -1,5 +1,8 @@
 package com.example.tenant_service.common;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface BaseService<DTO> {
@@ -8,4 +11,7 @@ public interface BaseService<DTO> {
     DTO save(DTO dto);
     DTO update(Long id, DTO dto);
     void softDeleteById(Long id);
+
+    // New method to support pagination with search functionality
+    Page<DTO> findAllPaginate(Pageable pageable, String search);
 }

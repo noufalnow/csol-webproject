@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.example.tenant_service.entity.MisDesignation;
 
 @Repository
 public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
@@ -25,6 +26,9 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
            + "OR LOWER(u.userUname) LIKE LOWER(CONCAT('%', :search, '%')) "
            + "OR LOWER(u.userEmail) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<CoreUser> findAllNotDeleted(String search, Pageable pageable);
+    
+    
+    List<CoreUser> findByDesignation(MisDesignation designation);
 }
 
 

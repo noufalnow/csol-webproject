@@ -2,11 +2,14 @@ package com.example.tenant_service.service;
 
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
+import com.example.tenant_service.dto.PropertyDTO;
 import com.example.tenant_service.dto.PropertyStatusDTO;
 import com.example.tenant_service.entity.MisPropertyStatus;
 import com.example.tenant_service.mapper.MisPropertyStatusMapper;
 import com.example.tenant_service.repository.MisPropertyStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -86,5 +89,12 @@ public class MisPropertyStatusService implements BaseService<PropertyStatusDTO> 
         } else {
             throw new ResourceNotFoundException("MisPropertyStatus", prtyStatusId);
         }
+    }
+    
+    @Override
+    public Page<PropertyStatusDTO> findAllPaginate(Pageable pageable, String search) {
+        // Assuming findAllPaginate method exists in the repository
+        return misPropertyStatusRepository.findAllNotDeleted(search == null ? "" : search, pageable)
+                .map(misPropertyStatusMapper::toDTO);
     }
 }

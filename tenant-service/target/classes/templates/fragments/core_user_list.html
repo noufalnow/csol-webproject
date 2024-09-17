@@ -31,7 +31,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="user : ${users}">
+            <tr th:each="user : ${items}">
                 <td th:text="${user.userId}"></td>
                 <td th:text="${user.userFname}"></td>
                 <td th:text="${user.userLname}"></td>
@@ -54,51 +54,8 @@
         </tbody>
     </table>
 
-    <!-- Pagination Controls -->
-<div class="pagination">
-    <ul>
-        <!-- First page link -->
-        <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
-            <a href="javascript:void(0);" th:if="${currentPage != 0}"
-               th:onclick="'loadContent(\'' + @{/users/html(page=0, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">First</a>
-            <span th:if="${currentPage == 0}">First</span>
-        </li>
-
-        <!-- Previous page link -->
-        <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
-            <a href="javascript:void(0);" th:if="${currentPage != 0}"
-               th:onclick="'loadContent(\'' + @{/users/html(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Previous</a>
-            <span th:if="${currentPage == 0}">Previous</span>
-        </li>
-
-        <!-- Page numbers -->
-<li th:each="i : ${#numbers.sequence(startPage, endPage)}"
-    th:classappend="${i == currentPage} ? 'active' : ''">
-    
-    <!-- If it's the current page, render a disabled span -->
-    <span th:if="${i == currentPage}" th:text="${i + 1}" class="disabled-page"></span>
-
-    <!-- If it's not the current page, render the link with onclick action -->
-    <a th:if="${i != currentPage}" href="javascript:void(0);"
-       th:onclick="'loadContent(\'' + @{/users/html(page=${i}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'"
-       th:text="${i + 1}"></a>
-</li>
-
-        <!-- Next page link -->
-        <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
-            <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
-               th:onclick="'loadContent(\'' + @{/users/html(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Next</a>
-            <span th:if="${currentPage == totalPages - 1}">Next</span>
-        </li>
-
-        <!-- Last page link -->
-        <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
-            <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
-               th:onclick="'loadContent(\'' + @{/users/html(page=${totalPages - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Last</a>
-            <span th:if="${currentPage == totalPages - 1}">Last</span>
-        </li>
-    </ul>
-</div>
+<div th:replace="~{fragments/pagination :: pagination}"
+     th:with="currentPage=${currentPage}, totalPages=${totalPages}, size=${size}, sortField=${sortField}, sortDir=${sortDir}, pageUrl='/users/html'"></div>
 
 
 

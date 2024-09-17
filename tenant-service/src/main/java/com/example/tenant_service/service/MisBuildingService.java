@@ -3,10 +3,14 @@ package com.example.tenant_service.service;
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.BuildingDTO;
+import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.entity.MisBuilding;
 import com.example.tenant_service.mapper.MisBuildingMapper;
 import com.example.tenant_service.repository.MisBuildingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -98,4 +102,12 @@ public class MisBuildingService implements BaseService<BuildingDTO> {
             throw new ResourceNotFoundException("MisBuilding", bldId);
         }
     }
+    
+    @Override
+    public Page<BuildingDTO> findAllPaginate(Pageable pageable, String search) {
+        // Assuming findAllPaginate method exists in the repository
+        return misBuildingRepository.findAllNotDeleted(search == null ? "" : search, pageable)
+                .map(misBuildingMapper::toDTO);
+    }
+    
 }

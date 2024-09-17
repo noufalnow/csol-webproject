@@ -35,8 +35,12 @@ public class CoreUser extends BaseEntity {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @Column(name = "user_desig")
-    private Long userDesig;
+    //@Column(name = "user_desig")
+    //private Long userDesig;
+    
+    @ManyToOne
+    @JoinColumn(name = "user_desig", referencedColumnName = "desig_id") // Foreign key to MisDesignation
+    private MisDesignation designation;
 
     @Column(name = "user_dept")
     private Long userDept;

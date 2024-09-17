@@ -8,6 +8,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.Model;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,33 +26,28 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         this.service = service;
     }
 
-    // Common GET request to retrieve all resources
     @GetMapping
     public ResponseEntity<List<DTO>> getAll() {
         logger.debug("Received GET request for all resources");
         return ResponseEntity.ok(service.findAll());
     }
 
-    // Common GET request to retrieve a resource by ID
     @GetMapping("/{id}")
     public ResponseEntity<DTO> getById(@PathVariable Long id) {
         logger.debug("Received GET request for resource with id: {}", id);
         return ResponseEntity.ok(service.findById(id));
     }
 
-    // Common POST request to create a resource
     @PostMapping
     public ResponseEntity<Map<String, Object>> create(@RequestBody DTO dto, BindingResult result) {
-        return handleRequest(result, () -> service.save(dto), "Resource created successfully",null);
+        return handleRequest(result, () -> service.save(dto), "Resource created successfully", null);
     }
 
-    // Common PUT request to update a resource
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody DTO dto, BindingResult result) {
-        return handleRequest(result, () -> service.update(id, dto), "Resource updated successfully",null);
+        return handleRequest(result, () -> service.update(id, dto), "Resource updated successfully", null);
     }
 
-    // Common DELETE request to soft delete a resource
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         logger.debug("Received DELETE request for resource with id: {}", id);
@@ -57,24 +55,20 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         return ResponseEntity.noContent().build();
     }
 
-    // Helper method for validation and handling the service layer
     protected ResponseEntity<Map<String, Object>> handleRequest(BindingResult result, Supplier<DTO> serviceAction, String successMessage, Map<String, Object> additionalData) {
-        Map<String, String> validationErrors = validate(result);  // Validate the input data
+        Map<String, String> validationErrors = validate(result);
         if (!validationErrors.isEmpty()) {
-            return buildErrorResponse(validationErrors, "Validation failed");  // Return validation errors
+            return buildErrorResponse(validationErrors, "Validation failed");
         }
         
         try {
-            serviceAction.get();  // Perform the service action (e.g., save, update)
-
-            // Pass the success message and any additional data (like reload_link) to buildResponse
+            DTO resultDto = serviceAction.get();
             return buildResponse(successMessage, additionalData);
         } catch (Exception e) {
-            return buildErrorResponse(new HashMap<>(), "Error occurred: " + e.getMessage());  // Return error if an exception occurs
+            return buildErrorResponse(new HashMap<>(), "Error occurred: " + e.getMessage());
         }
     }
 
-    // Helper method to validate the DTO object
     protected Map<String, String> validate(BindingResult result) {
         Map<String, String> validationErrors = new HashMap<>();
         result.getAllErrors().forEach(error -> {
@@ -88,7 +82,6 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         return validationErrors;
     }
 
-    // Helper methods to build responses
     protected ResponseEntity<Map<String, Object>> buildResponse(String message, Map<String, Object> additionalData) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
@@ -104,7 +97,42 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         response.put("status", "error");
         response.put("message", message);
         response.put("errors", errors);
-        
         return ResponseEntity.badRequest().body(response);
+    }
+
+    protected void setupPagination(Model model, Page<DTO> page, String sortField, String sortDir) {
+        int totalPages = page.getTotalPages();
+        int currentPage = page.getNumber();
+        
+        model.addAttribute("items", page.getContent());  // Consistent naming
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", page.getTotalElements());
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+
+        Map<String, String> sortStatus = new HashMap<>();
+        sortStatus.put(sortField, sortDir);
+        model.addAttribute("sortStatus", sortStatus);
+        
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+
+        int startPage = Math.max(0, currentPage - 2);
+        int endPage = Math.min(totalPages - 1, currentPage + 2);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+    }
+    
+    
+    protected void logInfo(String message, Object... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(message, args);
+        }
+    }
+
+    protected void logError(String message, Throwable throwable) {
+        if (logger.isErrorEnabled()) {
+            logger.error(message, throwable);
+        }
     }
 }
