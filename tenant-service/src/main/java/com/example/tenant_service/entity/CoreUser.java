@@ -2,9 +2,6 @@ package com.example.tenant_service.entity;
 
 import com.example.tenant_service.common.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -35,12 +32,9 @@ public class CoreUser extends BaseEntity {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    //@Column(name = "user_desig")
-    //private Long userDesig;
-    
     @ManyToOne
-    @JoinColumn(name = "user_desig", referencedColumnName = "desig_id") // Foreign key to MisDesignation
-    private MisDesignation designation;
+    @JoinColumn(name = "user_desig", referencedColumnName = "desig_id", nullable = false) // Foreign key to MisDesignation
+    private MisDesignation designation; // This handles the designation relationship
 
     @Column(name = "user_dept")
     private Long userDept;
@@ -51,4 +45,3 @@ public class CoreUser extends BaseEntity {
     @Column(name = "user_email", nullable = false)
     private String userEmail;
 }
-

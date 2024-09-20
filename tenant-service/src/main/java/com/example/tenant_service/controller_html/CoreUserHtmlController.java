@@ -7,6 +7,9 @@ import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserToggleDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.DesignationDTO;
+
+import com.example.tenant_service.service.MisDesignationService;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -16,119 +19,126 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/users")
 public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUserService> {
+	
+	
+    private final MisDesignationService designationService;
 
-    public CoreUserHtmlController(CoreUserService coreUserService) {
+    // Inject both services via constructor
+    public CoreUserHtmlController(CoreUserService coreUserService, MisDesignationService designationService) {
         super(coreUserService);
+        this.designationService = designationService; // Properly assign the designationService
     }
+
 
     @GetMapping("/html")
     public String listUsers(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "3") int size,
-        @RequestParam(defaultValue = "userId") String sortField,
-        @RequestParam(defaultValue = "asc") String sortDir,
-        @RequestParam(required = false) String search,
-        Model model) {
+    	    @RequestParam(defaultValue = "0") int page,
+    	    @RequestParam(defaultValue = "30") int size,
+    	    @RequestParam(defaultValue = "userId") String sortField,
+    	    @RequestParam(defaultValue = "asc") String sortDir,
+    	    @RequestParam(required = false) String search,
+    	    Model model) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
 
-        logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}",
-                page, size, sortField, sortDir, search);
+    	    // Construct the Pageable object
+    	    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
 
-        Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
+    	    logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}",
+    	            page, size, sortField, sortDir, search);
 
-        logInfo("User Page - Total Elements: {}, Total Pages: {}", userPage.getTotalElements(), userPage.getTotalPages());
-        logInfo("Users: {}", userPage.getContent());
+    	    Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
 
-        // Use the reusable method for setting up pagination
-        setupPagination(model, userPage, sortField, sortDir);
+    	    logInfo("User Page - Total Elements: {}, Total Pages: {}", userPage.getTotalElements(), userPage.getTotalPages());
+    	    logInfo("Users: {}", userPage.getContent());
 
-        model.addAttribute("search", search);
-        model.addAttribute("pageTitle", "User List - My Application");
+    	    // Use the reusable method for setting up pagination
+    	    setupPagination(model, userPage, sortField, sortDir);
 
-        return "fragments/core_user_list";
+    	    model.addAttribute("search", search);
+    	    model.addAttribute("pageTitle", "User List - My Application");
+
+    	    return "fragments/core_user_list";
+    	}
+
+
+    @GetMapping("/html/{id}")
+    public String viewUserById(@PathVariable Long id, Model model) {
+        model.addAttribute("user", service.findById(id));
+        model.addAttribute("pageTitle", "User Detail - My Application");
+        return "fragments/core_user_detail";
     }
 
+    @GetMapping("/html/add")
+    public String showAddUserForm(Model model) {
+        model.addAttribute("pageTitle", "Add User - My Application");
+        model.addAttribute("user", new CoreUserDTO());
+        // Fetch designations from the service and pass them to the model
+        List<DesignationDTO> designations = designationService.findAll();
+        model.addAttribute("designations", designations);
+        return "fragments/add_user";
+    }
 
+    @PostMapping("/html/add")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addUser(@Valid @ModelAttribute CoreUserDTO userDTO,
+                                                       BindingResult result) {
+    	
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "/users/html");
+        return handleRequest(result, () -> service.save(userDTO), "User added successfully", additionalData);
+    }
 
-	@GetMapping("/html/{id}")
-	public String viewUserById(@PathVariable Long id, Model model) {
-		model.addAttribute("user", service.findById(id));
-		model.addAttribute("pageTitle", "User Detail - My Application");
-		return "fragments/core_user_detail";
-	}
+    @GetMapping("/html/edit/{id}")
+    public String editUser(@PathVariable Long id, Model model) {
+        model.addAttribute("userDTO", service.findById(id));
+        List<DesignationDTO> designations = designationService.findAll();
+        model.addAttribute("designations", designations);
+        return "fragments/edit_user";
+    }
 
-	@GetMapping("/html/add")
-	public String showAddUserForm(Model model) {
-		model.addAttribute("pageTitle", "Add User - My Application");
-		model.addAttribute("user", new CoreUserDTO());
-		return "fragments/add_user";
-	}
+    @PostMapping("/html/update/{refId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateUser(@PathVariable("refId") Long userId,
+                                                          @Valid @ModelAttribute CoreUserUpdateDTO coreUserUpdateDTO, BindingResult result) {
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "/users/html");
 
-	@PostMapping("/html/add")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addUser(@Valid @ModelAttribute CoreUserDTO userDTO,
-			BindingResult result) {
-		return handleRequest(result, () -> service.save(userDTO), "User added successfully",null);
-	}
+        return handleRequest(result, () -> service.updateUser(userId, coreUserUpdateDTO), "User updated successfully", additionalData);
+    }
 
-	@GetMapping("/html/edit/{id}")
-	public String editUser(@PathVariable Long id, Model model) {
-		model.addAttribute("userDTO", service.findById(id));
-		return "fragments/edit_user";
-	}
-	
-	
-	@PostMapping("/html/update/{refId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateUser(@PathVariable("refId") Long userId,
-	        @Valid @ModelAttribute CoreUserUpdateDTO coreUserUpdateDTO, BindingResult result) {
-	    
-	    // Define the additional data you want to return in the response, e.g., reload link
-	    Map<String, Object> additionalData = new HashMap<>();
-	    additionalData.put("loadnext", "/users/html");
-	    
-	    // Call handleRequest with the success message and the additional data
-	    return handleRequest(result, () -> service.updateUser(userId, coreUserUpdateDTO), "User updated successfully", additionalData);
-	}
+    @PostMapping("/html/resetPassword/{refId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> resetPassword(@PathVariable("refId") Long refId,
+                                                             @Valid @ModelAttribute CoreUserPasswordDTO passwordDTO, BindingResult result) {
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "/users/html");
 
-	@PostMapping("/html/resetPassword/{refId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> resetPassword(@PathVariable("refId") Long refId,
-			@Valid @ModelAttribute CoreUserPasswordDTO passwordDTO, BindingResult result) {
-		
-		
-	    // Define the additional data you want to return in the response, e.g., reload link
-	    Map<String, Object> additionalData = new HashMap<>();
-	    additionalData.put("loadnext", "/users/html");
-		
-		return handleRequest(result, () -> service.resetPassword(refId, passwordDTO), "Password reset successfully",additionalData);
-	}
+        return handleRequest(result, () -> service.resetPassword(refId, passwordDTO), "Password reset successfully", additionalData);
+    }
 
-	@PostMapping("/html/toggleStatus")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> toggleUserStatus(@RequestBody CoreUserToggleDTO toggleStatusDTO) {
-		boolean isActive = service.toggleUserStatus(toggleStatusDTO.getUserId(), toggleStatusDTO.getUserStatus());
-		return buildResponse(isActive ? "User activated successfully" : "User deactivated successfully",
-				Map.of("active", isActive ? "Y" : "N"));
-	}
+    @PostMapping("/html/toggleStatus")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleUserStatus(@RequestBody CoreUserToggleDTO toggleStatusDTO) {
+        boolean isActive = service.toggleUserStatus(toggleStatusDTO.getUserId(), toggleStatusDTO.getUserStatus());
+        return buildResponse(isActive ? "User activated successfully" : "User deactivated successfully",
+                Map.of("active", isActive ? "Y" : "N"));
+    }
 
-	// Reset User Password
-	@GetMapping("/html/resetPassword/{id}")
-	public String resetPassword(@PathVariable("id") Long id, Model model) {
-		CoreUserDTO user = service.findById(id); // Use the service instance
-		model.addAttribute("userDTO", user);
-		return "fragments/reset_password"; // View for updating user details
-	}
-
+    @GetMapping("/html/resetPassword/{id}")
+    public String resetPassword(@PathVariable("id") Long id, Model model) {
+        CoreUserDTO user = service.findById(id); // Use the service instance
+        model.addAttribute("userDTO", user);
+        return "fragments/reset_password"; // View for updating user details
+    }
 }
+

@@ -24,6 +24,12 @@
             <th>
                 <a href="#" class="sort" data-field="userUname" th:attr="data-dir=${sortStatus['userUname'] != null ? sortStatus['userUname'] : 'asc'}" onclick="sortEntities('userUname')">Username</a>
             </th>
+			<th>
+			    <a href="#" class="sort" data-field="designation.desigName" 
+			       th:attr="data-dir=${sortStatus['designation.desigName'] != null ? sortStatus['designation.desigName'] : 'asc'}" 
+			       onclick="sortEntities('designation.desigName')">Designation</a>
+			</th>
+
             <th>
                 <a href="#" class="sort" data-field="userEmail" th:attr="data-dir=${sortStatus['userEmail'] != null ? sortStatus['userEmail'] : 'asc'}" onclick="sortEntities('userEmail')">Email</a>
             </th>
@@ -36,6 +42,7 @@
                 <td th:text="${user.userFname}"></td>
                 <td th:text="${user.userLname}"></td>
                 <td th:text="${user.userUname}"></td>
+				<td th:text="${user.designationName}"></td>
                 <td th:text="${user.userEmail}"></td>
                 <td>
                     <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/users/html/' + ${user.userId} + '\', \'#content\')'">View</a>

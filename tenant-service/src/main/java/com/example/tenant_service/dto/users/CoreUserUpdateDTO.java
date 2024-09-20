@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import com.example.tenant_service.common.BaseDTO;
+import com.example.tenant_service.dto.DesignationDTO;
 
 @Data
 @NoArgsConstructor
@@ -37,7 +38,13 @@ public class CoreUserUpdateDTO extends BaseDTO {
     @Max(value = 2, message = "Status must be at most 2")
     private Short userStatus = 1;
 
-    private Long userDesig;
+    @NotNull(message = "Designation is required")
+    private Long userDesig;  // Designation ID
+    
+    private DesignationDTO designation; // Reference to the designation DTO
+    
+    private String designationName; 
+    
     private Long userDept;
 
     @NotNull(message = "Employee ID is required")

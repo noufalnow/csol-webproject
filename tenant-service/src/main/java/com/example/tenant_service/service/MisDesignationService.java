@@ -45,9 +45,10 @@ public class MisDesignationService implements BaseService<DesignationDTO> {
         }
     }
 
+    // Fetch all designations that are not deleted
     @Override
     public List<DesignationDTO> findAll() {
-        return misDesignationRepository.findAll().stream()
+        return misDesignationRepository.findAllByDeletedFalse().stream()
                 .map(misDesignationMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -79,9 +80,9 @@ public class MisDesignationService implements BaseService<DesignationDTO> {
         }
     }
     
+    // Fetch paginated results of designations that are not deleted and allow search functionality
     @Override
     public Page<DesignationDTO> findAllPaginate(Pageable pageable, String search) {
-        // Assuming findAllPaginate method exists in the repository
         return misDesignationRepository.findAllNotDeleted(search == null ? "" : search, pageable)
                 .map(misDesignationMapper::toDTO);
     }

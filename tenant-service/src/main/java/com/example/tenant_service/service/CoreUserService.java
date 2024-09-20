@@ -6,8 +6,10 @@ import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
 import com.example.tenant_service.entity.CoreUser;
+import com.example.tenant_service.entity.MisDesignation;
 import com.example.tenant_service.mapper.CoreUserMapper;
 import com.example.tenant_service.repository.CoreUserRepository;
+import com.example.tenant_service.repository.MisDesignationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,9 @@ import org.springframework.data.domain.Page;
 
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,12 +29,14 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     private final CoreUserRepository coreUserRepository;
     private final CoreUserMapper coreUserMapper;
     private final PasswordEncoder passwordEncoder;
+    private final MisDesignationRepository misDesignationRepository;
 
     @Autowired
-    public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder) {
+    public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder, MisDesignationRepository misDesignationRepository) {
         this.coreUserRepository = coreUserRepository;
         this.coreUserMapper = coreUserMapper;
         this.passwordEncoder = passwordEncoder;
+        this.misDesignationRepository = misDesignationRepository;
     }
 
     // Update CoreUser using CoreUserDTO
@@ -47,18 +53,33 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(updatedUser); // Return updated user as DTO
     }
 
-    // Update CoreUser using CoreUserUpdateDTO
+ // Update CoreUser using CoreUserUpdateDTO
     public CoreUserDTO updateUser(Long userId, CoreUserUpdateDTO updateUserDetailsDTO) {
+        // Fetch the existing user from the repository
         CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
 
-        // Manually map fields from CoreUserUpdateDTO to CoreUser
-        coreUserMapper.updateCoreUserFromDto(updateUserDetailsDTO, existingUser); // Map update DTO to entity
-        existingUser.setTModified(LocalDateTime.now()); // Update modified timestamp
+        // If the designation ID is provided, fetch the designation and set it
+        if (updateUserDetailsDTO.getUserDesig() != null) {
+            MisDesignation designation = misDesignationRepository.findById(updateUserDetailsDTO.getUserDesig())
+                    .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", updateUserDetailsDTO.getUserDesig()));
+            existingUser.setDesignation(designation);
+        }
 
-        CoreUser updatedUser = coreUserRepository.save(existingUser); // Save the updated user
-        return coreUserMapper.toDTO(updatedUser); // Return updated user as DTO
+        // Map other fields from CoreUserUpdateDTO to CoreUser
+        coreUserMapper.updateCoreUserFromDto(updateUserDetailsDTO, existingUser);
+
+        // Update the modified timestamp
+        existingUser.setTModified(LocalDateTime.now());
+
+        // Save the updated user entity
+        CoreUser updatedUser = coreUserRepository.save(existingUser);
+
+        // Return the updated user as a DTO
+        return coreUserMapper.toDTO(updatedUser);
     }
+
+
 
     public CoreUserDTO resetPassword(Long userId, CoreUserPasswordDTO passwordDTO) {
         CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
@@ -126,5 +147,10 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         user.setDeleted(true);
         user.setTDeleted(LocalDateTime.now());
         coreUserRepository.save(user); // Save the soft-deleted user
+    }
+    
+    public List<CoreUser> listUsersByDesignation(Long desigId) {
+        Optional<MisDesignation> designation = misDesignationRepository.findById(desigId);
+        return designation.map(coreUserRepository::findByDesignation).orElse(Collections.emptyList());
     }
 }

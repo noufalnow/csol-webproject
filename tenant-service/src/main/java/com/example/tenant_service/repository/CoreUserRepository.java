@@ -20,12 +20,16 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     Optional<CoreUser> findByIdAndNotDeleted(Long userId);
 
     // Fetch non-deleted users with pagination and sorting
-    @Query("SELECT u FROM CoreUser u WHERE u.deleted = false AND "
-           + "(LOWER(u.userFname) LIKE LOWER(CONCAT('%', :search, '%')) "
-           + "OR LOWER(u.userLname) LIKE LOWER(CONCAT('%', :search, '%')) "
-           + "OR LOWER(u.userUname) LIKE LOWER(CONCAT('%', :search, '%')) "
-           + "OR LOWER(u.userEmail) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<CoreUser> findAllNotDeleted(String search, Pageable pageable);
+   
+    @Query("SELECT u FROM CoreUser u "
+    	       + "LEFT JOIN u.designation d "
+    	       + "WHERE u.deleted = false AND "
+    	       + "(LOWER(u.userFname) LIKE LOWER(CONCAT('%', :search, '%')) "
+    	       + "OR LOWER(u.userLname) LIKE LOWER(CONCAT('%', :search, '%')) "
+    	       + "OR LOWER(u.userUname) LIKE LOWER(CONCAT('%', :search, '%')) "
+    	       + "OR LOWER(u.userEmail) LIKE LOWER(CONCAT('%', :search, '%')) "
+    	       + "OR LOWER(d.desigName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    	Page<CoreUser> findAllNotDeleted(String search, Pageable pageable);    
     
     
     List<CoreUser> findByDesignation(MisDesignation designation);

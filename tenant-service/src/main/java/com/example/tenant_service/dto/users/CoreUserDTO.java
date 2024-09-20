@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import com.example.tenant_service.common.BaseDTO;
+import com.example.tenant_service.dto.DesignationDTO;
 import com.example.tenant_service.dto.validation.PasswordMatches;
 
 @Data
@@ -45,8 +46,14 @@ public class CoreUserDTO extends BaseDTO {
 
     @NotBlank(message = "Password confirmation is required")
     private String userPasswordConf;
-
-    private Long userDesig;
+    
+    @NotNull(message = "Designation is required")
+    private Long userDesig;  // Designation ID
+    
+    private DesignationDTO designation; // Reference to the designation DTO
+    
+    private String designationName; 
+    
     private Long userDept;
 
     @NotNull(message = "Employee ID is required")
@@ -57,5 +64,3 @@ public class CoreUserDTO extends BaseDTO {
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
 }
-
-
