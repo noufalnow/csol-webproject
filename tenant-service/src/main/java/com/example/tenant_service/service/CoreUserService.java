@@ -122,6 +122,12 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
                                  .map(coreUserMapper::toDTO);
     }
     
+    public Page<CoreUserDTO> searchUsers(String query, Pageable pageable) {
+        return coreUserRepository.findAllNotDeleted(query, pageable)
+                                 .map(coreUserMapper::toDTO);
+    }
+
+    
     
     public CoreUserDTO findById(Long userId) {
         // Find the user by ID and return as DTO

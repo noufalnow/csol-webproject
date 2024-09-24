@@ -17,8 +17,12 @@ public interface MisBuildingRepository extends BaseRepository<MisBuilding, Long>
 
     @Query("SELECT b FROM MisBuilding b WHERE b.id = :bldId AND b.deleted = false")
     Optional<MisBuilding> findByIdAndNotDeleted(Long bldId);
+    
+    
+    // Find all designations that are not deleted
+    List<MisBuilding> findAllByDeletedFalse();
 
     @Query("SELECT b FROM MisBuilding b WHERE b.deleted = false")
-    Page<MisBuilding> findAllNotDeleted(String search, Pageable pageable);
+    Page<MisBuilding> findAllNotDeleted(String search, Pageable pageable);    
     
 }
