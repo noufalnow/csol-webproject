@@ -2,7 +2,6 @@ package com.example.tenant_service.entity;
 
 import com.example.tenant_service.common.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,6 @@ import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "mis_documents")
@@ -18,6 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MisDocuments extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "doc_id")
@@ -68,7 +67,7 @@ public class MisDocuments extends BaseEntity {
     @Column(name = "doc_paydet")
     private String docPaydet;
 
-    @NotNull(message = "Tenant ID is mandatory")
-    @Column(name = "doc_tnt_id", nullable = false)
+    @Column(name = "doc_tnt_id")
     private Long docTntId;
+
 }

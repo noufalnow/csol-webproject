@@ -1,0 +1,71 @@
+<div th:fragment="content">
+    <h1>Agreements List</h1>
+    
+    <!-- Filter/Search Input -->
+    <form id="search-form" method="GET" action="/documents/html">
+        <input type="text" name="search" placeholder="Search..." th:value="${search}">
+        <button type="button" onclick="searchEntities('/documents/html', '#content', 'docId')">Search</button>
+    </form>
+
+    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('/documents/html/add', '#content')">Add New Agreement</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <a href="#" class="sort" data-field="docId" th:attr="data-dir=${sortStatus['docId'] != null ? sortStatus['docId'] : 'asc'}" onclick="sortEntities('docId')">ID</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="docNo" th:attr="data-dir=${sortStatus['docNo'] != null ? sortStatus['docNo'] : 'asc'}" onclick="sortEntities('docNo')">Document No</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="docDesc" th:attr="data-dir=${sortStatus['docDesc'] != null ? sortStatus['docDesc'] : 'asc'}" onclick="sortEntities('docDesc')">Description</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="propName" th:attr="data-dir=${sortStatus['propName'] != null ? sortStatus['propName'] : 'asc'}" onclick="sortEntities('propName')">Property Name</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="propFileno" th:attr="data-dir=${sortStatus['propFileno'] != null ? sortStatus['propFileno'] : 'asc'}" onclick="sortEntities('propFileno')">Property File No</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="propBuilding" th:attr="data-dir=${sortStatus['propBuilding'] != null ? sortStatus['propBuilding'] : 'asc'}" onclick="sortEntities('propBuilding')">Property Building</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="tenantFullName" th:attr="data-dir=${sortStatus['tenantFullName'] != null ? sortStatus['tenantFullName'] : 'asc'}" onclick="sortEntities('tenantFullName')">Tenant Name</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="docApplyDate" th:attr="data-dir=${sortStatus['docApplyDate'] != null ? sortStatus['docApplyDate'] : 'asc'}" onclick="sortEntities('docApplyDate')">Application Date</a>
+                </th>
+                <th>
+                    <a href="#" class="sort" data-field="docExpiryDate" th:attr="data-dir=${sortStatus['docExpiryDate'] != null ? sortStatus['docExpiryDate'] : 'asc'}" onclick="sortEntities('docExpiryDate')">Expiry Date</a>
+                </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="document : ${items}">
+                <td th:text="${document.docId}"></td> <!-- ID -->
+                <td th:text="${document.docNo}"></td> <!-- Document No -->
+                <td th:text="${document.docDesc}"></td> <!-- Description -->
+                <td th:text="${document.propName}"></td> <!-- Property Name -->
+                <td th:text="${document.propFileno}"></td> <!-- Property File No -->
+                <td th:text="${document.propBuilding}"></td> <!-- Property Building -->
+                <td th:text="${document.tenantFullName}"></td> <!-- Tenant Name -->
+                <td th:text="${#dates.format(document.docApplyDate, 'yyyy-MM-dd')}"></td> <!-- Application Date -->
+                <td th:text="${#dates.format(document.docExpiryDate, 'yyyy-MM-dd')}"></td> <!-- Expiry Date -->
+                <td>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/' + ${document.docId} + '\', \'#content\')'">View</a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/edit/' + ${document.docId} + '\', \'#content\')'">Update</a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/delete/' + ${document.docId} + '\', \'#content\')'" th:text="'Delete'"></a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div th:replace="~{fragments/pagination :: pagination}"
+         th:with="currentPage=${currentPage}, totalPages=${totalPages}, size=${size}, sortField=${sortField}, sortDir=${sortDir}, pageUrl='/documents/html'"></div>
+</div>
+
+<script>
+    var listingUrl = '/documents/html';  // Set dynamically from server-side or any page variable
+</script>

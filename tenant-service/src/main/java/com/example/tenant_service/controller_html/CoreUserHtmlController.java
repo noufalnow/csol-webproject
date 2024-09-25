@@ -43,7 +43,7 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
     @GetMapping("/html")
     public String listUsers(
     	    @RequestParam(defaultValue = "0") int page,
-    	    @RequestParam(defaultValue = "30") int size,
+    	    @RequestParam(defaultValue = "10") int size,
     	    @RequestParam(defaultValue = "userId") String sortField,
     	    @RequestParam(defaultValue = "asc") String sortDir,
     	    @RequestParam(required = false) String search,
@@ -66,6 +66,7 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
     	    model.addAttribute("search", search);
     	    model.addAttribute("pageTitle", "User List - My Application");
+            model.addAttribute("pageUrl",  "/users/html");
 
     	    return "fragments/core_user_list";
     	}

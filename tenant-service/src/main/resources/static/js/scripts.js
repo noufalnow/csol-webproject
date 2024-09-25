@@ -162,7 +162,6 @@ function searchEntities(listingUrl, targetContainer, defaultSortField) {
 }
 
 function sortEntities(sortField) {
-    var listingUrl = '/users/html'; // Base URL for fetching the sorted list
     var targetContainer = '#content'; // Container where the content will be loaded
     var defaultSortField = 'userId'; // Default sort field
 
@@ -175,6 +174,7 @@ function sortEntities(sortField) {
     // Trigger the search with updated sort direction and field
     searchEntities(listingUrl, targetContainer, defaultSortField);
 }
+
 
 function loadContent(url, target) {
     $.ajax({
