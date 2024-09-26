@@ -34,9 +34,11 @@ public class MisDocuments extends BaseEntity {
     @Column(name = "doc_ref_id", nullable = false)
     private Long docRefId;
 
+    @NotNull(message = "Document number is required.")
     @Column(name = "doc_no")
     private String docNo;
 
+    @NotNull(message = "Document description is required.")
     @Column(name = "doc_desc")
     private String docDesc;
 
@@ -69,5 +71,8 @@ public class MisDocuments extends BaseEntity {
 
     @Column(name = "doc_tnt_id")
     private Long docTntId;
+    
+    @Column(name = "doc_agreement")
+    private Short docAgreement;
 
 }

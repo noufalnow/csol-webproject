@@ -10,7 +10,7 @@ import java.sql.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentDTO {
+public class DocumentsViewDTO {
 
     // Fields from MisDocuments
     private Long docId;
@@ -29,6 +29,7 @@ public class DocumentDTO {
     private BigDecimal docTax;
     private String docPaydet;
     private Long docTntId;
+    private Long docAgreement;
 
     // Additional fields from MisDocumentsView (for tenant and property information)
     private boolean deleted; // Ensure to include this field

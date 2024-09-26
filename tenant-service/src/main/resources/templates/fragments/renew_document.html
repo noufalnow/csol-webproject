@@ -1,0 +1,312 @@
+<div class="container">
+	<h3 th:text="${pageTitle}">Renew Document</h3>
+
+	<!-- Document Information Section -->
+	<h3>Document Detail</h3>
+
+	<!-- Document Information Section -->
+	<div class="section">
+		<h4>Document Information</h4>
+		<div class="header">
+			<p>
+				ID: <span th:text="${documentView.docId}"></span>
+			</p>
+			<p>
+				Document No: <span th:text="${documentView.docNo}"></span>
+			</p>
+		</div>
+		<div class="details">
+			<p>
+				Description: <span th:text="${documentView.docDesc}"></span>
+			</p>
+			<p>
+				Remarks: <span th:text="${documentView.docRemarks}"></span>
+			</p>
+			<p>
+				Issue Date: <span
+					th:text="${#dates.format(documentView.docIssueDate, 'yyyy-MM-dd')}"></span>
+			</p>
+			<p>
+				Expiry Date: <span
+					th:text="${#dates.format(documentView.docExpiryDate, 'yyyy-MM-dd')}"></span>
+			</p>
+			<p>
+				Amount: <span th:text="${documentView.docAmount}"></span>
+			</p>
+			<p>
+				Tax: <span th:text="${documentView.docTax}"></span>
+			</p>
+			<p>
+				Payment Details: <span th:text="${documentView.docPaydet}"></span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Tenant Information Section -->
+	<div class="section">
+		<h4>Tenant Information</h4>
+		<div class="header">
+			<p>
+				Full Name: <span th:text="${documentView.tenantFullName}"></span>
+			</p>
+			<p>
+				Company Name: <span th:text="${documentView.tenantCompanyName}"></span>
+			</p>
+		</div>
+		<div class="details">
+			<p>
+				Phone: <span th:text="${documentView.tenantPhone}"></span>
+			</p>
+			<p>
+				Tele: <span th:text="${documentView.tenantTele}"></span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Property Information Section -->
+	<div class="section">
+		<h4>Property Information</h4>
+		<div class="header">
+			<p>
+				Property No: <span th:text="${documentView.propNo}"></span>
+			</p>
+			<p>
+				Property Name: <span th:text="${documentView.propName}"></span>
+			</p>
+		</div>
+		<div class="details">
+			<p>
+				File No: <span th:text="${documentView.propFileno}"></span>
+			</p>
+			<p>
+				Building: <span th:text="${documentView.propBuilding}"></span>
+			</p>
+			<p>
+				Responsible: <span th:text="${documentView.propResponsible}"></span>
+			</p>
+			<p>
+				Category: <span th:text="${documentView.propCat}"></span>
+			</p>
+		</div>
+	</div>
+
+	<div th:if="${#lists.size(versions) > 0}">
+	<h4>Previous Agreements</h4>
+	<table>
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Document No</th>
+				<th>Description</th>
+				<th>Application Date</th>
+				<th>Expiry Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="document : ${versions}">
+				<td th:text="${document.docId}"></td>
+				<!-- ID -->
+				<td th:text="${document.docNo}"></td>
+				<!-- Document No -->
+				<td th:text="${document.docDesc}"></td>
+				<!-- Description -->
+
+    <td th:text="${document.docApplyDate != null ? #temporals.format(document.docApplyDate, 'dd/MM/yyyy') : 'N/A'}"></td>
+    <td th:text="${document.docExpiryDate != null ? #temporals.format(document.docExpiryDate, 'dd/MM/yyyy') : 'N/A'}"></td>
+
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+	<a class="ajax-link" th:href="@{view/documents/html}">Back to List</a>
+
+
+	<!-- Renewal Form -->
+	<h4>Enter New Document Details</h4>
+	<form id="renewDocumentForm" action="/data/documents/html/renew"
+		method="post">
+		<input type="hidden" id="doc_agreement" name="docAgreement"
+			th:value="${documentView.docId}"> <input type="hidden"
+			name="docType" value="1" /> <input type="hidden" name="docRefType"
+			value="1000" />
+			
+			<input type="hidden" name="docRefId"
+			th:value="${documentView.docRefId}" />
+			
+			<input type="hidden" name="docTntId"
+			th:value="${documentView.docTntId}" />
+
+		<div class="form-row">
+			<div class="form-group">
+				<label for="doc_no">Document Number:</label> <input type="text"
+					id="doc_no" name="docNo" required>
+			</div>
+			<div class="form-group">
+				<label for="doc_desc">Description:</label> <input type="text"
+					id="doc_desc" name="docDesc" required>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label for="doc_remarks">Remarks:</label> <input type="text"
+					id="doc_remarks" name="docRemarks">
+			</div>
+			<div class="form-group">
+				<label for="doc_issue_auth">Issuing Authority:</label> <input
+					type="text" id="doc_issue_auth" name="docIssueAuth">
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label for="doc_apply_date">Application Date:</label> <input
+					type="date" id="doc_apply_date" name="docApplyDate" required>
+			</div>
+			<div class="form-group">
+				<label for="doc_issue_date">Issue Date:</label> <input type="date"
+					id="doc_issue_date" name="docIssueDate" required>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label for="doc_expiry_date">Expiry Date:</label> <input type="date"
+					id="doc_expiry_date" name="docExpiryDate">
+			</div>
+			<div class="form-group">
+				<label for="doc_amount">Amount:</label> <input type="number"
+					step="0.01" id="doc_amount" name="docAmount" required>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label for="doc_tax">Tax:</label> <input type="number" step="0.01"
+					id="doc_tax" name="docTax" required>
+			</div>
+			<div class="form-group">
+				<label for="doc_paydet">Payment Details:</label> <input type="text"
+					id="doc_paydet" name="docPaydet">
+			</div>
+		</div>
+
+		<button type="button" onclick="submitHtmlForm('renewDocumentForm')">Update
+			Document</button>
+
+		<div id="error-messages" class="error-message"></div>
+	</form>
+
+	<a class="ajax-link" th:href="@{view/documents/html}">Back to List</a>
+</div>
+
+
+<style>
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f4f4f4;
+	margin: 0;
+	padding: 20px;
+}
+
+.container {
+	max-width: 600px;
+	margin: auto;
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+	text-align: center;
+	color: #333;
+	margin-bottom: 20px;
+}
+
+.form-row {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 15px;
+}
+
+.form-group {
+	flex: 1;
+	margin-right: 10px;
+}
+
+.form-group:last-child {
+	margin-right: 0;
+}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+
+input[type="text"], input[type="date"], input[type="number"], select {
+	width: 100%;
+	padding: 8px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+button {
+	background-color: #007BFF;
+	color: white;
+	padding: 5px 10px; /* Reduced padding */
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	width: auto; /* Set width to auto to make it smaller */
+	font-size: 14px; /* Reduced font size */
+	transition: background-color 0.3s;
+}
+
+.button {
+	background-color: #007BFF;
+	color: white;
+	padding: 5px 10px; /* Reduced padding */
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	width: auto; /* Set width to auto to make it smaller */
+	font-size: 14px; /* Reduced font size */
+	transition: background-color 0.3s;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+.error-message {
+	color: red;
+	margin-top: 10px;
+}
+
+.ajax-link:hover {
+	background-color: #0056b3;
+}
+
+.header {
+	background-color: #f9f9f9; /* Light background for headers */
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 10px;
+}
+
+.details {
+	padding: 10px;
+	margin: 10px 0;
+	background-color: #ffffff; /* White background for details */
+	border: 1px solid #ddd; /* Light border around details */
+	border-radius: 5px;
+}
+
+.section {
+	margin: 15px 0; /* Space between sections */
+}
+</style>
+

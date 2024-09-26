@@ -1,7 +1,7 @@
 package com.example.tenant_service.mapper;
 
 import com.example.tenant_service.common.BaseMapper;
-import com.example.tenant_service.dto.DocumentDTO;
+import com.example.tenant_service.dto.DocumentsDTO;
 import com.example.tenant_service.entity.MisDocuments;
 import com.example.tenant_service.entity.MisDocumentsView;
 
@@ -11,17 +11,17 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface MisDocumentsMapper extends BaseMapper<MisDocuments, DocumentDTO> {
+public interface MisDocumentsMapper extends BaseMapper<MisDocuments, DocumentsDTO> {
 
     // Map MisDocuments to DocumentDTO
-    DocumentDTO toDTO(MisDocuments misDocuments);
+    DocumentsDTO toDTO(MisDocuments misDocuments);
     
     // Map MisDocumentsView to DocumentDTO
-    DocumentDTO toDTO(MisDocumentsView misDocumentsView);
+    DocumentsDTO toDTO(MisDocumentsView misDocumentsView);
 
     // Map DocumentDTO to MisDocuments
-    MisDocuments toEntity(DocumentDTO documentDTO);
+    MisDocuments toEntity(DocumentsDTO documentDTO);
 
     // Update MisDocuments fields from DocumentDTO, ignoring null values
-    void updateMisDocumentsFromDto(DocumentDTO documentDTO, @MappingTarget MisDocuments misDocuments);
+    void updateMisDocumentsFromDto(DocumentsDTO documentDTO, @MappingTarget MisDocuments misDocuments);
 }

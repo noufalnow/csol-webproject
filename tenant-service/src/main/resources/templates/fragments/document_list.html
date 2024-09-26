@@ -2,12 +2,12 @@
     <h1>Agreements List</h1>
     
     <!-- Filter/Search Input -->
-    <form id="search-form" method="GET" action="/documents/html">
+    <form id="search-form" method="GET" action="view/documents/html">
         <input type="text" name="search" placeholder="Search..." th:value="${search}">
-        <button type="button" onclick="searchEntities('/documents/html', '#content', 'docId')">Search</button>
+        <button type="button" onclick="searchEntities('view/documents/html', '#content', 'docId')">Search</button>
     </form>
 
-    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('/documents/html/add', '#content')">Add New Agreement</a>
+    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('data/documents/html/add', '#content')">Add New Agreement</a>
 
     <table>
         <thead>
@@ -51,21 +51,21 @@
                 <td th:text="${document.propFileno}"></td> <!-- Property File No -->
                 <td th:text="${document.propBuilding}"></td> <!-- Property Building -->
                 <td th:text="${document.tenantFullName}"></td> <!-- Tenant Name -->
-                <td th:text="${#dates.format(document.docApplyDate, 'yyyy-MM-dd')}"></td> <!-- Application Date -->
-                <td th:text="${#dates.format(document.docExpiryDate, 'yyyy-MM-dd')}"></td> <!-- Expiry Date -->
+                <td th:text="${#dates.format(document.docApplyDate, 'dd/MM/yyyy')}"></td> <!-- Application Date -->
+                <td th:text="${#dates.format(document.docExpiryDate, 'dd/MM/yyyy')}"></td> <!-- Expiry Date -->
                 <td>
-                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/' + ${document.docId} + '\', \'#content\')'">View</a>
-                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/edit/' + ${document.docId} + '\', \'#content\')'">Update</a>
-                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'/documents/html/delete/' + ${document.docId} + '\', \'#content\')'" th:text="'Delete'"></a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'view/documents/html/' + ${document.docId} + '\', \'#content\')'">View</a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'data/documents/html/edit/' + ${document.docId} + '\', \'#content\')'">Update</a>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'data/documents/html/renew/' + ${document.docId} + '\', \'#content\')'">Renew</a>
                 </td>
             </tr>
         </tbody>
     </table>
 
     <div th:replace="~{fragments/pagination :: pagination}"
-         th:with="currentPage=${currentPage}, totalPages=${totalPages}, size=${size}, sortField=${sortField}, sortDir=${sortDir}, pageUrl='/documents/html'"></div>
+         th:with="currentPage=${currentPage}, totalPages=${totalPages}, size=${size}, sortField=${sortField}, sortDir=${sortDir}, pageUrl='view/documents/html'"></div>
 </div>
 
 <script>
-    var listingUrl = '/documents/html';  // Set dynamically from server-side or any page variable
+    var listingUrl = 'view/documents/html';  // Set dynamically from server-side or any page variable
 </script>

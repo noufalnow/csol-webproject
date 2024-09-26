@@ -2,7 +2,7 @@ package com.example.tenant_service.service;
 
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
-import com.example.tenant_service.dto.DocumentDTO;
+import com.example.tenant_service.dto.DocumentsViewDTO;
 import com.example.tenant_service.dto.PropertyDTO;
 import com.example.tenant_service.entity.MisProperty;
 import com.example.tenant_service.mapper.MisPropertyMapper;

@@ -1,122 +1,118 @@
 package com.example.tenant_service.mapper;
 
-import com.example.tenant_service.dto.DocumentDTO;
+import com.example.tenant_service.dto.DocumentsDTO;
 import com.example.tenant_service.entity.MisDocuments;
 import com.example.tenant_service.entity.MisDocumentsView;
+import java.sql.Date;
+import java.time.ZoneOffset;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-09-24T23:33:37+0530",
+    date = "2024-09-26T16:20:23+0530",
     comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
 )
 @Component
 public class MisDocumentsMapperImpl implements MisDocumentsMapper {
 
     @Override
-    public DocumentDTO toDTO(MisDocuments misDocuments) {
+    public DocumentsDTO toDTO(MisDocuments misDocuments) {
         if ( misDocuments == null ) {
             return null;
         }
 
-        DocumentDTO documentDTO = new DocumentDTO();
+        DocumentsDTO documentsDTO = new DocumentsDTO();
 
-        if ( misDocuments.getDeleted() != null ) {
-            documentDTO.setDeleted( misDocuments.getDeleted() );
+        if ( misDocuments.getDocAgreement() != null ) {
+            documentsDTO.setDocAgreement( misDocuments.getDocAgreement().longValue() );
         }
-        documentDTO.setDocAlertDays( misDocuments.getDocAlertDays() );
-        documentDTO.setDocAmount( misDocuments.getDocAmount() );
-        documentDTO.setDocApplyDate( misDocuments.getDocApplyDate() );
-        documentDTO.setDocDesc( misDocuments.getDocDesc() );
-        documentDTO.setDocExpiryDate( misDocuments.getDocExpiryDate() );
-        documentDTO.setDocId( misDocuments.getDocId() );
-        documentDTO.setDocIssueAuth( misDocuments.getDocIssueAuth() );
-        documentDTO.setDocIssueDate( misDocuments.getDocIssueDate() );
-        documentDTO.setDocNo( misDocuments.getDocNo() );
-        documentDTO.setDocPaydet( misDocuments.getDocPaydet() );
-        documentDTO.setDocRefId( misDocuments.getDocRefId() );
-        documentDTO.setDocRefType( misDocuments.getDocRefType() );
-        documentDTO.setDocRemarks( misDocuments.getDocRemarks() );
-        documentDTO.setDocTax( misDocuments.getDocTax() );
-        documentDTO.setDocTntId( misDocuments.getDocTntId() );
-        documentDTO.setDocType( misDocuments.getDocType() );
+        documentsDTO.setDocAlertDays( misDocuments.getDocAlertDays() );
+        documentsDTO.setDocAmount( misDocuments.getDocAmount() );
+        if ( misDocuments.getDocApplyDate() != null ) {
+            documentsDTO.setDocApplyDate( misDocuments.getDocApplyDate().toLocalDate() );
+        }
+        documentsDTO.setDocDesc( misDocuments.getDocDesc() );
+        if ( misDocuments.getDocExpiryDate() != null ) {
+            documentsDTO.setDocExpiryDate( misDocuments.getDocExpiryDate().toLocalDate() );
+        }
+        documentsDTO.setDocId( misDocuments.getDocId() );
+        documentsDTO.setDocIssueAuth( misDocuments.getDocIssueAuth() );
+        if ( misDocuments.getDocIssueDate() != null ) {
+            documentsDTO.setDocIssueDate( misDocuments.getDocIssueDate().toLocalDate() );
+        }
+        documentsDTO.setDocNo( misDocuments.getDocNo() );
+        documentsDTO.setDocPaydet( misDocuments.getDocPaydet() );
+        documentsDTO.setDocRefId( misDocuments.getDocRefId() );
+        documentsDTO.setDocRefType( misDocuments.getDocRefType() );
+        documentsDTO.setDocRemarks( misDocuments.getDocRemarks() );
+        documentsDTO.setDocTax( misDocuments.getDocTax() );
+        documentsDTO.setDocTntId( misDocuments.getDocTntId() );
+        documentsDTO.setDocType( misDocuments.getDocType() );
 
-        return documentDTO;
+        return documentsDTO;
     }
 
     @Override
-    public DocumentDTO toDTO(MisDocumentsView misDocumentsView) {
+    public DocumentsDTO toDTO(MisDocumentsView misDocumentsView) {
         if ( misDocumentsView == null ) {
             return null;
         }
 
-        DocumentDTO documentDTO = new DocumentDTO();
+        DocumentsDTO documentsDTO = new DocumentsDTO();
 
-        documentDTO.setDeleted( misDocumentsView.isDeleted() );
-        documentDTO.setDocAlertDays( misDocumentsView.getDocAlertDays() );
-        documentDTO.setDocAmount( misDocumentsView.getDocAmount() );
-        documentDTO.setDocApplyDate( misDocumentsView.getDocApplyDate() );
-        documentDTO.setDocDesc( misDocumentsView.getDocDesc() );
-        documentDTO.setDocExpiryDate( misDocumentsView.getDocExpiryDate() );
-        documentDTO.setDocId( misDocumentsView.getDocId() );
-        documentDTO.setDocIssueAuth( misDocumentsView.getDocIssueAuth() );
-        documentDTO.setDocIssueDate( misDocumentsView.getDocIssueDate() );
-        documentDTO.setDocNo( misDocumentsView.getDocNo() );
-        documentDTO.setDocPaydet( misDocumentsView.getDocPaydet() );
-        documentDTO.setDocRefId( misDocumentsView.getDocRefId() );
-        documentDTO.setDocRefType( misDocumentsView.getDocRefType() );
-        documentDTO.setDocRemarks( misDocumentsView.getDocRemarks() );
-        documentDTO.setDocTax( misDocumentsView.getDocTax() );
-        documentDTO.setDocTntId( misDocumentsView.getDocTntId() );
-        documentDTO.setDocType( misDocumentsView.getDocType() );
-        documentDTO.setPropAccount( misDocumentsView.getPropAccount() );
-        documentDTO.setPropBuilding( misDocumentsView.getPropBuilding() );
-        documentDTO.setPropBuildingType( misDocumentsView.getPropBuildingType() );
-        documentDTO.setPropCat( misDocumentsView.getPropCat() );
-        documentDTO.setPropElecAccount( misDocumentsView.getPropElecAccount() );
-        documentDTO.setPropElecMeter( misDocumentsView.getPropElecMeter() );
-        documentDTO.setPropElecRecharge( misDocumentsView.getPropElecRecharge() );
-        documentDTO.setPropFileno( misDocumentsView.getPropFileno() );
-        documentDTO.setPropId( misDocumentsView.getPropId() );
-        documentDTO.setPropLevel( misDocumentsView.getPropLevel() );
-        documentDTO.setPropName( misDocumentsView.getPropName() );
-        documentDTO.setPropNo( misDocumentsView.getPropNo() );
-        documentDTO.setPropRemarks( misDocumentsView.getPropRemarks() );
-        documentDTO.setPropResponsible( misDocumentsView.getPropResponsible() );
-        documentDTO.setPropStatus( misDocumentsView.getPropStatus() );
-        documentDTO.setPropType( misDocumentsView.getPropType() );
-        documentDTO.setPropWater( misDocumentsView.getPropWater() );
-        documentDTO.setTenantAgrType( misDocumentsView.getTenantAgrType() );
-        documentDTO.setTenantCompanyName( misDocumentsView.getTenantCompanyName() );
-        documentDTO.setTenantCrno( misDocumentsView.getTenantCrno() );
-        documentDTO.setTenantDocId( misDocumentsView.getTenantDocId() );
-        documentDTO.setTenantExpat( misDocumentsView.getTenantExpat() );
-        documentDTO.setTenantFullName( misDocumentsView.getTenantFullName() );
-        documentDTO.setTenantIdNo( misDocumentsView.getTenantIdNo() );
-        documentDTO.setTenantPhone( misDocumentsView.getTenantPhone() );
-        documentDTO.setTenantTele( misDocumentsView.getTenantTele() );
+        documentsDTO.setDocAgreement( misDocumentsView.getDocAgreement() );
+        documentsDTO.setDocAlertDays( misDocumentsView.getDocAlertDays() );
+        documentsDTO.setDocAmount( misDocumentsView.getDocAmount() );
+        if ( misDocumentsView.getDocApplyDate() != null ) {
+            documentsDTO.setDocApplyDate( misDocumentsView.getDocApplyDate().toLocalDate() );
+        }
+        documentsDTO.setDocDesc( misDocumentsView.getDocDesc() );
+        if ( misDocumentsView.getDocExpiryDate() != null ) {
+            documentsDTO.setDocExpiryDate( misDocumentsView.getDocExpiryDate().toLocalDate() );
+        }
+        documentsDTO.setDocId( misDocumentsView.getDocId() );
+        documentsDTO.setDocIssueAuth( misDocumentsView.getDocIssueAuth() );
+        if ( misDocumentsView.getDocIssueDate() != null ) {
+            documentsDTO.setDocIssueDate( misDocumentsView.getDocIssueDate().toLocalDate() );
+        }
+        documentsDTO.setDocNo( misDocumentsView.getDocNo() );
+        documentsDTO.setDocPaydet( misDocumentsView.getDocPaydet() );
+        documentsDTO.setDocRefId( misDocumentsView.getDocRefId() );
+        documentsDTO.setDocRefType( misDocumentsView.getDocRefType() );
+        documentsDTO.setDocRemarks( misDocumentsView.getDocRemarks() );
+        documentsDTO.setDocTax( misDocumentsView.getDocTax() );
+        documentsDTO.setDocTntId( misDocumentsView.getDocTntId() );
+        documentsDTO.setDocType( misDocumentsView.getDocType() );
 
-        return documentDTO;
+        return documentsDTO;
     }
 
     @Override
-    public MisDocuments toEntity(DocumentDTO documentDTO) {
+    public MisDocuments toEntity(DocumentsDTO documentDTO) {
         if ( documentDTO == null ) {
             return null;
         }
 
         MisDocuments misDocuments = new MisDocuments();
 
-        misDocuments.setDeleted( documentDTO.isDeleted() );
+        if ( documentDTO.getDocAgreement() != null ) {
+            misDocuments.setDocAgreement( documentDTO.getDocAgreement().shortValue() );
+        }
         misDocuments.setDocAlertDays( documentDTO.getDocAlertDays() );
         misDocuments.setDocAmount( documentDTO.getDocAmount() );
-        misDocuments.setDocApplyDate( documentDTO.getDocApplyDate() );
+        if ( documentDTO.getDocApplyDate() != null ) {
+            misDocuments.setDocApplyDate( new Date( documentDTO.getDocApplyDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
+        }
         misDocuments.setDocDesc( documentDTO.getDocDesc() );
-        misDocuments.setDocExpiryDate( documentDTO.getDocExpiryDate() );
+        if ( documentDTO.getDocExpiryDate() != null ) {
+            misDocuments.setDocExpiryDate( new Date( documentDTO.getDocExpiryDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
+        }
         misDocuments.setDocId( documentDTO.getDocId() );
         misDocuments.setDocIssueAuth( documentDTO.getDocIssueAuth() );
-        misDocuments.setDocIssueDate( documentDTO.getDocIssueDate() );
+        if ( documentDTO.getDocIssueDate() != null ) {
+            misDocuments.setDocIssueDate( new Date( documentDTO.getDocIssueDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
+        }
         misDocuments.setDocNo( documentDTO.getDocNo() );
         misDocuments.setDocPaydet( documentDTO.getDocPaydet() );
         misDocuments.setDocRefId( documentDTO.getDocRefId() );
@@ -130,12 +126,14 @@ public class MisDocumentsMapperImpl implements MisDocumentsMapper {
     }
 
     @Override
-    public void updateMisDocumentsFromDto(DocumentDTO documentDTO, MisDocuments misDocuments) {
+    public void updateMisDocumentsFromDto(DocumentsDTO documentDTO, MisDocuments misDocuments) {
         if ( documentDTO == null ) {
             return;
         }
 
-        misDocuments.setDeleted( documentDTO.isDeleted() );
+        if ( documentDTO.getDocAgreement() != null ) {
+            misDocuments.setDocAgreement( documentDTO.getDocAgreement().shortValue() );
+        }
         if ( documentDTO.getDocAlertDays() != null ) {
             misDocuments.setDocAlertDays( documentDTO.getDocAlertDays() );
         }
@@ -143,13 +141,13 @@ public class MisDocumentsMapperImpl implements MisDocumentsMapper {
             misDocuments.setDocAmount( documentDTO.getDocAmount() );
         }
         if ( documentDTO.getDocApplyDate() != null ) {
-            misDocuments.setDocApplyDate( documentDTO.getDocApplyDate() );
+            misDocuments.setDocApplyDate( new Date( documentDTO.getDocApplyDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
         }
         if ( documentDTO.getDocDesc() != null ) {
             misDocuments.setDocDesc( documentDTO.getDocDesc() );
         }
         if ( documentDTO.getDocExpiryDate() != null ) {
-            misDocuments.setDocExpiryDate( documentDTO.getDocExpiryDate() );
+            misDocuments.setDocExpiryDate( new Date( documentDTO.getDocExpiryDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
         }
         if ( documentDTO.getDocId() != null ) {
             misDocuments.setDocId( documentDTO.getDocId() );
@@ -158,7 +156,7 @@ public class MisDocumentsMapperImpl implements MisDocumentsMapper {
             misDocuments.setDocIssueAuth( documentDTO.getDocIssueAuth() );
         }
         if ( documentDTO.getDocIssueDate() != null ) {
-            misDocuments.setDocIssueDate( documentDTO.getDocIssueDate() );
+            misDocuments.setDocIssueDate( new Date( documentDTO.getDocIssueDate().atStartOfDay( ZoneOffset.UTC ).toInstant().toEpochMilli() ) );
         }
         if ( documentDTO.getDocNo() != null ) {
             misDocuments.setDocNo( documentDTO.getDocNo() );

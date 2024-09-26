@@ -26,4 +26,38 @@
     <!-- Include your custom JavaScript file -->
     <script src="/js/scripts.js"></script>
 </body>
+
+<style>
+.container {
+    max-width: 1200px; /* Adjust as needed */
+    margin: auto;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 15px; /* Space between rows */
+}
+
+.form-group {
+    flex: 1 1 30%; /* Flex-grow: 1, Flex-shrink: 1, Flex-basis: 30% */
+    padding: 0 10px; /* Optional: spacing between columns */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px; /* Space between label and input */
+}
+
+.form-group input,
+.form-group select {
+    width: 100%; /* Make inputs full-width */
+    padding: 8px; /* Padding for inputs */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+</style>
+
 </html>
+
+

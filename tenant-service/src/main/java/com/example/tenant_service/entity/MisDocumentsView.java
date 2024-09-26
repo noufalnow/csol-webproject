@@ -70,6 +70,12 @@ public class MisDocumentsView {
     @Column(name = "doc_tnt_id")
     private Long docTntId;
     
+    @Column(name = "doc_agreement")
+    private Long docAgreement;
+    
+    
+    
+    
     private boolean deleted; // Make sure this field exists
 
     // Fields from MisTenants
