@@ -36,86 +36,123 @@ $(document).ready(function () {
     });
 
     // Form submission with AJAX
-    window.submitHtmlForm = function (formId) {
-        console.log('Button clicked');
+window.submitHtmlForm = function (formId) {
+    console.log('Button clicked');
 
-        $('#error-messages').empty(); // Clear error messages
-        $('.error-message').html('');
-        $('input').removeClass('has-error');
+    $('#error-messages').empty(); // Clear error messages
+    $('.error-message').html('');
+    $('input').removeClass('has-error');
 
-        var form = $('#' + formId);
-        if (form.length === 0) {
-            console.error('Form not found');
+    var form = $('#' + formId);
+    if (form.length === 0) {
+        console.error('Form not found');
+        return;
+    }
+
+    var formData = form.serialize();
+    var actionUrl = form.attr('action');
+
+    if ($('#ref_id', form).length > 0) {
+        var refId = $('#ref_id', form).val();
+        if (!refId) {
+            console.error('Reference ID not found');
             return;
         }
+        actionUrl += '/' + refId;
+    }
 
-        var formData = form.serialize();
-        var actionUrl = form.attr('action');
+    console.log('Form data:', formData);
 
-        if ($('#ref_id', form).length > 0) {
-            var refId = $('#ref_id', form).val();
-            if (!refId) {
-                console.error('Reference ID not found');
-                return;
-            }
-            actionUrl += '/' + refId;
-        }
-
-        console.log('Form data:', formData);
-
-        $.ajax({
-            type: 'POST',
-            url: actionUrl,
-            data: formData,
-            dataType: 'json',
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            success: function (response) {
-                if (response.status === 'error') {
-                    handleFormErrors(response);
-                } else if (response.status === 'success') {
-                    $('<div>' + response.message + '</div>').dialog({
-                        title: 'Success',
-                        modal: true,
-                        buttons: {
-                            Ok: function () {
-                                $(this).dialog('close');
-                                if (response.loadnext) {
-                                    loadContent(response.loadnext, '#content');
-                                }
+    $.ajax({
+        type: 'POST',
+        url: actionUrl,
+        data: formData,
+        dataType: 'json',
+        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        success: function (response) {
+            if (response.status === 'error') {
+                handleFormErrors(response);
+            } else if (response.status === 'success') {
+                $('<div>' + response.message + '</div>').dialog({
+                    title: 'Success',
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog('close');
+                            if (response.loadnext) {
+                                loadContent(response.loadnext, '#content');
                             }
                         }
-                    });
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error('Error Status:', status);
-                console.error('Error Message:', error);
-
-                try {
-                    var response = JSON.parse(xhr.responseText);
-                    handleFormErrors(response);
-                } catch (e) {
-                    $('#error-messages').html('<p class="error-message">Failed to process form. Please try again.</p>');
-                }
+                    }
+                });
             }
-        });
-    };
+        },
+        error: function (xhr, status, error) {
+            //console.error('Error Status:', status);
+            //console.error('Error Message:', error);
 
-    function handleFormErrors(response) {
-        if (response.message) {
-            $('#error-messages').append('<p class="error-message" style="color:red;">' + response.message + '</p>');
+            try {
+                var response = JSON.parse(xhr.responseText);
+                handleFormErrors(response);
+            } catch (e) {
+                $('#error-messages').html('<p class="error-message">Failed to process form. Please try again.</p>');
+            }
         }
+    });
+};
 
-        $.each(response.errors, function (field, error) {
-            var fieldElement = $('[name=' + field + ']');
+function handleFormErrors(response) {
+    // Clear previous error messages
+    $('#error-messages').empty(); // Clear error messages container
+    $('.error-message').remove(); // Remove all existing error messages
+    $('input, select').removeClass('has-error'); // Remove error classes
+
+    // Display the general error message
+    if (response.message) {
+        $('#error-messages').append('<p class="error-message" style="color:red;">' + response.message + '</p>');
+    }
+
+    // Iterate through each error in the response
+    $.each(response.errors, function (field, error) {
+        // Normalize the field name to match the input names in the form
+        var fieldIndex = field.match(/\d+/); // Extract the index (e.g., 0 or 1)
+        var normalizedFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/\[\d+\]/, '[]'); // Normalize to snake_case
+
+        // Handle array-type fields
+        if (fieldIndex) {
+            // Construct the selector for the array fields
+            var fieldElement = $('[name="' + normalizedFieldName + '"]').eq(fieldIndex[0]);
+
             if (fieldElement.length > 0) {
+                // Highlight the field and display the error message
                 fieldElement.addClass('has-error');
                 fieldElement.after('<span class="error-message" style="color:red;">' + error + '</span>');
             } else {
+                // If the field is not found, append the error message to the container
                 $('#error-messages').append('<p class="error-message" style="color:red;">' + error + '</p>');
             }
-        });
-    }
+        } else {
+            // Handle regular fields (without array notation)
+            var fieldElement = $('[name="' + field + '"]');
+
+            if (fieldElement.length > 0) {
+                // Highlight the field and display the error message
+                fieldElement.addClass('has-error');
+                fieldElement.after('<span class="error-message" style="color:red;">' + error + '</span>');
+            } else {
+                // If the field is not found, append the error message to the container
+                $('#error-messages').append('<p class="error-message" style="color:red;">' + error + '</p>');
+            }
+        }
+    });
+}
+
+
+
+
+
+
+
 
     // Clear error messages when interacting with form fields
     $(document).on('focus', 'input', function () {

@@ -40,6 +40,7 @@
                     <a href="#" class="sort" data-field="docExpiryDate" th:attr="data-dir=${sortStatus['docExpiryDate'] != null ? sortStatus['docExpiryDate'] : 'asc'}" onclick="sortEntities('docExpiryDate')">Expiry Date</a>
                 </th>
                 <th>Actions</th>
+                <th>Schedule</th>
             </tr>
         </thead>
         <tbody>
@@ -57,6 +58,9 @@
                     <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'view/documents/html/' + ${document.docId} + '\', \'#content\')'">View</a>
                     <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'data/documents/html/edit/' + ${document.docId} + '\', \'#content\')'">Update</a>
                     <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'data/documents/html/renew/' + ${document.docId} + '\', \'#content\')'">Renew</a>
+                </td>
+                <td>
+                    <a class="ajax-link" href="javascript:void(0);" th:onclick="'loadContent(\'propertyPayOptions/html/add/' + ${document.docId} + '\', \'#content\')'">Schedule</a>
                 </td>
             </tr>
         </tbody>
