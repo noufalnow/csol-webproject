@@ -53,6 +53,22 @@ public class MisPropertyPayOptionService implements BaseService<PropertyPayOptio
                 .map(propertyPayOptionMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    
+    
+    public List<PropertyPayOptionDTO> findByPoptDocId(Long poptDocId) {
+        List<MisPropertyPayOption> payOptions = propertyPayOptionRepository.findByPoptDocIdAndNotDeleted(poptDocId);
+        return payOptions.stream()
+                .map(propertyPayOptionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    
+    public List<PropertyPayOptionDTO> findByPoptDocIdAndPending(Long poptDocId) {
+        List<MisPropertyPayOption> payOptions = propertyPayOptionRepository.findByPoptDocIdAndNotDeletedAndNotPaid(poptDocId);
+        return payOptions.stream()
+                .map(propertyPayOptionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public PropertyPayOptionDTO findById(Long poptId) {

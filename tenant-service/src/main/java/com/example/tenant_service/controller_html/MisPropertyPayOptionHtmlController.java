@@ -4,6 +4,7 @@ import com.example.tenant_service.common.BaseController;
 import com.example.tenant_service.dto.DocumentsDTO;
 import com.example.tenant_service.dto.PropertyPayOptionDTO;
 import com.example.tenant_service.entity.MisDocuments;
+import com.example.tenant_service.entity.MisPropertyPayOption;
 import com.example.tenant_service.repository.MisDocumentsRepository;
 import com.example.tenant_service.service.MisDocumentDataService;
 import com.example.tenant_service.service.MisPropertyPayOptionService;
@@ -89,6 +90,15 @@ public class MisPropertyPayOptionHtmlController
 		model.addAttribute("pageTitle", "Add Property Payment Option - My Application");
 		model.addAttribute("payOption", new PropertyPayOptionDTO());
 		model.addAttribute("refId", refId);
+		
+		
+		
+	    List<PropertyPayOptionDTO> payOptions = service.findByPoptDocId(refId);
+	    model.addAttribute("payOptions", payOptions);
+
+
+	    // Add the existing payment options to the model
+	    model.addAttribute("payOptions", payOptions);
 
 		return "fragments/payment_schedule";
 	}
@@ -102,7 +112,7 @@ public class MisPropertyPayOptionHtmlController
 	        @RequestParam("poptDocId") Long poptDocId) {
 
 	    Map<String, Object> additionalData = new HashMap<>();
-	    additionalData.put("loadnext", "/propertyPayOptions/html");
+	    additionalData.put("loadnext", "view/documents/html");
 
 	    List<PropertyPayOptionDTO> payOptionDTOs = new ArrayList<>();
 	    Map<String, String> errors = new HashMap<>(); // Error map for storing validation errors

@@ -198,6 +198,26 @@ function searchEntities(listingUrl, targetContainer, defaultSortField) {
     loadContent(url, targetContainer);  // Use loadContent to handle AJAX
 }
 
+
+function filterReports(listingUrl, targetContainer, defaultSortField) {
+    // Serialize all form inputs into a query string
+    var formData = $('#search-form').serialize(); // Automatically grabs all input fields in the form
+
+    // Get sorting and pagination data
+    var sortField = $('.sort.active').data('field') || defaultSortField;
+    var sortDir = $('.sort.active').data('dir') || 'asc';
+    var page = $('.pagination .active').find('a').data('page') || 0;
+
+    // Construct the URL with query parameters
+    var url = listingUrl + '?page=' + page 
+              + '&sortField=' + sortField 
+              + '&sortDir=' + sortDir
+              + '&' + formData; // Append form data (all inputs from the form)
+
+    // Perform AJAX request and load content into the target container
+    loadContent(url, targetContainer);
+}
+
 function sortEntities(sortField) {
     var targetContainer = '#content'; // Container where the content will be loaded
     var defaultSortField = 'userId'; // Default sort field

@@ -37,7 +37,7 @@ public class MisPropertyPayOption extends BaseEntity {
     private Short poptType;
 
     @NotNull(message = "Payment date is required.")
-    @PastOrPresent(message = "Payment date cannot be in the future.")
+    //@PastOrPresent(message = "Payment date cannot be in the future.")
     @Column(name = "popt_date", nullable = false)
     private LocalDate poptDate;
 

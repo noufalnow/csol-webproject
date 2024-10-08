@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
+import com.example.tenant_service.entity.MisPropertyPayOption;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,8 @@ public interface BaseRepository<T, ID> extends JpaRepository<T, ID> {
 
     @Query("SELECT e FROM #{#entityName} e WHERE e.deleted = false")
     List<T> findAllNotDeleted();
+    
+
 }
 
 

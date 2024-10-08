@@ -16,6 +16,17 @@ public interface MisDocumentsViewRepository extends JpaRepository<MisDocumentsVi
 
     @Query("SELECT v FROM MisDocumentsView v WHERE v.docId = :docId AND v.deleted = false")
     Optional<MisDocumentsView> findByIdAndNotDeleted(@Param("docId") Long docId);
+    
+    
+    @Query("SELECT v FROM MisDocumentsView v WHERE v.docTntId = :docTntId AND v.deleted = false")
+    List<MisDocumentsView> findByDocTntIdAndNotDeleted(@Param("docTntId") Long docTntId);
+    
+    // New method to find documents with pending payment options
+    @Query("SELECT v FROM MisDocumentsView v WHERE v.docTntId = :docTntId AND v.deleted = false " +
+           "AND EXISTS (SELECT 1 FROM MisPropertyPayOption p WHERE p.poptDocId = v.docId AND p.poptStatus = 1)")
+    List<MisDocumentsView> findByDocTntIdAndPendingPayments(@Param("docTntId") Long docTntId);
+    
+    
 
     @Query("SELECT v FROM MisDocumentsView v WHERE v.deleted = false")
     List<MisDocumentsView> findAllNotDeleted();

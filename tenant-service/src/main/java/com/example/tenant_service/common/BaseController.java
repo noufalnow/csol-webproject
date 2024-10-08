@@ -101,9 +101,22 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
     }
 
     protected void setupPagination(Model model, Page<DTO> page, String sortField, String sortDir) {
+        /*if (page == null || page.isEmpty()) {
+            // Handle the case when page is null or empty (e.g., no results)
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("totalItems", 0);
+            model.addAttribute("sortField", sortField);
+            model.addAttribute("sortDir", sortDir);
+            model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+            model.addAttribute("startPage", 0);
+            model.addAttribute("endPage", 0);
+            return;
+        }*/
+
         int totalPages = page.getTotalPages();
         int currentPage = page.getNumber();
-        
+
         model.addAttribute("items", page.getContent());  // Consistent naming
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
@@ -114,7 +127,7 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         Map<String, String> sortStatus = new HashMap<>();
         sortStatus.put(sortField, sortDir);
         model.addAttribute("sortStatus", sortStatus);
-        
+
         model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
 
         int startPage = Math.max(0, currentPage - 2);
@@ -122,6 +135,7 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
     }
+
     
     
     protected void logInfo(String message, Object... args) {

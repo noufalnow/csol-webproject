@@ -56,6 +56,36 @@
     box-sizing: border-box; /* Include padding in width calculation */
 }
 
+.floating-section {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+        /* Style the table */
+        .floating-section table {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .floating-section td {
+            padding: 5px;
+        }
+
+        .floating-section label {
+            font-weight: bold;
+        }
+
+        .floating-section input {
+            width: 100px;
+        }
+
 </style>
 
 </html>

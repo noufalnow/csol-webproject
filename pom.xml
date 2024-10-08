@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>common-exceptions</module>
+        <!--<module>common-exceptions</module>-->
         <!--<module>tenant-service</module> -->
     </modules>
 

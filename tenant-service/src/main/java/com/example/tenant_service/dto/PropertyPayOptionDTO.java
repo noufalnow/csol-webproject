@@ -20,7 +20,7 @@ public class PropertyPayOptionDTO extends BaseDTO {
     @NotNull(message = "Payment type is required.")
     private Short poptType;
 
-    @PastOrPresent(message = "Payment date cannot be in the future.")
+    //@PastOrPresent(message = "Payment date cannot be in the future.")
     @NotNull(message = "Payment date is required.")
     private LocalDate poptDate;
 

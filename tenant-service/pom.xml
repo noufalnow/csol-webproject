@@ -24,10 +24,9 @@
 		</dependency>
 		
 		<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security</artifactId>
-</dependency>
-
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 
 		<!-- Spring Boot Starter Data JPA -->
 		<dependency>
@@ -57,12 +56,18 @@
 			<version>${mapstruct.version}</version>
 		</dependency>
 
-		<!-- Common Exceptions 
+		<!-- TinyLog -->
 		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>common-exceptions</artifactId>
-			<version>1.0.0</version>
-		</dependency>Dependency -->
+		    <groupId>org.tinylog</groupId>
+		    <artifactId>tinylog-api</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.tinylog</groupId>
+		    <artifactId>tinylog-impl</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+
 
 		<!-- JUnit Jupiter Dependencies -->
 		<dependency>
@@ -77,20 +82,14 @@
 			<version>5.10.0</version>
 			<scope>test</scope>
 		</dependency>
-		
-		
+
+
+
 		<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-devtools</artifactId>
-    <optional>true</optional>
-</dependency>
-
-
-		<!-- Spring 
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>Cloud Dependencies -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -102,10 +101,10 @@
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
-		        <dependency>
-		    <groupId>nz.net.ultraq.thymeleaf</groupId>
-		    <artifactId>thymeleaf-layout-dialect</artifactId>
-		    <version>3.0.0</version> <!-- or latest version -->
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -113,13 +112,12 @@
 			<artifactId>jquery</artifactId>
 			<version>3.6.0</version>
 		</dependency>
-		
-		<dependency>
-    <groupId>org.thymeleaf.extras</groupId>
-    <artifactId>thymeleaf-extras-java8time</artifactId>
-    <version>3.0.4.RELEASE</version>
-</dependency>
 
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<version>3.0.4.RELEASE</version>
+		</dependency>
 
 		<!-- Spring Cloud Config -->
 		<dependency>
@@ -188,15 +186,9 @@
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${mapstruct.version}</version>
 						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>1.18.24</version>
-						</path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

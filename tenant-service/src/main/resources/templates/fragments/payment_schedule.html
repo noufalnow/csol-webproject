@@ -2,50 +2,97 @@
     <h3>Payment Schedule</h3>
     <form id="paymentScheduleForm" method="POST" action="/propertyPayOptions/html/add">
         <input type="hidden" id="poptDocId" name="poptDocId" th:value="${refId}">
+
         <div id="paymentScheduleRows">
-            <!-- Payment Option Row Template -->
-            <div class="payment-row">
-                <div class="row align-top">
-                    <!-- Custom class for alignment -->
-                    <div class="col">
-                        <label for="popt_date">Payment Date</label>
-                        <input type="date" class="form-control" name="popt_date[]" required>
+            <!-- Iterate over existing payment options -->
+            <div th:each="payOption : ${payOptions}">
+                <div class="payment-row">
+                    <div class="row align-top">
+                        <div class="col">
+                            <label for="popt_date">Payment Date</label>
+                            <input type="date" class="form-control" name="popt_date[]" th:value="${payOption.poptDate}" required>
+                        </div>
+                        <div class="col">
+                            <label for="popt_amount">Amount</label>
+                            <input type="number" class="form-control" name="popt_amount[]" th:value="${payOption.poptAmount}" required>
+                        </div>
+                        <div class="col">
+                            <label for="popt_type">Payment Type</label>
+                            <select class="form-control popt_type" name="popt_type[]" required onchange="toggleBankOptions(this)">
+                                <option value="1" th:selected="${payOption.poptType == 1}">Cash</option>
+                                <option value="2" th:selected="${payOption.poptType == 2}">Cheque</option>
+                                <option value="3" th:selected="${payOption.poptType == 3}">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="col bank-select" th:style="${payOption.poptType == 1} ? 'display:none;' : 'display:block;'" >
+						    <label for="popt_bank">Bank</label>
+						    <select class="form-control" name="popt_bank[]">
+						        <option value="" th:selected="${payOption.poptBank == null}">Select Bank</option>
+						        <option value="1" th:selected="${payOption.poptBank == 1}">Bank 1</option>
+						        <option value="2" th:selected="${payOption.poptBank == 2}">Bank 2</option>
+						        <option value="3" th:selected="${payOption.poptBank == 3}">Bank 3</option>
+						    </select>
+						    <span class="error-message" style="color:red;"></span>
+						</div>
+
+                        <div class="col">
+                            <button type="button" class="btn btn-danger remove-row" onclick="removePaymentRow(this)">Remove</button>
+                        </div>
                     </div>
-                    <div class="col">
-                        <label for="popt_amount">Amount</label>
-                        <input type="number" class="form-control" name="popt_amount[]" required>
-                    </div>
-                    <div class="col">
-                        <label for="popt_type">Payment Type</label>
-                        <select class="form-control popt_type" name="popt_type[]" required onchange="toggleBankOptions(this)">
-                            <option value="1">Cash</option>
-                            <option value="2">Cheque</option>
-                            <option value="3">Bank Transfer</option>
-                        </select>
-                    </div>
-                    <div class="col bank-select" style="display: none;">
-                        <label for="popt_bank">Bank</label>
-                        <select class="form-control" name="popt_bank[]">
-                            <option value="">Select Bank</option>
-                            <option value="1">Bank 1</option>
-                            <option value="2">Bank 2</option>
-                            <option value="3">Bank 3</option>
-                        </select>
-                        <span class="error-message" style="color:red;"></span>
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-danger remove-row" onclick="removePaymentRow(this)">Remove</button>
-                    </div>
+                    <hr>
                 </div>
-                <hr>
+            </div>
+
+            <!-- If there are no payment options, show the initial input row -->
+            <div th:if="${#lists.isEmpty(payOptions)}">
+                <div class="payment-row">
+                    <div class="row align-top">
+                        <div class="col">
+                            <label for="popt_date">Payment Date</label>
+                            <input type="date" class="form-control" name="popt_date[]" required>
+                        </div>
+                        <div class="col">
+                            <label for="popt_amount">Amount</label>
+                            <input type="number" class="form-control" name="popt_amount[]" required>
+                        </div>
+                        <div class="col">
+                            <label for="popt_type">Payment Type</label>
+                            <select class="form-control popt_type" name="popt_type[]" required onchange="toggleBankOptions(this)">
+                                <option value="1">Cash</option>
+                                <option value="2">Cheque</option>
+                                <option value="3">Bank Transfer</option>
+                            </select>
+                        </div>
+						<div class="col bank-select" style="display:none;">
+						    <label for="popt_bank">Bank</label>
+						    <select class="form-control" name="popt_bank[]">
+						        <option value="" th:selected="${payOption.poptBank == null}">Select Bank</option>
+						        <option value="1" th:selected="${payOption.poptBank == 1}">Bank 1</option>
+						        <option value="2" th:selected="${payOption.poptBank == 2}">Bank 2</option>
+						        <option value="3" th:selected="${payOption.poptBank == 3}">Bank 3</option>
+						    </select>
+						    <span class="error-message" style="color:red;"></span>
+						</div>
+
+                        <div class="col">
+                            <button type="button" class="btn btn-danger remove-row" onclick="removePaymentRow(this)">Remove</button>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
             </div>
         </div>
+
+        <!-- Button to add more payment options -->
         <div class="row">
             <div class="col">
                 <button type="button" class="btn btn-primary" onclick="addPaymentRow()">Add More</button>
             </div>
         </div>
+
         <br>
+        
+        <!-- Submit Button -->
         <div class="row">
             <div class="col">
                 <button type="button" onclick="submitHtmlForm('paymentScheduleForm')">Submit Payment Schedule</button>
@@ -57,8 +104,11 @@
 </div>
 
 
+
+
 <script>
-// Function to dynamically add new payment rows
+
+//Function to dynamically add new payment rows
 function addPaymentRow() {
     let paymentRow = document.querySelector('.payment-row').cloneNode(true);
     let paymentRowsContainer = document.getElementById('paymentScheduleRows');
@@ -67,9 +117,9 @@ function addPaymentRow() {
     paymentRow.querySelectorAll('input').forEach(input => {
         input.value = ''; // Clear input values
         input.classList.remove('has-error'); // Remove error class
-        let errorMessage = input.nextElementSibling; // Assuming the error message is the next sibling
-        if (errorMessage) {
-            errorMessage.style.display = 'none'; // Hide error message
+        let errorMessage = input.nextElementSibling;
+        if (errorMessage && errorMessage.classList.contains('error-message')) {
+            errorMessage.style.display = 'none'; // Hide error message if it exists
         }
     });
 
@@ -77,11 +127,13 @@ function addPaymentRow() {
         select.selectedIndex = 0; // Reset to default
     });
 
-    paymentRow.querySelector('.bank-select').style.display = 'none'; // Hide bank dropdown by default
+    let bankSelect = paymentRow.querySelector('.bank-select');
+    if (bankSelect) {
+        bankSelect.style.display = 'none'; // Hide bank dropdown by default
+    }
 
     paymentRowsContainer.appendChild(paymentRow);
 }
-
 
 // Function to remove a payment row
 function removePaymentRow(button) {
@@ -94,18 +146,18 @@ function removePaymentRow(button) {
     }
 }
 
-// Function to toggle the bank dropdown based on payment type
-function toggleBankOptions(selectElement) {
-    let paymentType = parseInt(selectElement.value, 10); // Convert to integer
-    let bankSelect = selectElement.closest('.row').querySelector('.bank-select');
-
-    if (paymentType === 1) { // Cash
-        bankSelect.style.display = 'none'; // Hide bank dropdown
+// Function to toggle visibility of bank options based on selected payment type
+function toggleBankOptions(paymentTypeElement) {
+    const paymentRow = paymentTypeElement.closest('.payment-row');
+    const bankSelect = paymentRow.querySelector('.bank-select');
+    
+    // Show or hide the bank select field based on payment type
+    if (paymentTypeElement.value == 2 || paymentTypeElement.value == 3) {
+        bankSelect.style.display = 'block';  // Show bank options for Cheque or Bank Transfer
     } else {
-        bankSelect.style.display = 'block'; // Show bank dropdown for other payment types
+        bankSelect.style.display = 'none';  // Hide for Cash
     }
 }
-
 
 
 

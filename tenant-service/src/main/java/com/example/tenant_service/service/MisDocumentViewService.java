@@ -3,7 +3,9 @@ package com.example.tenant_service.service;
 import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.DocumentsDTO;
 import com.example.tenant_service.dto.DocumentsViewDTO;
+import com.example.tenant_service.dto.PropertyPayOptionDTO;
 import com.example.tenant_service.entity.MisDocumentsView;
+import com.example.tenant_service.entity.MisPropertyPayOption;
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.mapper.MisDocumentsMapper;
 import com.example.tenant_service.mapper.MisDocumentsViewMapper;
@@ -41,6 +43,24 @@ public class MisDocumentViewService implements BaseService<DocumentsViewDTO> {
                 .orElseThrow(() -> new ResourceNotFoundException("MisDocumentsView", docId));
         return misDocumentsViewMapper.toDTO(documentView);
     }
+    
+    public List<DocumentsViewDTO> findByTenantId(Long docTntId) {
+        List<MisDocumentsView> documentView = misDocumentsViewRepository.findByDocTntIdAndNotDeleted(docTntId);
+        return documentView.stream()
+                .map(misDocumentsViewMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    
+    
+    
+    public List<DocumentsViewDTO> findByTenantIdPendingPayments(Long docTntId) {
+        List<MisDocumentsView> documentView = misDocumentsViewRepository.findByDocTntIdAndPendingPayments(docTntId);
+        return documentView.stream()
+                .map(misDocumentsViewMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public List<DocumentsViewDTO> findAll() {
