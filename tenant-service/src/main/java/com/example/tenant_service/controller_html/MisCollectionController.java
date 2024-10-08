@@ -16,6 +16,7 @@ import com.example.tenant_service.service.MisDocumentViewService;
 import com.example.tenant_service.service.MisPropertyPayOptionService;
 import com.example.tenant_service.service.MisTenantsService;
 
+import groovy.lang.Tuple;
 import jakarta.validation.Valid;
 
 import com.example.tenant_service.common.BaseController;
@@ -280,6 +281,60 @@ public class MisCollectionController extends BaseController<MisCollectionDTO, Mi
 
 	    return "fragments/payments_report";  // Make sure this is the correct view name
 	}
+	
+	
+	@GetMapping("/html/property")
+	public String getPropertyReport(@RequestParam Map<String, String> params, Model model) {
+	    String sortField = params.getOrDefault("sortField", "propName");  // Default sorting field
+	    String sortDir = params.getOrDefault("sortDir", "asc");           // Default sorting direction
+	    
+	    // Extract filter parameters
+	    // Extract individual parameters and decode them
+	    String propNo = params.get("prop_no");
+	    if (propNo != null) {
+	        propNo = URLDecoder.decode(propNo, StandardCharsets.UTF_8);
+	    }
+
+	    String propName = params.get("prop_name");
+	    if (propName != null) {
+	        propName = URLDecoder.decode(propName, StandardCharsets.UTF_8);
+	    }
+
+	    String propFileno = params.get("prop_fileno");
+	    if (propFileno != null) {
+	        propFileno = URLDecoder.decode(propFileno, StandardCharsets.UTF_8);
+	    }
+
+	    String propBuilding = params.get("prop_building");
+	    if (propBuilding != null) {
+	        propBuilding = URLDecoder.decode(propBuilding, StandardCharsets.UTF_8);
+	    }
+
+	    String status = params.get("status");
+	    if (status != null) {
+	        status = URLDecoder.decode(status, StandardCharsets.UTF_8);
+	    }
+
+
+	    // Pass the filters to the service
+	    List<jakarta.persistence.Tuple> properties = service.propertyListReport(
+	        sortField, sortDir, propNo, propName, propFileno, propBuilding, status
+	    );
+
+	    // Add attributes to the model
+	    model.addAttribute("sortField", sortField);
+	    model.addAttribute("sortDir", sortDir);
+	    model.addAttribute("propNo", propNo);
+	    model.addAttribute("propName", propName);
+	    model.addAttribute("propFileno", propFileno);
+	    model.addAttribute("propBuilding", propBuilding);
+	    model.addAttribute("status", status);
+	    model.addAttribute("properties", properties);
+	    model.addAttribute("pageTitle", "Report: Property List");
+
+	    return "fragments/property_report";
+	}
+
 
 
 

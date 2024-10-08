@@ -1,0 +1,104 @@
+<div th:fragment="content">
+    <h1>Property Report</h1>
+
+    <!-- Filter Form -->
+    <form id="search-form" method="GET" action="/collections/html/property">
+        <input type="text" name="prop_no" placeholder="Property No" th:value="${propNo}"/>
+        <input type="text" name="prop_name" placeholder="Property Name" th:value="${propName}"/>
+        <input type="text" name="prop_fileno" placeholder="File No" th:value="${propFileno}"/>
+        <input type="text" name="prop_building" placeholder="Building" th:value="${propBuilding}"/>
+
+        <select name="status">
+            <option value="">All</option>
+            <option value="active" th:selected="${status == 'active'}">Active</option>
+            <option value="inactive" th:selected="${status == 'inactive'}">Inactive</option>
+        </select>
+
+        <button type="button" onclick="filterReports('/collections/html/property', '#content', 'prop_name')">Filter</button>
+    </form>
+
+    <!-- Properties Report Table -->
+    <table id="properties-container">
+        <thead>
+            <tr>
+                <th>Property ID</th>
+                <th>Property No</th>
+                <th>Property Name</th>
+                <th>File No</th>
+                <th>Building</th>
+                <th>Responsible</th>
+                <th>Remarks</th>
+                <th>Created By</th>
+                <th>Modified By</th>
+                <th>Status</th>
+                <th>Account</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(properties)}">
+                <td colspan="11">No records found.</td> <!-- Updated colspan to match the number of headers -->
+            </tr>
+            <tr th:each="record : ${properties}">
+                <td th:text="${record.get('propId')}"></td> <!-- Property ID -->
+                <td th:text="${record.get('propNo')}"></td> <!-- Property No -->
+                <td th:text="${record.get('propName')}"></td> <!-- Property Name -->
+                <td th:text="${record.get('propFileno')}"></td> <!-- File No -->
+                <td th:text="${record.get('propBuilding')}"></td> <!-- Building -->
+                <td th:text="${record.get('propResponsible')}"></td> <!-- Responsible -->
+                <td th:text="${record.get('propRemarks')}"></td> <!-- Remarks -->
+                <td th:text="${record.get('uCreated')}"></td> <!-- Created By -->
+                <td th:text="${record.get('uModified')}"></td> <!-- Modified By -->
+                <td th:text="${record.get('active') == 1 ? 'Active' : 'Inactive'}"></td> <!-- Status -->           
+                <td th:text="${record.get('propAccount')}"></td> <!-- Account -->
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+function filterReports(listingUrl, targetContainer, defaultSortField) {
+    var queryParams = [];
+    var inputs = document.querySelectorAll("#search-form input, #search-form select");
+
+    // Collect all input values from the filter form
+    inputs.forEach(input => {
+        if (input.value) {
+            queryParams.push(input.name + '=' + encodeURIComponent(input.value));
+        }
+    });
+
+    // Default sorting field
+    var sortField = defaultSortField;
+    var sortDir = 'asc';
+
+    // Append sort parameters
+    queryParams.push('sortField=' + sortField);
+    queryParams.push('sortDir=' + sortDir);
+
+    // Build the URL with query parameters
+    var url = listingUrl + '?' + queryParams.join('&');
+    loadContent(url, targetContainer);
+}
+</script>
+
+
+
+<style>
+    #search-form {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Adjust spacing between the fields */
+    }
+    
+    #search-form input,
+    #search-form select {
+        padding: 5px;  /* Adjust padding for consistent sizing */
+        font-size: 14px;
+    }
+    
+    #search-form button {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+</style>
