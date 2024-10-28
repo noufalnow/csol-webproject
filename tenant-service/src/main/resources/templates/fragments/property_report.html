@@ -3,6 +3,8 @@
 
     <!-- Filter Form -->
     <form id="search-form" method="GET" action="/collections/html/property">
+        <input type="hidden" name="sortField" th:value="${sortField}"/>
+    	<input type="hidden" name="sortDir" th:value="${sortDir}"/>
         <input type="text" name="prop_no" placeholder="Property No" th:value="${propNo}"/>
         <input type="text" name="prop_name" placeholder="Property Name" th:value="${propName}"/>
         <input type="text" name="prop_fileno" placeholder="File No" th:value="${propFileno}"/>
@@ -20,19 +22,25 @@
     <!-- Properties Report Table -->
     <table id="properties-container">
         <thead>
-            <tr>
-                <th>Property ID</th>
-                <th>Property No</th>
-                <th>Property Name</th>
-                <th>File No</th>
-                <th>Building</th>
-                <th>Responsible</th>
-                <th>Remarks</th>
-                <th>Created By</th>
-                <th>Modified By</th>
-                <th>Status</th>
-                <th>Account</th>
-            </tr>
+	        <tr>
+<th>
+    <a href="#" 
+       th:onclick="'sortTable(\'search-form\', \'propId\')'" 
+       th:classappend="${sortField == 'propId'} ? ('sorted-' + sortDir) : ''">
+        Property ID
+    </a>
+</th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propNo\')'" th:classappend="${sortField == 'propNo'} ? 'sorted-' + sortDir : ''">Property No</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propName\')'" th:classappend="${sortField == 'propName'} ? 'sorted-' + sortDir : ''">Property Name</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propFileno\')'" th:classappend="${sortField == 'propFileno'} ? 'sorted-' + sortDir : ''">File No</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propBuilding\')'" th:classappend="${sortField == 'propBuilding'} ? 'sorted-' + sortDir : ''">Building</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propResponsible\')'" th:classappend="${sortField == 'propResponsible'} ? 'sorted-' + sortDir : ''">Responsible</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propRemarks\')'" th:classappend="${sortField == 'propRemarks'} ? 'sorted-' + sortDir : ''">Remarks</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'uCreated\')'" th:classappend="${sortField == 'uCreated'} ? 'sorted-' + sortDir : ''">Created By</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'uModified\')'" th:classappend="${sortField == 'uModified'} ? 'sorted-' + sortDir : ''">Modified By</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'active\')'" th:classappend="${sortField == 'active'} ? 'sorted-' + sortDir : ''">Status</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propAccount\')'" th:classappend="${sortField == 'propAccount'} ? 'sorted-' + sortDir : ''">Account</a></th>
+        </tr>
         </thead>
         <tbody>
             <tr th:if="${#lists.isEmpty(properties)}">
@@ -57,29 +65,57 @@
 </div>
 
 <script>
-function filterReports(listingUrl, targetContainer, defaultSortField) {
-    var queryParams = [];
-    var inputs = document.querySelectorAll("#search-form input, #search-form select");
+
+
+//JavaScript function to handle sorting
+function sortTable(formId, sortField) {
+    // Get the form element by its ID
+    const form = document.getElementById(formId);
+
+    // Get the hidden input fields for sortField and sortDir
+    const sortFieldInput = form.querySelector("input[name='sortField']");
+    const sortDirInput = form.querySelector("input[name='sortDir']");
+
+    // Get the current sort direction (asc or desc) from the hidden input
+    let currentSortDir = sortDirInput.value || 'asc';
+
+    // If the sortField is the same as the current one, toggle the sort direction
+    let newSortDir = (sortFieldInput.value === sortField && currentSortDir === 'asc') ? 'desc' : 'asc';
+
+    // Update the hidden input fields
+    sortFieldInput.value = sortField;
+    sortDirInput.value = newSortDir;
+
+    // Trigger the filterReports function to update the content dynamically
+    filterReports(form.action, '#content');
+}
+
+
+
+
+function filterReports(listingUrl, targetContainer) {
+    // Get the current URL and ensure no fragment (`#`) is used
+    var url = new URL(listingUrl);
 
     // Collect all input values from the filter form
+    var inputs = document.querySelectorAll("#search-form input, #search-form select");
+
+    // Update query parameters with filter values
     inputs.forEach(input => {
         if (input.value) {
-            queryParams.push(input.name + '=' + encodeURIComponent(input.value));
+            // Append filter parameters
+            url.searchParams.set(input.name, input.value);  // Set the filters in the URL
+        } else {
+            url.searchParams.delete(input.name);  // Remove empty filters
         }
     });
 
-    // Default sorting field
-    var sortField = defaultSortField;
-    var sortDir = 'asc';
-
-    // Append sort parameters
-    queryParams.push('sortField=' + sortField);
-    queryParams.push('sortDir=' + sortDir);
-
-    // Build the URL with query parameters
-    var url = listingUrl + '?' + queryParams.join('&');
-    loadContent(url, targetContainer);
+    // Build final URL and load content
+    console.log(url.toString());  // For debugging purposes
+    loadContent(url.toString(), targetContainer);  // Load the filtered content into the target container
 }
+
+
 </script>
 
 
@@ -101,4 +137,13 @@ function filterReports(listingUrl, targetContainer, defaultSortField) {
         padding: 5px 10px;
         font-size: 14px;
     }
+    
+    .sorted-asc::after {
+    content: " ⬆"; /* Ascending indicator */
+}
+
+.sorted-desc::after {
+    content: " ⬇"; /* Descending indicator */
+}
+    
 </style>
