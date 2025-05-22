@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:14+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisBuildingMapperImpl implements MisBuildingMapper {
@@ -21,23 +21,23 @@ public class MisBuildingMapperImpl implements MisBuildingMapper {
 
         BuildingDTO buildingDTO = new BuildingDTO();
 
-        buildingDTO.setActive( entity.getActive() );
-        buildingDTO.setDeleted( map( entity.getDeleted() ) );
-        buildingDTO.setTCreated( entity.getTCreated() );
-        buildingDTO.setTDeleted( entity.getTDeleted() );
-        buildingDTO.setTModified( entity.getTModified() );
         buildingDTO.setUCreated( entity.getUCreated() );
-        buildingDTO.setUDeleted( entity.getUDeleted() );
+        buildingDTO.setTCreated( entity.getTCreated() );
+        buildingDTO.setTModified( entity.getTModified() );
         buildingDTO.setUModified( entity.getUModified() );
-        buildingDTO.setBldArea( entity.getBldArea() );
-        buildingDTO.setBldBlock( entity.getBldBlock() );
-        buildingDTO.setBldBlockNo( entity.getBldBlockNo() );
+        buildingDTO.setUDeleted( entity.getUDeleted() );
+        buildingDTO.setTDeleted( entity.getTDeleted() );
+        buildingDTO.setDeleted( map( entity.getDeleted() ) );
+        buildingDTO.setActive( entity.getActive() );
         buildingDTO.setBldId( entity.getBldId() );
         buildingDTO.setBldName( entity.getBldName() );
         buildingDTO.setBldNo( entity.getBldNo() );
+        buildingDTO.setBldArea( entity.getBldArea() );
+        buildingDTO.setBldBlockNo( entity.getBldBlockNo() );
         buildingDTO.setBldPlotNo( entity.getBldPlotNo() );
-        buildingDTO.setBldStreet( entity.getBldStreet() );
         buildingDTO.setBldWay( entity.getBldWay() );
+        buildingDTO.setBldStreet( entity.getBldStreet() );
+        buildingDTO.setBldBlock( entity.getBldBlock() );
 
         return buildingDTO;
     }
@@ -50,23 +50,23 @@ public class MisBuildingMapperImpl implements MisBuildingMapper {
 
         MisBuilding misBuilding = new MisBuilding();
 
-        misBuilding.setActive( dto.getActive() );
-        misBuilding.setDeleted( map( dto.getDeleted() ) );
-        misBuilding.setTCreated( dto.getTCreated() );
-        misBuilding.setTDeleted( dto.getTDeleted() );
-        misBuilding.setTModified( dto.getTModified() );
         misBuilding.setUCreated( dto.getUCreated() );
-        misBuilding.setUDeleted( dto.getUDeleted() );
+        misBuilding.setTCreated( dto.getTCreated() );
+        misBuilding.setTModified( dto.getTModified() );
         misBuilding.setUModified( dto.getUModified() );
-        misBuilding.setBldArea( dto.getBldArea() );
-        misBuilding.setBldBlock( dto.getBldBlock() );
-        misBuilding.setBldBlockNo( dto.getBldBlockNo() );
+        misBuilding.setUDeleted( dto.getUDeleted() );
+        misBuilding.setTDeleted( dto.getTDeleted() );
+        misBuilding.setDeleted( map( dto.getDeleted() ) );
+        misBuilding.setActive( dto.getActive() );
         misBuilding.setBldId( dto.getBldId() );
         misBuilding.setBldName( dto.getBldName() );
         misBuilding.setBldNo( dto.getBldNo() );
+        misBuilding.setBldArea( dto.getBldArea() );
+        misBuilding.setBldBlockNo( dto.getBldBlockNo() );
         misBuilding.setBldPlotNo( dto.getBldPlotNo() );
-        misBuilding.setBldStreet( dto.getBldStreet() );
         misBuilding.setBldWay( dto.getBldWay() );
+        misBuilding.setBldStreet( dto.getBldStreet() );
+        misBuilding.setBldBlock( dto.getBldBlock() );
 
         return misBuilding;
     }

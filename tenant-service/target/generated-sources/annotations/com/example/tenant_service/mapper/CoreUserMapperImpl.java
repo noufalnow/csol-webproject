@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class CoreUserMapperImpl implements CoreUserMapper {
@@ -26,24 +26,24 @@ public class CoreUserMapperImpl implements CoreUserMapper {
 
         coreUserDTO.setUserDesig( coreUserDesignationDesigId( coreUser ) );
         coreUserDTO.setDesignationName( coreUserDesignationDesigName( coreUser ) );
-        coreUserDTO.setActive( coreUser.getActive() );
-        coreUserDTO.setDeleted( map( coreUser.getDeleted() ) );
-        coreUserDTO.setTCreated( coreUser.getTCreated() );
-        coreUserDTO.setTDeleted( coreUser.getTDeleted() );
-        coreUserDTO.setTModified( coreUser.getTModified() );
         coreUserDTO.setUCreated( coreUser.getUCreated() );
-        coreUserDTO.setUDeleted( coreUser.getUDeleted() );
+        coreUserDTO.setTCreated( coreUser.getTCreated() );
+        coreUserDTO.setTModified( coreUser.getTModified() );
         coreUserDTO.setUModified( coreUser.getUModified() );
+        coreUserDTO.setUDeleted( coreUser.getUDeleted() );
+        coreUserDTO.setTDeleted( coreUser.getTDeleted() );
+        coreUserDTO.setDeleted( map( coreUser.getDeleted() ) );
+        coreUserDTO.setActive( coreUser.getActive() );
+        coreUserDTO.setUserId( coreUser.getUserId() );
+        coreUserDTO.setUserFname( coreUser.getUserFname() );
+        coreUserDTO.setUserLname( coreUser.getUserLname() );
+        coreUserDTO.setUserUname( coreUser.getUserUname() );
+        coreUserDTO.setUserStatus( coreUser.getUserStatus() );
+        coreUserDTO.setUserPassword( coreUser.getUserPassword() );
         coreUserDTO.setDesignation( misDesignationToDesignationDTO( coreUser.getDesignation() ) );
         coreUserDTO.setUserDept( coreUser.getUserDept() );
-        coreUserDTO.setUserEmail( coreUser.getUserEmail() );
         coreUserDTO.setUserEmpId( coreUser.getUserEmpId() );
-        coreUserDTO.setUserFname( coreUser.getUserFname() );
-        coreUserDTO.setUserId( coreUser.getUserId() );
-        coreUserDTO.setUserLname( coreUser.getUserLname() );
-        coreUserDTO.setUserPassword( coreUser.getUserPassword() );
-        coreUserDTO.setUserStatus( coreUser.getUserStatus() );
-        coreUserDTO.setUserUname( coreUser.getUserUname() );
+        coreUserDTO.setUserEmail( coreUser.getUserEmail() );
 
         return coreUserDTO;
     }
@@ -57,23 +57,23 @@ public class CoreUserMapperImpl implements CoreUserMapper {
         CoreUser coreUser = new CoreUser();
 
         coreUser.setDesignation( coreUserDTOToMisDesignation( coreUserDTO ) );
-        coreUser.setActive( coreUserDTO.getActive() );
-        coreUser.setDeleted( map( coreUserDTO.getDeleted() ) );
-        coreUser.setTCreated( coreUserDTO.getTCreated() );
-        coreUser.setTDeleted( coreUserDTO.getTDeleted() );
-        coreUser.setTModified( coreUserDTO.getTModified() );
         coreUser.setUCreated( coreUserDTO.getUCreated() );
-        coreUser.setUDeleted( coreUserDTO.getUDeleted() );
+        coreUser.setTCreated( coreUserDTO.getTCreated() );
+        coreUser.setTModified( coreUserDTO.getTModified() );
         coreUser.setUModified( coreUserDTO.getUModified() );
-        coreUser.setUserDept( coreUserDTO.getUserDept() );
-        coreUser.setUserEmail( coreUserDTO.getUserEmail() );
-        coreUser.setUserEmpId( coreUserDTO.getUserEmpId() );
-        coreUser.setUserFname( coreUserDTO.getUserFname() );
+        coreUser.setUDeleted( coreUserDTO.getUDeleted() );
+        coreUser.setTDeleted( coreUserDTO.getTDeleted() );
+        coreUser.setDeleted( map( coreUserDTO.getDeleted() ) );
+        coreUser.setActive( coreUserDTO.getActive() );
         coreUser.setUserId( coreUserDTO.getUserId() );
+        coreUser.setUserFname( coreUserDTO.getUserFname() );
         coreUser.setUserLname( coreUserDTO.getUserLname() );
-        coreUser.setUserPassword( coreUserDTO.getUserPassword() );
-        coreUser.setUserStatus( coreUserDTO.getUserStatus() );
         coreUser.setUserUname( coreUserDTO.getUserUname() );
+        coreUser.setUserStatus( coreUserDTO.getUserStatus() );
+        coreUser.setUserPassword( coreUserDTO.getUserPassword() );
+        coreUser.setUserDept( coreUserDTO.getUserDept() );
+        coreUser.setUserEmpId( coreUserDTO.getUserEmpId() );
+        coreUser.setUserEmail( coreUserDTO.getUserEmail() );
 
         return coreUser;
     }
@@ -88,53 +88,53 @@ public class CoreUserMapperImpl implements CoreUserMapper {
             coreUser.setDesignation( new MisDesignation() );
         }
         coreUserUpdateDTOToMisDesignation( coreUserUpdateDTO, coreUser.getDesignation() );
-        if ( coreUserUpdateDTO.getActive() != null ) {
-            coreUser.setActive( coreUserUpdateDTO.getActive() );
-        }
-        if ( coreUserUpdateDTO.getDeleted() != null ) {
-            coreUser.setDeleted( map( coreUserUpdateDTO.getDeleted() ) );
+        if ( coreUserUpdateDTO.getUCreated() != null ) {
+            coreUser.setUCreated( coreUserUpdateDTO.getUCreated() );
         }
         if ( coreUserUpdateDTO.getTCreated() != null ) {
             coreUser.setTCreated( coreUserUpdateDTO.getTCreated() );
         }
-        if ( coreUserUpdateDTO.getTDeleted() != null ) {
-            coreUser.setTDeleted( coreUserUpdateDTO.getTDeleted() );
-        }
         if ( coreUserUpdateDTO.getTModified() != null ) {
             coreUser.setTModified( coreUserUpdateDTO.getTModified() );
-        }
-        if ( coreUserUpdateDTO.getUCreated() != null ) {
-            coreUser.setUCreated( coreUserUpdateDTO.getUCreated() );
-        }
-        if ( coreUserUpdateDTO.getUDeleted() != null ) {
-            coreUser.setUDeleted( coreUserUpdateDTO.getUDeleted() );
         }
         if ( coreUserUpdateDTO.getUModified() != null ) {
             coreUser.setUModified( coreUserUpdateDTO.getUModified() );
         }
-        if ( coreUserUpdateDTO.getUserDept() != null ) {
-            coreUser.setUserDept( coreUserUpdateDTO.getUserDept() );
+        if ( coreUserUpdateDTO.getUDeleted() != null ) {
+            coreUser.setUDeleted( coreUserUpdateDTO.getUDeleted() );
         }
-        if ( coreUserUpdateDTO.getUserEmail() != null ) {
-            coreUser.setUserEmail( coreUserUpdateDTO.getUserEmail() );
+        if ( coreUserUpdateDTO.getTDeleted() != null ) {
+            coreUser.setTDeleted( coreUserUpdateDTO.getTDeleted() );
         }
-        if ( coreUserUpdateDTO.getUserEmpId() != null ) {
-            coreUser.setUserEmpId( coreUserUpdateDTO.getUserEmpId() );
+        if ( coreUserUpdateDTO.getDeleted() != null ) {
+            coreUser.setDeleted( map( coreUserUpdateDTO.getDeleted() ) );
         }
-        if ( coreUserUpdateDTO.getUserFname() != null ) {
-            coreUser.setUserFname( coreUserUpdateDTO.getUserFname() );
+        if ( coreUserUpdateDTO.getActive() != null ) {
+            coreUser.setActive( coreUserUpdateDTO.getActive() );
         }
         if ( coreUserUpdateDTO.getUserId() != null ) {
             coreUser.setUserId( coreUserUpdateDTO.getUserId() );
         }
+        if ( coreUserUpdateDTO.getUserFname() != null ) {
+            coreUser.setUserFname( coreUserUpdateDTO.getUserFname() );
+        }
         if ( coreUserUpdateDTO.getUserLname() != null ) {
             coreUser.setUserLname( coreUserUpdateDTO.getUserLname() );
+        }
+        if ( coreUserUpdateDTO.getUserUname() != null ) {
+            coreUser.setUserUname( coreUserUpdateDTO.getUserUname() );
         }
         if ( coreUserUpdateDTO.getUserStatus() != null ) {
             coreUser.setUserStatus( coreUserUpdateDTO.getUserStatus() );
         }
-        if ( coreUserUpdateDTO.getUserUname() != null ) {
-            coreUser.setUserUname( coreUserUpdateDTO.getUserUname() );
+        if ( coreUserUpdateDTO.getUserDept() != null ) {
+            coreUser.setUserDept( coreUserUpdateDTO.getUserDept() );
+        }
+        if ( coreUserUpdateDTO.getUserEmpId() != null ) {
+            coreUser.setUserEmpId( coreUserUpdateDTO.getUserEmpId() );
+        }
+        if ( coreUserUpdateDTO.getUserEmail() != null ) {
+            coreUser.setUserEmail( coreUserUpdateDTO.getUserEmail() );
         }
     }
 
@@ -175,18 +175,18 @@ public class CoreUserMapperImpl implements CoreUserMapper {
 
         DesignationDTO designationDTO = new DesignationDTO();
 
-        designationDTO.setActive( misDesignation.getActive() );
-        designationDTO.setDeleted( map( misDesignation.getDeleted() ) );
-        designationDTO.setTCreated( misDesignation.getTCreated() );
-        designationDTO.setTDeleted( misDesignation.getTDeleted() );
-        designationDTO.setTModified( misDesignation.getTModified() );
         designationDTO.setUCreated( misDesignation.getUCreated() );
-        designationDTO.setUDeleted( misDesignation.getUDeleted() );
+        designationDTO.setTCreated( misDesignation.getTCreated() );
+        designationDTO.setTModified( misDesignation.getTModified() );
         designationDTO.setUModified( misDesignation.getUModified() );
-        designationDTO.setDesigCode( misDesignation.getDesigCode() );
+        designationDTO.setUDeleted( misDesignation.getUDeleted() );
+        designationDTO.setTDeleted( misDesignation.getTDeleted() );
+        designationDTO.setDeleted( map( misDesignation.getDeleted() ) );
+        designationDTO.setActive( misDesignation.getActive() );
         designationDTO.setDesigId( misDesignation.getDesigId() );
-        designationDTO.setDesigLevel( misDesignation.getDesigLevel() );
+        designationDTO.setDesigCode( misDesignation.getDesigCode() );
         designationDTO.setDesigName( misDesignation.getDesigName() );
+        designationDTO.setDesigLevel( misDesignation.getDesigLevel() );
         designationDTO.setDesigType( misDesignation.getDesigType() );
 
         return designationDTO;

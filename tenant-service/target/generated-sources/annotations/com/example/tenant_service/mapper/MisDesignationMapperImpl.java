@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisDesignationMapperImpl implements MisDesignationMapper {
@@ -21,18 +21,18 @@ public class MisDesignationMapperImpl implements MisDesignationMapper {
 
         DesignationDTO designationDTO = new DesignationDTO();
 
-        designationDTO.setActive( entity.getActive() );
-        designationDTO.setDeleted( map( entity.getDeleted() ) );
-        designationDTO.setTCreated( entity.getTCreated() );
-        designationDTO.setTDeleted( entity.getTDeleted() );
-        designationDTO.setTModified( entity.getTModified() );
         designationDTO.setUCreated( entity.getUCreated() );
-        designationDTO.setUDeleted( entity.getUDeleted() );
+        designationDTO.setTCreated( entity.getTCreated() );
+        designationDTO.setTModified( entity.getTModified() );
         designationDTO.setUModified( entity.getUModified() );
-        designationDTO.setDesigCode( entity.getDesigCode() );
+        designationDTO.setUDeleted( entity.getUDeleted() );
+        designationDTO.setTDeleted( entity.getTDeleted() );
+        designationDTO.setDeleted( map( entity.getDeleted() ) );
+        designationDTO.setActive( entity.getActive() );
         designationDTO.setDesigId( entity.getDesigId() );
-        designationDTO.setDesigLevel( entity.getDesigLevel() );
+        designationDTO.setDesigCode( entity.getDesigCode() );
         designationDTO.setDesigName( entity.getDesigName() );
+        designationDTO.setDesigLevel( entity.getDesigLevel() );
         designationDTO.setDesigType( entity.getDesigType() );
 
         return designationDTO;
@@ -46,18 +46,18 @@ public class MisDesignationMapperImpl implements MisDesignationMapper {
 
         MisDesignation misDesignation = new MisDesignation();
 
-        misDesignation.setActive( dto.getActive() );
-        misDesignation.setDeleted( map( dto.getDeleted() ) );
-        misDesignation.setTCreated( dto.getTCreated() );
-        misDesignation.setTDeleted( dto.getTDeleted() );
-        misDesignation.setTModified( dto.getTModified() );
         misDesignation.setUCreated( dto.getUCreated() );
-        misDesignation.setUDeleted( dto.getUDeleted() );
+        misDesignation.setTCreated( dto.getTCreated() );
+        misDesignation.setTModified( dto.getTModified() );
         misDesignation.setUModified( dto.getUModified() );
-        misDesignation.setDesigCode( dto.getDesigCode() );
+        misDesignation.setUDeleted( dto.getUDeleted() );
+        misDesignation.setTDeleted( dto.getTDeleted() );
+        misDesignation.setDeleted( map( dto.getDeleted() ) );
+        misDesignation.setActive( dto.getActive() );
         misDesignation.setDesigId( dto.getDesigId() );
-        misDesignation.setDesigLevel( dto.getDesigLevel() );
+        misDesignation.setDesigCode( dto.getDesigCode() );
         misDesignation.setDesigName( dto.getDesigName() );
+        misDesignation.setDesigLevel( dto.getDesigLevel() );
         misDesignation.setDesigType( dto.getDesigType() );
 
         return misDesignation;

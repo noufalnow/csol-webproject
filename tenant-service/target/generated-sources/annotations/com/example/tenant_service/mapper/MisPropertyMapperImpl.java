@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisPropertyMapperImpl implements MisPropertyMapper {
@@ -21,31 +21,31 @@ public class MisPropertyMapperImpl implements MisPropertyMapper {
 
         PropertyDTO propertyDTO = new PropertyDTO();
 
-        propertyDTO.setActive( entity.getActive() );
-        propertyDTO.setDeleted( map( entity.getDeleted() ) );
-        propertyDTO.setTCreated( entity.getTCreated() );
-        propertyDTO.setTDeleted( entity.getTDeleted() );
-        propertyDTO.setTModified( entity.getTModified() );
         propertyDTO.setUCreated( entity.getUCreated() );
-        propertyDTO.setUDeleted( entity.getUDeleted() );
+        propertyDTO.setTCreated( entity.getTCreated() );
+        propertyDTO.setTModified( entity.getTModified() );
         propertyDTO.setUModified( entity.getUModified() );
-        propertyDTO.setPropAccount( entity.getPropAccount() );
-        propertyDTO.setPropBuilding( entity.getPropBuilding() );
-        propertyDTO.setPropBuildingType( entity.getPropBuildingType() );
-        propertyDTO.setPropCat( entity.getPropCat() );
-        propertyDTO.setPropElecAccount( entity.getPropElecAccount() );
-        propertyDTO.setPropElecMeter( entity.getPropElecMeter() );
-        propertyDTO.setPropElecRecharge( entity.getPropElecRecharge() );
-        propertyDTO.setPropFileno( entity.getPropFileno() );
+        propertyDTO.setUDeleted( entity.getUDeleted() );
+        propertyDTO.setTDeleted( entity.getTDeleted() );
+        propertyDTO.setDeleted( map( entity.getDeleted() ) );
+        propertyDTO.setActive( entity.getActive() );
         propertyDTO.setPropId( entity.getPropId() );
-        propertyDTO.setPropLevel( entity.getPropLevel() );
-        propertyDTO.setPropName( entity.getPropName() );
         propertyDTO.setPropNo( entity.getPropNo() );
-        propertyDTO.setPropRemarks( entity.getPropRemarks() );
+        propertyDTO.setPropName( entity.getPropName() );
+        propertyDTO.setPropFileno( entity.getPropFileno() );
+        propertyDTO.setPropBuilding( entity.getPropBuilding() );
         propertyDTO.setPropResponsible( entity.getPropResponsible() );
-        propertyDTO.setPropStatus( entity.getPropStatus() );
+        propertyDTO.setPropRemarks( entity.getPropRemarks() );
+        propertyDTO.setPropCat( entity.getPropCat() );
         propertyDTO.setPropType( entity.getPropType() );
+        propertyDTO.setPropLevel( entity.getPropLevel() );
+        propertyDTO.setPropElecMeter( entity.getPropElecMeter() );
         propertyDTO.setPropWater( entity.getPropWater() );
+        propertyDTO.setPropBuildingType( entity.getPropBuildingType() );
+        propertyDTO.setPropStatus( entity.getPropStatus() );
+        propertyDTO.setPropElecAccount( entity.getPropElecAccount() );
+        propertyDTO.setPropElecRecharge( entity.getPropElecRecharge() );
+        propertyDTO.setPropAccount( entity.getPropAccount() );
 
         return propertyDTO;
     }
@@ -58,31 +58,31 @@ public class MisPropertyMapperImpl implements MisPropertyMapper {
 
         MisProperty misProperty = new MisProperty();
 
-        misProperty.setActive( dto.getActive() );
-        misProperty.setDeleted( map( dto.getDeleted() ) );
-        misProperty.setTCreated( dto.getTCreated() );
-        misProperty.setTDeleted( dto.getTDeleted() );
-        misProperty.setTModified( dto.getTModified() );
         misProperty.setUCreated( dto.getUCreated() );
-        misProperty.setUDeleted( dto.getUDeleted() );
+        misProperty.setTCreated( dto.getTCreated() );
+        misProperty.setTModified( dto.getTModified() );
         misProperty.setUModified( dto.getUModified() );
-        misProperty.setPropAccount( dto.getPropAccount() );
-        misProperty.setPropBuilding( dto.getPropBuilding() );
-        misProperty.setPropBuildingType( dto.getPropBuildingType() );
-        misProperty.setPropCat( dto.getPropCat() );
-        misProperty.setPropElecAccount( dto.getPropElecAccount() );
-        misProperty.setPropElecMeter( dto.getPropElecMeter() );
-        misProperty.setPropElecRecharge( dto.getPropElecRecharge() );
-        misProperty.setPropFileno( dto.getPropFileno() );
+        misProperty.setUDeleted( dto.getUDeleted() );
+        misProperty.setTDeleted( dto.getTDeleted() );
+        misProperty.setDeleted( map( dto.getDeleted() ) );
+        misProperty.setActive( dto.getActive() );
         misProperty.setPropId( dto.getPropId() );
-        misProperty.setPropLevel( dto.getPropLevel() );
-        misProperty.setPropName( dto.getPropName() );
         misProperty.setPropNo( dto.getPropNo() );
-        misProperty.setPropRemarks( dto.getPropRemarks() );
+        misProperty.setPropName( dto.getPropName() );
+        misProperty.setPropFileno( dto.getPropFileno() );
+        misProperty.setPropBuilding( dto.getPropBuilding() );
         misProperty.setPropResponsible( dto.getPropResponsible() );
-        misProperty.setPropStatus( dto.getPropStatus() );
+        misProperty.setPropRemarks( dto.getPropRemarks() );
+        misProperty.setPropCat( dto.getPropCat() );
         misProperty.setPropType( dto.getPropType() );
+        misProperty.setPropLevel( dto.getPropLevel() );
+        misProperty.setPropElecMeter( dto.getPropElecMeter() );
         misProperty.setPropWater( dto.getPropWater() );
+        misProperty.setPropBuildingType( dto.getPropBuildingType() );
+        misProperty.setPropStatus( dto.getPropStatus() );
+        misProperty.setPropElecAccount( dto.getPropElecAccount() );
+        misProperty.setPropElecRecharge( dto.getPropElecRecharge() );
+        misProperty.setPropAccount( dto.getPropAccount() );
 
         return misProperty;
     }

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisCollectionDetMapperImpl implements MisCollectionDetMapper {
@@ -21,11 +21,11 @@ public class MisCollectionDetMapperImpl implements MisCollectionDetMapper {
 
         CollectionDetDTO collectionDetDTO = new CollectionDetDTO();
 
-        collectionDetDTO.setCdetAmtPaid( entity.getCdetAmtPaid() );
-        collectionDetDTO.setCdetAmtToPay( entity.getCdetAmtToPay() );
-        collectionDetDTO.setCdetCollId( entity.getCdetCollId() );
         collectionDetDTO.setCdetId( entity.getCdetId() );
+        collectionDetDTO.setCdetCollId( entity.getCdetCollId() );
         collectionDetDTO.setCdetPoptId( entity.getCdetPoptId() );
+        collectionDetDTO.setCdetAmtToPay( entity.getCdetAmtToPay() );
+        collectionDetDTO.setCdetAmtPaid( entity.getCdetAmtPaid() );
 
         return collectionDetDTO;
     }
@@ -38,11 +38,11 @@ public class MisCollectionDetMapperImpl implements MisCollectionDetMapper {
 
         MisCollectionDet misCollectionDet = new MisCollectionDet();
 
-        misCollectionDet.setCdetAmtPaid( dto.getCdetAmtPaid() );
-        misCollectionDet.setCdetAmtToPay( dto.getCdetAmtToPay() );
-        misCollectionDet.setCdetCollId( dto.getCdetCollId() );
         misCollectionDet.setCdetId( dto.getCdetId() );
+        misCollectionDet.setCdetCollId( dto.getCdetCollId() );
         misCollectionDet.setCdetPoptId( dto.getCdetPoptId() );
+        misCollectionDet.setCdetAmtToPay( dto.getCdetAmtToPay() );
+        misCollectionDet.setCdetAmtPaid( dto.getCdetAmtPaid() );
 
         return misCollectionDet;
     }

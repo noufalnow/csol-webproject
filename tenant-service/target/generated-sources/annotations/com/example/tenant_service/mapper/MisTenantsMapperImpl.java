@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisTenantsMapperImpl implements MisTenantsMapper {
@@ -21,24 +21,24 @@ public class MisTenantsMapperImpl implements MisTenantsMapper {
 
         TenantDTO tenantDTO = new TenantDTO();
 
-        tenantDTO.setActive( entity.getActive() );
-        tenantDTO.setDeleted( map( entity.getDeleted() ) );
-        tenantDTO.setTCreated( entity.getTCreated() );
-        tenantDTO.setTDeleted( entity.getTDeleted() );
-        tenantDTO.setTModified( entity.getTModified() );
         tenantDTO.setUCreated( entity.getUCreated() );
-        tenantDTO.setUDeleted( entity.getUDeleted() );
+        tenantDTO.setTCreated( entity.getTCreated() );
+        tenantDTO.setTModified( entity.getTModified() );
         tenantDTO.setUModified( entity.getUModified() );
-        tenantDTO.setTntAgrType( entity.getTntAgrType() );
-        tenantDTO.setTntCompName( entity.getTntCompName() );
-        tenantDTO.setTntCrno( entity.getTntCrno() );
-        tenantDTO.setTntDocId( entity.getTntDocId() );
-        tenantDTO.setTntExpat( entity.getTntExpat() );
-        tenantDTO.setTntFullName( entity.getTntFullName() );
+        tenantDTO.setUDeleted( entity.getUDeleted() );
+        tenantDTO.setTDeleted( entity.getTDeleted() );
+        tenantDTO.setDeleted( map( entity.getDeleted() ) );
+        tenantDTO.setActive( entity.getActive() );
         tenantDTO.setTntId( entity.getTntId() );
-        tenantDTO.setTntIdNo( entity.getTntIdNo() );
+        tenantDTO.setTntFullName( entity.getTntFullName() );
+        tenantDTO.setTntCompName( entity.getTntCompName() );
         tenantDTO.setTntPhone( entity.getTntPhone() );
         tenantDTO.setTntTele( entity.getTntTele() );
+        tenantDTO.setTntIdNo( entity.getTntIdNo() );
+        tenantDTO.setTntCrno( entity.getTntCrno() );
+        tenantDTO.setTntExpat( entity.getTntExpat() );
+        tenantDTO.setTntAgrType( entity.getTntAgrType() );
+        tenantDTO.setTntDocId( entity.getTntDocId() );
 
         return tenantDTO;
     }
@@ -51,24 +51,24 @@ public class MisTenantsMapperImpl implements MisTenantsMapper {
 
         MisTenants misTenants = new MisTenants();
 
-        misTenants.setActive( dto.getActive() );
-        misTenants.setDeleted( map( dto.getDeleted() ) );
-        misTenants.setTCreated( dto.getTCreated() );
-        misTenants.setTDeleted( dto.getTDeleted() );
-        misTenants.setTModified( dto.getTModified() );
         misTenants.setUCreated( dto.getUCreated() );
-        misTenants.setUDeleted( dto.getUDeleted() );
+        misTenants.setTCreated( dto.getTCreated() );
+        misTenants.setTModified( dto.getTModified() );
         misTenants.setUModified( dto.getUModified() );
-        misTenants.setTntAgrType( dto.getTntAgrType() );
-        misTenants.setTntCompName( dto.getTntCompName() );
-        misTenants.setTntCrno( dto.getTntCrno() );
-        misTenants.setTntDocId( dto.getTntDocId() );
-        misTenants.setTntExpat( dto.getTntExpat() );
-        misTenants.setTntFullName( dto.getTntFullName() );
+        misTenants.setUDeleted( dto.getUDeleted() );
+        misTenants.setTDeleted( dto.getTDeleted() );
+        misTenants.setDeleted( map( dto.getDeleted() ) );
+        misTenants.setActive( dto.getActive() );
         misTenants.setTntId( dto.getTntId() );
-        misTenants.setTntIdNo( dto.getTntIdNo() );
+        misTenants.setTntFullName( dto.getTntFullName() );
+        misTenants.setTntCompName( dto.getTntCompName() );
         misTenants.setTntPhone( dto.getTntPhone() );
         misTenants.setTntTele( dto.getTntTele() );
+        misTenants.setTntIdNo( dto.getTntIdNo() );
+        misTenants.setTntCrno( dto.getTntCrno() );
+        misTenants.setTntExpat( dto.getTntExpat() );
+        misTenants.setTntAgrType( dto.getTntAgrType() );
+        misTenants.setTntDocId( dto.getTntDocId() );
 
         return misTenants;
     }

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-07T14:38:44+0530",
-    comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.37.0.v20240215-1558, environment: Java 17.0.12 (Eclipse Adoptium)"
+    date = "2025-05-22T20:55:15+0530",
+    comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.13 (Ubuntu)"
 )
 @Component
 public class MisPropertyPayOptionMapperImpl implements MisPropertyPayOptionMapper {
@@ -21,24 +21,24 @@ public class MisPropertyPayOptionMapperImpl implements MisPropertyPayOptionMappe
 
         PropertyPayOptionDTO propertyPayOptionDTO = new PropertyPayOptionDTO();
 
-        propertyPayOptionDTO.setActive( entity.getActive() );
-        propertyPayOptionDTO.setDeleted( map( entity.getDeleted() ) );
-        propertyPayOptionDTO.setTCreated( entity.getTCreated() );
-        propertyPayOptionDTO.setTDeleted( entity.getTDeleted() );
-        propertyPayOptionDTO.setTModified( entity.getTModified() );
         propertyPayOptionDTO.setUCreated( entity.getUCreated() );
-        propertyPayOptionDTO.setUDeleted( entity.getUDeleted() );
+        propertyPayOptionDTO.setTCreated( entity.getTCreated() );
+        propertyPayOptionDTO.setTModified( entity.getTModified() );
         propertyPayOptionDTO.setUModified( entity.getUModified() );
+        propertyPayOptionDTO.setUDeleted( entity.getUDeleted() );
+        propertyPayOptionDTO.setTDeleted( entity.getTDeleted() );
+        propertyPayOptionDTO.setDeleted( map( entity.getDeleted() ) );
+        propertyPayOptionDTO.setActive( entity.getActive() );
+        propertyPayOptionDTO.setPoptId( entity.getPoptId() );
+        propertyPayOptionDTO.setPoptPropId( entity.getPoptPropId() );
+        propertyPayOptionDTO.setPoptDocId( entity.getPoptDocId() );
+        propertyPayOptionDTO.setPoptType( entity.getPoptType() );
+        propertyPayOptionDTO.setPoptDate( entity.getPoptDate() );
         propertyPayOptionDTO.setPoptAmount( entity.getPoptAmount() );
         propertyPayOptionDTO.setPoptBank( entity.getPoptBank() );
         propertyPayOptionDTO.setPoptChqno( entity.getPoptChqno() );
-        propertyPayOptionDTO.setPoptDate( entity.getPoptDate() );
-        propertyPayOptionDTO.setPoptDocId( entity.getPoptDocId() );
-        propertyPayOptionDTO.setPoptId( entity.getPoptId() );
-        propertyPayOptionDTO.setPoptPropId( entity.getPoptPropId() );
         propertyPayOptionDTO.setPoptStatus( entity.getPoptStatus() );
         propertyPayOptionDTO.setPoptStatusDate( entity.getPoptStatusDate() );
-        propertyPayOptionDTO.setPoptType( entity.getPoptType() );
 
         return propertyPayOptionDTO;
     }
@@ -51,24 +51,24 @@ public class MisPropertyPayOptionMapperImpl implements MisPropertyPayOptionMappe
 
         MisPropertyPayOption misPropertyPayOption = new MisPropertyPayOption();
 
-        misPropertyPayOption.setActive( dto.getActive() );
-        misPropertyPayOption.setDeleted( map( dto.getDeleted() ) );
-        misPropertyPayOption.setTCreated( dto.getTCreated() );
-        misPropertyPayOption.setTDeleted( dto.getTDeleted() );
-        misPropertyPayOption.setTModified( dto.getTModified() );
         misPropertyPayOption.setUCreated( dto.getUCreated() );
-        misPropertyPayOption.setUDeleted( dto.getUDeleted() );
+        misPropertyPayOption.setTCreated( dto.getTCreated() );
+        misPropertyPayOption.setTModified( dto.getTModified() );
         misPropertyPayOption.setUModified( dto.getUModified() );
+        misPropertyPayOption.setUDeleted( dto.getUDeleted() );
+        misPropertyPayOption.setTDeleted( dto.getTDeleted() );
+        misPropertyPayOption.setDeleted( map( dto.getDeleted() ) );
+        misPropertyPayOption.setActive( dto.getActive() );
+        misPropertyPayOption.setPoptId( dto.getPoptId() );
+        misPropertyPayOption.setPoptPropId( dto.getPoptPropId() );
+        misPropertyPayOption.setPoptDocId( dto.getPoptDocId() );
+        misPropertyPayOption.setPoptType( dto.getPoptType() );
+        misPropertyPayOption.setPoptDate( dto.getPoptDate() );
         misPropertyPayOption.setPoptAmount( dto.getPoptAmount() );
         misPropertyPayOption.setPoptBank( dto.getPoptBank() );
         misPropertyPayOption.setPoptChqno( dto.getPoptChqno() );
-        misPropertyPayOption.setPoptDate( dto.getPoptDate() );
-        misPropertyPayOption.setPoptDocId( dto.getPoptDocId() );
-        misPropertyPayOption.setPoptId( dto.getPoptId() );
-        misPropertyPayOption.setPoptPropId( dto.getPoptPropId() );
         misPropertyPayOption.setPoptStatus( dto.getPoptStatus() );
         misPropertyPayOption.setPoptStatusDate( dto.getPoptStatusDate() );
-        misPropertyPayOption.setPoptType( dto.getPoptType() );
 
         return misPropertyPayOption;
     }
