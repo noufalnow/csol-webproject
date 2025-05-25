@@ -1,0 +1,28 @@
+<!-- fragments/edit_node.html -->
+<div th:fragment="content">
+    <h1 th:text="${pageTitle}">Edit Node</h1>
+
+    <form id="editNodeForm" th:action="@{'/nodes/html/update/' + ${nodeDTO.nodeId}}" method="post" th:object="${nodeDTO}">
+        <input type="hidden" name="parentId" th:value="${nodeDTO.parentId}" />
+        <input type="hidden" name="nodeType" th:value="${nodeDTO.nodeType}" />
+
+        <label for="node_name">Node Name:</label>
+        <input type="text" id="node_name" name="nodeName" th:field="*{nodeName}" required />
+
+        <!--  <label for="node_type">Node Type:</label>
+        <select id="node_type" name="nodeType" th:field="*{nodeType}" required>
+            <option value="">Select Type</option>
+            <option th:each="type : ${availableTypes}" th:value="${type}" th:text="${type}"></option>
+        </select> -->
+
+        <label>Status:</label>
+        <input type="radio" id="active" name="nodeStatus" value="1" th:checked="*{nodeStatus == 1}" /> Active
+        <input type="radio" id="inactive" name="nodeStatus" value="0" th:checked="*{nodeStatus == 0}" /> Inactive
+
+        <button type="button" onclick="submitHtmlForm('editNodeForm')">Update Node</button>
+
+        <div id="error-messages" class="error-message"></div>
+    </form>
+
+    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('/nodes/html', '#content')">Back to List</a>
+</div>

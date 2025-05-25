@@ -12,6 +12,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.tenant_service.entity.MisDesignation;
+import com.example.tenant_service.entity.Node;
+
+import org.springframework.data.repository.query.Param;
+
 
 @Repository
 public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
@@ -33,6 +37,13 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     
     
     List<CoreUser> findByDesignation(MisDesignation designation);
+    
+    @Query("SELECT u FROM CoreUser u WHERE u.userNode.id = :nodeId AND u.deleted = false")
+    List<CoreUser> findByUserNodeIdAndNotDeleted(@Param("nodeId") Long nodeId);
+    
+
+    Optional<CoreUser> findByUserEmail(String userEmail);
+
 }
 
 

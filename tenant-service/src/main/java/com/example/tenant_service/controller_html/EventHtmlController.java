@@ -1,0 +1,178 @@
+package com.example.tenant_service.controller_html;
+
+import com.example.tenant_service.service.EventService;
+import com.example.tenant_service.service.NodeService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import com.example.tenant_service.common.BaseController;
+import com.example.tenant_service.dto.EventDTO;
+import com.example.tenant_service.dto.NodeDTO;
+import com.example.tenant_service.entity.Event;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/events")
+public class EventHtmlController extends BaseController<EventDTO, EventService> {
+
+    private final NodeService nodeService;
+
+    public EventHtmlController(EventService eventService, NodeService nodeService) {
+        super(eventService);
+        this.nodeService = nodeService;
+    }
+
+    @GetMapping("/html")
+    public String listEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "eventPeriodStart") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String search,
+            Model model) {
+
+    	Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
+
+        logInfo("Fetching events - Page: {}, Size: {}, Sort: {}, Search: {}", 
+                page, size, sortField + " " + sortDir, search);
+
+        Page<EventDTO> eventPage = service.findAllPaginate(pageable, search);
+
+        setupPagination(model, eventPage, sortField, sortDir);
+        model.addAttribute("search", search);
+        model.addAttribute("pageTitle", "Event List");
+        model.addAttribute("pageUrl", "/events/html");
+        model.addAttribute("today", LocalDate.now());
+
+        return "fragments/event_list";
+    }
+
+    @GetMapping("/html/byhost")
+    public String listEventsByHost(Model model, HttpServletRequest request) {
+    	
+ 	   HttpSession session = request.getSession(false);
+	    Long parentId = null;
+	    if (session != null) {
+	        Object attr = session.getAttribute("ParentId");
+	        if (attr instanceof Long) {
+	            parentId = (Long) attr;
+	        } else if (attr instanceof String) {
+	            parentId = Long.valueOf((String) attr);
+	        }
+	    }
+
+        List<EventDTO> events = service.findByHostNode(parentId);
+        model.addAttribute("events", events);
+        model.addAttribute("target", "events_target");
+        return "fragments/events/node_events";
+    }
+
+    @GetMapping("/html/{id}")
+    public String viewEventById(@PathVariable Long id, Model model) {
+        EventDTO event = service.findById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("pageTitle", "Event Details: " + event.getEventName());
+        return "fragments/event_detail";
+    }
+
+    @GetMapping("/html/addevent")
+    public String showAddEventForm(Model model, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        Long ParentId = session != null ? (Long) session.getAttribute("ParentId") : null;
+
+        model.addAttribute("pageTitle", "Add Event");
+        model.addAttribute("event", new EventDTO());
+        
+        if (ParentId != null) {
+            model.addAttribute("hostNode", nodeService.findById(ParentId));
+            model.addAttribute("hostNodeId", ParentId);
+        }
+
+        return "fragments/events/add_event";
+    }
+
+    @PostMapping("/html/addevent")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addEvent(
+            @Valid @ModelAttribute EventDTO eventDTO,
+            BindingResult result,
+            HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        Long parentId = session != null ? (Long) session.getAttribute("ParentId") : null;
+        
+        if (parentId != null) {
+            NodeDTO node = nodeService.findById(parentId);
+            if (node != null) {
+                eventDTO.setEventHost(node.getNodeType());  // Direct assignment
+                eventDTO.setEventHostId(parentId);
+            }
+        }
+
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "/events/html/byhost");
+        additionalData.put("target", "users_target");
+
+        return handleRequest(result, 
+                () -> service.save(eventDTO), 
+                "Event added successfully", 
+                additionalData);
+    }
+
+    @GetMapping("/html/edit/{id}")
+    public String editEvent(@PathVariable Long id, Model model) {
+        EventDTO event = service.findById(id);
+        model.addAttribute("event", event);
+        //model.addAttribute("hostTypes", Event.HostType.values());
+        List<NodeDTO> nodes = nodeService.findAll();
+        model.addAttribute("nodes", nodes);
+        return "fragments/edit_event";
+    }
+
+    @PostMapping("/html/update/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateEvent(
+            @PathVariable Long id,
+            @Valid @ModelAttribute EventDTO eventDTO,
+            BindingResult result) {
+
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "/events/html");
+
+        return handleRequest(result, 
+                () -> service.update(id, eventDTO), 
+                "Event updated successfully", 
+                additionalData);
+    }
+
+    @PostMapping("/html/cancel/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelEvent(@PathVariable Long id) {
+        service.softDeleteById(id);
+        return buildResponse("Event cancelled successfully", 
+                Map.of("redirect", "/events/html"));
+    }
+
+    @GetMapping("/html/active")
+    public String getActiveEvents(Model model) {
+        List<EventDTO> activeEvents = service.findActiveEventsOnDate(LocalDate.now());
+        model.addAttribute("events", activeEvents);
+        model.addAttribute("pageTitle", "Active Events");
+        return "fragments/active_events";
+    }
+}

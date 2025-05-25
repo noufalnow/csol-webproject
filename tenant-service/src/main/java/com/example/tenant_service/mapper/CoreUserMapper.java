@@ -3,7 +3,10 @@ package com.example.tenant_service.mapper;
 import com.example.tenant_service.common.BaseMapper;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
+import com.example.tenant_service.entity.Node;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -22,9 +25,39 @@ public interface CoreUserMapper extends BaseMapper<CoreUser, CoreUserDTO> {
     // Map CoreUserDTO to CoreUser, including designation details
     @Mapping(source = "userDesig", target = "designation.desigId") // Map userDesig to designation ID
     CoreUser toEntity(CoreUserDTO coreUserDTO);
-
+    
+    
+    default Node map(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Node node = new Node();
+        node.setNodeId(id);
+        return node;
+    }
     // Update CoreUser fields from CoreUserUpdateDTO, ignoring null values
     @Mapping(source = "userDesig", target = "designation.desigId") // Map userDesig to designation ID
     void updateCoreUserFromDto(CoreUserUpdateDTO coreUserUpdateDTO, @MappingTarget CoreUser coreUser);
+    
+    
+    @Mapping(source = "userDesig", target = "designation.desigId")
+    
+    @Mapping(source = "userFname", target = "userFname")
+    @Mapping(source = "userLname", target = "userLname")
+    @Mapping(source = "userEmail", target = "userEmail")
+    @Mapping(source = "userStatus", target = "userStatus")
+    @Mapping(source = "userNode", target = "userNode")
+    CoreUser toEntity(UserMemberDTO userMemberDTO);
+    
+    
+    default Long map(Node value) {
+        return value != null ? value.getNodeId() : null;
+    }
+    
 }
+
+
+
+
+
 

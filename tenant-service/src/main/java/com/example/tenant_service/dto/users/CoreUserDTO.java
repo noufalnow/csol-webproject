@@ -55,8 +55,10 @@ public class CoreUserDTO extends BaseDTO {
     private String designationName; 
     
     private Long userDept;
+    
+    private Long userNode;
 
-    @NotNull(message = "Employee ID is required")
+    //@NotNull(message = "Employee ID is required")
     private Long userEmpId;
 
     @NotBlank(message = "Email is required")

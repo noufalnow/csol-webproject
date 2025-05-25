@@ -41,7 +41,11 @@ public class CoreUser extends BaseEntity {
 
     @Column(name = "user_emp_id")
     private Long userEmpId;
+    
+    @ManyToOne
+    @JoinColumn(name = "user_node_id", referencedColumnName = "node_id")
+    private Node userNode;
 
-    @Column(name = "user_email", nullable = false)
+    @Column(name = "user_email", nullable = false ,unique = true)
     private String userEmail;
 }

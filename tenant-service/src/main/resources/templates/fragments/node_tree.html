@@ -1,0 +1,249 @@
+<style>
+    .tree-container {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .tree-title {
+        color: var(--bs-dark);
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.625rem;
+        border-bottom: 2px solid var(--bs-gray-200);
+    }
+
+    .tree {
+        list-style: none;
+        padding-left: 0.25rem;
+    }
+
+    .tree ul {
+        list-style: none;
+        padding-left: 1.25rem;
+    }
+
+    .tree li {
+        margin: 0.5rem 0;
+        position: relative;
+    }
+
+    .tree-node {
+        display: flex;
+        align-items: center;
+        padding: 0.3125rem 0.625rem;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .tree-node:hover {
+        background-color: var(--bs-light-bg-subtle);
+    }
+
+    .tree-node.active {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: var(--bs-primary);
+        font-weight: 500;
+    }
+
+    .tree-node a {
+        color: inherit;
+        text-decoration: none;
+        flex-grow: 1;
+    }
+
+    .tree-node a:hover {
+        text-decoration: underline;
+    }
+
+    .toggle-btn {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bs-tertiary-bg);
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.75rem;
+        user-select: none;
+    }
+
+    .toggle-btn:hover {
+        background-color: var(--bs-secondary-bg);
+    }
+
+    .empty-toggle {
+        width: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .tree-column {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 1.25rem;
+        padding: 0.125rem;
+        overflow-y: auto;
+    }
+    
+    .content-column {
+        border: 2px solid var(--bs-border-color);
+        border-radius: 1.25rem;
+        padding: 1.25rem;
+    }
+</style>
+
+<div class="container mt-1 mb-3">
+    <div class="d-flex justify-content-end align-items-center gap-3">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="choice" id="option1" value="option0">
+            <label class="form-check-label" for="option1">Branches</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="choice" id="option2" value="option1">
+            <label class="form-check-label" for="option2">Officials</label>
+        </div>
+        <div class="form-check form-check-inline" onclick="loadContent('/users/html/bynodeglobal', '#users_target');clearTreeForm()">
+            <input class="form-check-input" type="radio" name="choice" id="option3" value="option2" checked>
+            <label class="form-check-label" for="option3">Members</label>
+        </div>
+        <div class="form-check form-check-inline" onclick="loadContent('/events/html/byhost', '#users_target');clearTreeForm()">
+            <input class="form-check-input" type="radio" name="choice" id="option4" value="option3">
+            <label class="form-check-label" for="option4">Events</label>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex vh-100 overflow-hidden mb-3 border-bottom border-2 border-secondary">
+    <!-- Left column -->
+    <div class="tree-column me-2 flex-shrink-0" style="width: 25%;">
+        <div>
+            <!-- templates/fragments/node_tree.html -->
+            <div th:fragment="content">
+                <h5 th:text="${pageTitle}" class="tree-title ms-3 mt-3">Node Tree</h5>
+                <div class="tree-container">
+                    <ul class="tree">
+                        <li th:each="node : ${treeData}">
+                            <th:block th:if="${node != null}">
+                                <div class="tree-node">
+                                    <span th:if="${node['children'] != null}" class="toggle-btn" onclick="toggleChildren(this)">-</span>
+                                    <span th:unless="${node['children'] != null}" class="empty-toggle"></span>
+                                    <a th:if="${node['nodeId'] != null}" href="javascript:void(0);"
+                                        th:data-node-id="${node['nodeId']}"
+                                        th:onclick="|activateLink(this); loadContent('/users/html/bynode/' + this.getAttribute('data-node-id'), '#users_target'); clearTreeForm()|"
+                                        th:text="${node['nodeName']}">Node Name</a>
+                                </div>
+
+                                <ul th:if="${node['children'] != null}">
+                                    <li th:each="child : ${node['children']}">
+                                        <!-- recurse into nodeItem -->
+                                        <div th:replace="~{fragments/node_tree :: nodeItem(node=${child},parentId=${parentId})}"></div>
+                                    </li>
+                                </ul>
+                            </th:block>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recursive "nodeItem" fragment -->
+            <div th:fragment="nodeItem(node,parentId)">
+                <th:block th:if="${node != null}">
+                    <div class="tree-node" th:classappend="${node.nodeId == parentId} ? 'active' : ''">
+                        <span th:if="${node['children'] != null}" class="toggle-btn" onclick="toggleChildren(this)">-</span>
+                        <span th:unless="${node['children'] != null}" class="empty-toggle"></span>
+                        <a th:if="${node['nodeId'] != null}" href="javascript:void(0);"
+                            th:data-node-id="${node['nodeId']}"
+                            th:onclick="|activateLink(this); loadContent('/users/html/bynode/' + this.getAttribute('data-node-id'), '#users_target'); clearTreeForm()|"
+                            th:text="${node['nodeName']}">Node Name</a>
+
+                        <div class="d-none">
+                            Debug - nodeId: <span th:text="${node.nodeId}"></span>, parentId:
+                            <span th:text="${parentId}"></span>, Equal: <span th:text="${node.nodeId == parentId}"></span>
+                        </div>
+                    </div>
+
+                    <ul th:if="${node['children'] != null}">
+                        <li th:each="child : ${node['children']}">
+                            <div th:replace="~{fragments/node_tree :: nodeItem(node=${child},parentId=${parentId})}"></div>
+                        </li>
+                    </ul>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="content-column flex-grow-1">
+        <div id="users_target"></div>
+    </div>
+</div>
+
+<div id="tree_form_target"></div>
+
+<script>
+  function clearTreeForm() {
+    $('#tree_form_target').html('');
+  }
+  
+  // Function to toggle children visibility
+  function toggleChildren(btn) {
+    const parentNode = btn.closest('li');
+    const childrenList = parentNode.querySelector('ul');
+    
+    if (childrenList) {
+      if (childrenList.style.display === 'none') {
+        childrenList.style.display = 'block';
+        btn.textContent = '-';
+      } else {
+        childrenList.style.display = 'none';
+        btn.textContent = '+';
+      }
+    }
+  }
+  
+  // Function to activate the clicked link
+  function activateLink(link) {
+    // Remove active class from all links
+    document.querySelectorAll('.tree-node').forEach(node => {
+      node.classList.remove('active');
+    });
+    
+    // Add active class to clicked link's parent
+    link.closest('.tree-node').classList.add('active');
+  }
+  
+  // Initialize the tree (collapse all except first level)
+  document.addEventListener('DOMContentLoaded', function() {
+    const allLists = document.querySelectorAll('.tree ul');
+    allLists.forEach(list => {
+      // Hide all nested lists initially
+      if (list.closest('li').querySelector('ul') !== list) {
+        list.style.display = 'none';
+      }
+      
+      // Change toggle button to '+' for hidden lists
+      const parentNode = list.closest('li');
+      if (parentNode) {
+        const toggleBtn = parentNode.querySelector('.toggle-btn');
+        if (toggleBtn && list.style.display === 'none') {
+          toggleBtn.textContent = '+';
+        }
+      }
+    });
+    
+    // Make nodes with no children have empty toggle space
+    document.querySelectorAll('.tree li').forEach(li => {
+      if (!li.querySelector('ul')) {
+        const emptyToggle = li.querySelector('.empty-toggle');
+        if (emptyToggle) {
+          emptyToggle.style.visibility = 'hidden';
+        }
+      }
+    });
+  });
+  
+  function getActiveTreeNodeId() {
+	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
+	}
+  
+  loadContent('/users/html/bynodeglobal', '#users_target');
+  
+</script>

@@ -1,17 +1,23 @@
 package com.example.tenant_service.controller_html;
 
 import com.example.tenant_service.service.CoreUserService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import com.example.tenant_service.common.BaseController;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserToggleDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.UserMemberDTO;
+import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.dto.DesignationDTO;
 
 import com.example.tenant_service.service.MisDesignationService;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,6 +76,34 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
     	    return "fragments/core_user_list";
     	}
+    
+    
+    @GetMapping("/html/bynode/{id}")
+    public String listUsersByNode(@PathVariable("id") Long nodeId, Model model, HttpServletRequest request) {
+    	
+    	if(nodeId !=null) {
+	        HttpSession session = request.getSession();
+	        session.setAttribute("ParentId", nodeId);
+    	}
+    	
+    	
+        List<CoreUser> users = service.listUsersByNode(nodeId);
+        model.addAttribute("users", users);
+        model.addAttribute("target", "users_target");
+        return "fragments/node_users";
+    }
+    
+    @GetMapping("/html/bynodeglobal")
+    public String listUsersByNodeBlobal(Model model, HttpServletRequest request) {
+    	
+ 	   HttpSession session = request.getSession(false);
+ 	   Long nodeId = (Long) session.getAttribute("ParentId");
+    	
+        List<CoreUser> users = service.listUsersByNode(nodeId);
+        model.addAttribute("users", users);
+        model.addAttribute("target", "users_target");
+        return "fragments/node_users";
+    }
 
 
     @GetMapping("/html/{id}")
@@ -98,6 +132,53 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
         additionalData.put("loadnext", "/users/html");
         return handleRequest(result, () -> service.save(userDTO), "User added successfully", additionalData);
     }
+    
+    
+    @GetMapping("/html/addmember")
+    public String showAddMemberUserForm(Model model) {
+        model.addAttribute("pageTitle", "Add New Official - ##");
+        model.addAttribute("user", new UserMemberDTO());
+        // Fetch designations from the service and pass them to the model
+        List<DesignationDTO> designations = designationService.findAll();
+        model.addAttribute("designations", designations);
+        return "fragments/add_memberuser";
+    }
+    
+    @PostMapping("/html/addmember")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addMember(@Valid @ModelAttribute UserMemberDTO userMemberDTO,
+                                                       BindingResult result,HttpServletRequest request) {
+    	
+    	logInfo("Request Parameters – userMemberDTO: {}", userMemberDTO);
+    	
+	   HttpSession session = request.getSession(false);
+	    Long parentId = null;
+	    if (session != null) {
+	        Object attr = session.getAttribute("ParentId");
+	        if (attr instanceof Long) {
+	            parentId = (Long) attr;
+	        } else if (attr instanceof String) {
+	            parentId = Long.valueOf((String) attr);
+	        }
+	    }
+	    if (parentId == null) {
+	        return ResponseEntity
+	            .status(HttpStatus.UNAUTHORIZED)
+	            .body(Map.of("error", "ParentId not found in session"));
+	    }
+	    
+	    
+	    logInfo("Request Parameters – setUserNodeId-parentId: {}", parentId);
+	    
+	    userMemberDTO.setUserNode(parentId);
+    	
+    	
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("loadnext", "users/html/bynode/"+parentId);
+        additionalData.put("target", "users_target");
+        return handleRequest(result, () -> service.saveMamber(userMemberDTO), "User added successfully", additionalData);
+    }
+    
 
     @GetMapping("/html/edit/{id}")
     public String editUser(@PathVariable Long id, Model model) {

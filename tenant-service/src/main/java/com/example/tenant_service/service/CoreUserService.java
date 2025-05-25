@@ -5,15 +5,20 @@ import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.MisDesignation;
+import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.mapper.CoreUserMapper;
 import com.example.tenant_service.repository.CoreUserRepository;
 import com.example.tenant_service.repository.MisDesignationRepository;
+import com.example.tenant_service.repository.NodeRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.domain.Page;
 
 
@@ -30,13 +35,16 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     private final CoreUserMapper coreUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final MisDesignationRepository misDesignationRepository;
+	private final NodeRepository nodeRepository;
 
     @Autowired
-    public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder, MisDesignationRepository misDesignationRepository) {
+    public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder, MisDesignationRepository misDesignationRepository, 
+    		NodeRepository nodeRepository	) {
         this.coreUserRepository = coreUserRepository;
         this.coreUserMapper = coreUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.misDesignationRepository = misDesignationRepository;
+        this.nodeRepository = nodeRepository;
     }
 
     // Update CoreUser using CoreUserDTO
@@ -143,6 +151,13 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         CoreUser savedCoreUser = coreUserRepository.save(coreUser);
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }
+    
+    public CoreUserDTO saveMamber(UserMemberDTO userMemberDTO) {
+        // Convert DTO to entity and save
+        CoreUser coreUser = coreUserMapper.toEntity(userMemberDTO);
+        CoreUser savedCoreUser = coreUserRepository.save(coreUser);
+        return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
+    }
 
     @Override
     public void softDeleteById(Long userId) {
@@ -158,5 +173,15 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     public List<CoreUser> listUsersByDesignation(Long desigId) {
         Optional<MisDesignation> designation = misDesignationRepository.findById(desigId);
         return designation.map(coreUserRepository::findByDesignation).orElse(Collections.emptyList());
+    }
+    
+    public CoreUserDTO getUserByEmailAddress(String email) {
+        CoreUser user = coreUserRepository.findByUserEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return coreUserMapper.toDTO(user);
+    }
+    
+    public List<CoreUser> listUsersByNode(Long nodeId) {
+        return coreUserRepository.findByUserNodeIdAndNotDeleted(nodeId);
     }
 }

@@ -73,6 +73,7 @@ window.submitHtmlForm = function (formId) {
             if (response.status === 'error') {
                 handleFormErrors(response);
             } else if (response.status === 'success') {
+				$('#dynamicModal').modal('hide');
                 $('<div>' + response.message + '</div>').dialog({
                     title: 'Success',
                     modal: true,
@@ -80,7 +81,8 @@ window.submitHtmlForm = function (formId) {
                         Ok: function () {
                             $(this).dialog('close');
                             if (response.loadnext) {
-                                loadContent(response.loadnext, '#content');
+                                loadContent(response.loadnext,('#'+response.target || '#content'));
+								form.parent().html('');
                             }
                         }
                     }
@@ -233,15 +235,79 @@ function sortEntities(sortField) {
 }
 
 
-function loadContent(url, target) {
-    $.ajax({
-        url: encodeURI(url),
-        method: 'GET',
-        success: function (data) {
-            $(target).html(data);
-        },
-        error: function () {
-            $(target).html('<p class="error-message">Failed to load content. Please try again.</p>');
+function loadContent(url, targetSelector) {
+  const $target = $(targetSelector);
+  const isModal = $target.is('.modal') || targetSelector === 'modal';
+
+  $.ajax({
+    url: encodeURI(url),
+    method: 'GET',
+
+    success(data) {
+      if (isModal) {
+        // modal path
+        const $modal = $target.is('.modal') ? $target : $('#dynamicModal');
+        if (!$modal.length) {
+          console.error('Modal not found:', targetSelector);
+          return $target.html(data);
         }
-    });
+
+        $modal.find('.modal-content').html(data);
+        const bsModal = bootstrap.Modal.getInstance($modal[0]) || new bootstrap.Modal($modal[0]);
+        bsModal.show();
+
+        // focus first input
+        setTimeout(() => {
+          const $first = $modal.find('input,select,textarea').filter(':visible').first();
+          if ($first.length) $first.focus();
+        }, 300);
+      } else {
+        // regular pane
+        $target.html(data);
+
+        // scroll into view within nearest scrollable ancestor
+        const $scrollable = $target.closest('.overflow-auto,body');
+        $scrollable.animate({ 
+          scrollTop: $target.position().top + $scrollable.scrollTop() 
+        }, 300);
+
+        // outline flash
+        $target.css('outline','2px solid var(--bs-success)');
+        setTimeout(() => $target.css('outline',''), 500);
+
+        // focus first input
+        const $first = $target.find('input,select,textarea').filter(':visible').first();
+        if ($first.length) $first.focus();
+      }
+    },
+
+    /*error(xhr, status, err) {
+      const msg    = xhr.statusText || 'Server error';
+      const detail = xhr.responseText || '';
+
+      const errorHtml = `
+        <div class="alert alert-danger" role="alert">
+          <h5>Failed to load content</h5>
+          <p>${msg}</p>
+          ${detail ? `<pre class="small text-muted mt-2" style="white-space:pre-wrap;">${detail}</pre>` : ''}
+        </div>`;
+
+      if (isModal) {
+        const $modal = $target.is('.modal') ? $target : $('#dynamicModal');
+        if ($modal.length) {
+          $modal.find('.modal-body').html(errorHtml);
+          const bsModal = bootstrap.Modal.getInstance($modal[0]) || new bootstrap.Modal($modal[0]);
+          bsModal.show();
+        } else {
+          console.error('Modal error fallback:', err);
+          $target.html(errorHtml);
+        }
+      } else {
+        $target.html(errorHtml);
+      }
+
+      console.error('loadContent error for', url, err);
+    }*/
+  });
 }
+

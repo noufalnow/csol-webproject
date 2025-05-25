@@ -1,93 +1,79 @@
-<!-- src/main/resources/templates/layout.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="${pageTitle}">My Application</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery UI CSS (keep if you need it) -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Your custom CSS -->
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
 
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    
-    
+    <!-- jQuery (keep if you need it) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- jQuery UI (keep if you need it) -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 <body>
-    <header th:include="fragments/menu :: menu"></header>
-    
-    
-	<div id="content">
-			<div th:replace="${content}"></div>
-	</div>
+<header th:include="fragments/menu :: menu"></header>
 
-    <footer>
-        <p>&copy; 2024 My Application</p>
-    </footer>
+<div id="content" class="container mt-4" style=" min-width: 99%;">
+    <div th:replace="${content}"></div>
+</div>
 
-    <!-- Include your custom JavaScript file -->
-    <script src="/js/scripts.js"></script>
+<footer class="bg-light text-center py-3 mt-4">
+    <p class="mb-0">&copy; 2024 My Application</p>
+</footer>
+
+<!-- Include your custom JavaScript file -->
+<script src="/js/scripts.js"></script>
 </body>
 
 <style>
-.container {
-    max-width: 1200px; /* Adjust as needed */
-    margin: auto;
-}
+    /* You can now replace many of these with Bootstrap classes */
+    /* Keep only custom styles that Bootstrap doesn't provide */
+    .floating-section {
+        position: fixed;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
 
-.form-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 15px; /* Space between rows */
-}
+    .floating-section table {
+        margin-top: 20px;
+        width: 100%;
+    }
 
-.form-group {
-    flex: 1 1 30%; /* Flex-grow: 1, Flex-shrink: 1, Flex-basis: 30% */
-    padding: 0 10px; /* Optional: spacing between columns */
-}
+    .floating-section td {
+        padding: 5px;
+    }
 
-.form-group label {
-    display: block;
-    margin-bottom: 5px; /* Space between label and input */
-}
+    .floating-section label {
+        font-weight: bold;
+    }
 
-.form-group input,
-.form-group select {
-    width: 100%; /* Make inputs full-width */
-    padding: 8px; /* Padding for inputs */
-    box-sizing: border-box; /* Include padding in width calculation */
-}
-
-.floating-section {
-    position: fixed;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    background-color: #fff;
-    border: 1px solid #ccc;
-    padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-        /* Style the table */
-        .floating-section table {
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .floating-section td {
-            padding: 5px;
-        }
-
-        .floating-section label {
-            font-weight: bold;
-        }
-
-        .floating-section input {
-            width: 100px;
-        }
-
+    .floating-section input {
+        width: 100px;
+    }
 </style>
 
+
+
+<div class="modal fade" id="dynamicModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="overflow: auto;">
+
+        </div>
+    </div>
+</div>
+
 </html>
-
-

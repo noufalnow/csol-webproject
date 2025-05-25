@@ -1,44 +1,43 @@
+<!-- fragments/pagination.html -->
 <div th:fragment="pagination">
-    <div class="pagination">
-        <ul>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
             <!-- First page link -->
-            <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
-                <a href="javascript:void(0);" th:if="${currentPage != 0}"
+            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != 0}"
                    th:onclick="'loadContent(\'' + @{${pageUrl}(page=0, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">First</a>
-                <span th:if="${currentPage == 0}">First</span>
+                <span class="page-link" th:if="${currentPage == 0}">First</span>
             </li>
 
             <!-- Previous page link -->
-            <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
-                <a href="javascript:void(0);" th:if="${currentPage != 0}"
+            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != 0}"
                    th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Previous</a>
-                <span th:if="${currentPage == 0}">Previous</span>
+                <span class="page-link" th:if="${currentPage == 0}">Previous</span>
             </li>
 
             <!-- Page numbers -->
-            <li th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                th:classappend="${i == currentPage} ? 'active' : ''">
-                <!-- If it's the current page, render a disabled span -->
-                <span th:if="${i == currentPage}" th:text="${i + 1}" class="disabled-page"></span>
-                <!-- If it's not the current page, render the link with onclick action -->
-                <a th:if="${i != currentPage}" href="javascript:void(0);"
+            <li class="page-item" th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                th:classappend="${i == currentPage} ? ' active'">
+                <a class="page-link" href="javascript:void(0);" th:if="${i != currentPage}"
                    th:onclick="'loadContent(\'' + @{${pageUrl}(page=${i}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'"
                    th:text="${i + 1}"></a>
+                <span class="page-link" th:if="${i == currentPage}" th:text="${i + 1}"></span>
             </li>
 
             <!-- Next page link -->
-            <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
-                <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
+            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
                    th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Next</a>
-                <span th:if="${currentPage == totalPages - 1}">Next</span>
+                <span class="page-link" th:if="${currentPage == totalPages - 1}">Next</span>
             </li>
 
             <!-- Last page link -->
-            <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
-                <a href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
+            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
                    th:onclick="'loadContent(\'' + @{${pageUrl}(page=${totalPages - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Last</a>
-                <span th:if="${currentPage == totalPages - 1}">Last</span>
+                <span class="page-link" th:if="${currentPage == totalPages - 1}">Last</span>
             </li>
         </ul>
-    </div>
+    </nav>
 </div>

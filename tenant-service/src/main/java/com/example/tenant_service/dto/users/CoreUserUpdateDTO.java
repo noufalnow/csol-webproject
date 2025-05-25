@@ -47,8 +47,10 @@ public class CoreUserUpdateDTO extends BaseDTO {
     
     private Long userDept;
 
-    @NotNull(message = "Employee ID is required")
+    //@NotNull(message = "Employee ID is required")
     private Long userEmpId;
+    
+    private Long userNode = null;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
