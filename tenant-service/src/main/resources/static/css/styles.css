@@ -380,3 +380,7 @@ footer {
 .form-label {
     margin-bottom: .1rem;
 }
+
+a {
+    text-decoration: auto;
+}

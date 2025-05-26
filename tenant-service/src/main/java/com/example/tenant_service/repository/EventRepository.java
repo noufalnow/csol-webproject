@@ -2,20 +2,30 @@ package com.example.tenant_service.repository;
 
 import com.example.tenant_service.common.BaseRepository;
 import com.example.tenant_service.entity.Event;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.sql.DataSource;
+
+
 
 @Repository
 public interface EventRepository extends BaseRepository<Event, Long> {
 
-    @Query("SELECT e FROM Event e WHERE e.id = :eventId AND e.deleted = false")
+    JdbcTemplate jdbcTemplate = null;
+
+	@Query("SELECT e FROM Event e WHERE e.id = :eventId AND e.deleted = false")
     Optional<Event> findByIdAndNotDeleted(@Param("eventId") Long eventId);
 
     @Query("SELECT e FROM Event e WHERE e.deleted = false AND " +
@@ -36,4 +46,28 @@ public interface EventRepository extends BaseRepository<Event, Long> {
            "e.eventHost = :hostType AND e.hostNode.nodeId = :hostId AND e.deleted = false")
     List<Event> findByHostTypeAndHostId(@Param("hostType") String hostType, 
                                       @Param("hostId") Long hostId);
+    
+    
+    /*@Query(value = """
+            WITH RECURSIVE node_hierarchy AS (
+                SELECT node_id, parent_id
+                FROM nodes
+                WHERE node_id = :nodeId
+                UNION ALL
+                SELECT n.node_id, n.parent_id
+                FROM nodes n
+                INNER JOIN node_hierarchy nh ON n.node_id = nh.parent_id
+                WHERE n.deleted = false
+            )
+            SELECT e.*, me.*
+            FROM events e
+            LEFT JOIN member_events me ON me.memvnt_event_id = e.event_id 
+                AND me.memvnt_member_id = :memberId 
+                AND me.deleted = false
+            JOIN node_hierarchy nh ON e.event_host_id = nh.node_id
+            WHERE e.deleted = false
+            """, nativeQuery = true)
+        List<Object[]> findEventsByMemberAndNodeHierarchy(@Param("nodeId") Long nodeId, @Param("memberId") Long memberId);*/
+    
+    
 }

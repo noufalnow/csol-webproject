@@ -81,7 +81,7 @@ window.submitHtmlForm = function (formId) {
                         Ok: function () {
                             $(this).dialog('close');
                             if (response.loadnext) {
-                                loadContent(response.loadnext,('#'+response.target || '#content'));
+                                loadContent(response.loadnext, ('#' + (response.target || 'content')));
 								form.parent().html('');
                             }
                         }
@@ -236,6 +236,9 @@ function sortEntities(sortField) {
 
 
 function loadContent(url, targetSelector) {
+	
+  console.log(targetSelector);
+	
   const $target = $(targetSelector);
   const isModal = $target.is('.modal') || targetSelector === 'modal';
 
@@ -263,17 +266,22 @@ function loadContent(url, targetSelector) {
         }, 300);
       } else {
         // regular pane
+		
+		console.log($target);
+		
+		
         $target.html(data);
 
         // scroll into view within nearest scrollable ancestor
         const $scrollable = $target.closest('.overflow-auto,body');
-        $scrollable.animate({ 
+		
+        /*$scrollable.animate({ 
           scrollTop: $target.position().top + $scrollable.scrollTop() 
-        }, 300);
+        }, 300);*/
 
         // outline flash
-        $target.css('outline','2px solid var(--bs-success)');
-        setTimeout(() => $target.css('outline',''), 500);
+        /*$target.css('outline','2px solid var(--bs-success)');
+        setTimeout(() => $target.css('outline',''), 500);*/
 
         // focus first input
         const $first = $target.find('input,select,textarea').filter(':visible').first();

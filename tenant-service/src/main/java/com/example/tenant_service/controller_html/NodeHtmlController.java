@@ -106,9 +106,15 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
     }
 
     @GetMapping("/html/edit/{id}")
-    public String editNode(@PathVariable Long id, Model model) {
+    public String editNode(@PathVariable Long id, Model model,HttpServletRequest request) {
         NodeDTO node = service.findById(id);
         model.addAttribute("nodeDTO", node);
+        
+ 	    HttpSession session = request.getSession(false);
+ 	    Long parentId = (Long) session.getAttribute("ParentId");
+ 	    model.addAttribute("parentId", parentId);
+        
+        model.addAttribute("nodeType", service.getNextNodeType(parentId));
         //model.addAttribute("availableTypes", service.getAvailableNodeTypes(node.getParentId()));
         model.addAttribute("pageTitle", "Edit Node - " + node.getName());
         return "fragments/edit_node";

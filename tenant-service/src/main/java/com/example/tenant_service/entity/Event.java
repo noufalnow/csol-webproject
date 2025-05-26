@@ -50,6 +50,6 @@ public class Event extends BaseEntity {
         COUNTRY,
         STATE,
         DISTRICT,
-        BRANCH
+        KALARI
     }
 }

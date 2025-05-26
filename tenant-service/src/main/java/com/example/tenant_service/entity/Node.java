@@ -20,7 +20,7 @@ public class Node extends BaseEntity {
         COUNTRY,
         STATE,
         DISTRICT,
-        BRANCH
+        KALARI
     }
 
     @Id
@@ -44,4 +44,5 @@ public class Node extends BaseEntity {
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Node> children;
+
 }

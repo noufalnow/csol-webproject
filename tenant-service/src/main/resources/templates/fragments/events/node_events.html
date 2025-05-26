@@ -20,7 +20,7 @@
                 <tr th:each="event, iterStat : ${events}">
                     <th scope="row" th:text="${iterStat.count}">1</th>
                     <td th:text="${event.eventName}">Annual Conference</td>
-                    <td th:text="${event.eventHost}">BRANCH</td>
+                    <td th:text="${event.eventHost}">KALARI</td>
                     <td>
                         <span th:text="${#temporals.format(event.eventPeriodStart, 'MMM dd')}">Jan 01</span> - 
                         <span th:text="${#temporals.format(event.eventPeriodEnd, 'MMM dd, yyyy')}">Jan 03, 2023</span>
@@ -44,27 +44,4 @@
         </table>
     </div>
 </div>
-
-
-    
-    <script>
-        function confirmAction(message, url, target) {
-            if (confirm(message)) {
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else {
-                        //loadContent(data.loadnext || '/events/html/byhost/' + ${hostId}, target);
-                    }
-                });
-            }
-        }
-    </script>
 </div>

@@ -150,7 +150,7 @@ public class NodeService implements BaseService<NodeDTO> {
             case ROOT: return List.of(Node.Type.COUNTRY);
             case COUNTRY: return List.of(Node.Type.STATE);
             case STATE: return List.of(Node.Type.DISTRICT);
-            case DISTRICT: return List.of(Node.Type.BRANCH);
+            case DISTRICT: return List.of(Node.Type.KALARI);
             default: return List.of();
         }
     }
@@ -168,7 +168,7 @@ public class NodeService implements BaseService<NodeDTO> {
             case STATE:
                 return Node.Type.DISTRICT;
             case DISTRICT:
-                return Node.Type.BRANCH;
+                return Node.Type.KALARI;
             default:
                 throw new IllegalStateException("Unsupported node type: " + parent.getNodeType());
         }

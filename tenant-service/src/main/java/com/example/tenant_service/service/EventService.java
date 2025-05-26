@@ -17,8 +17,12 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
 
 @Service
 public class EventService implements BaseService<EventDTO> {
@@ -26,14 +30,17 @@ public class EventService implements BaseService<EventDTO> {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final NodeRepository nodeRepository;
+    private final EntityManager entityManager;
 
     @Autowired
     public EventService(EventRepository eventRepository, 
                        EventMapper eventMapper,
-                       NodeRepository nodeRepository) {
+                       NodeRepository nodeRepository,
+                       EntityManager entityManager) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
         this.nodeRepository = nodeRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -98,6 +105,47 @@ public class EventService implements BaseService<EventDTO> {
                 .map(eventMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    
+    
+    
+    public List<Object[]> findByHostNodeHierarchy(Long nodeId, Long userId) {
+        //return eventRepository.findEventsByMemberAndNodeHierarchy(nodeId, userId);
+    	
+	    StringBuilder queryBuilder = new StringBuilder("""
+				    WITH RECURSIVE node_hierarchy AS (
+				        SELECT node_id, parent_id
+				        FROM nodes
+				        WHERE node_id = :nodeId
+				        UNION ALL
+				        SELECT n.node_id, n.parent_id
+				        FROM nodes n
+				        INNER JOIN node_hierarchy nh ON n.node_id = nh.parent_id
+				        WHERE n.deleted = false
+				    )
+				    SELECT e.*, me.*, TO_CHAR("event_period_start", 'DD/MM/YYYY') AS dd_event_period_start, TO_CHAR("event_period_end", 'DD/MM/YYYY') AS dd_event_period_end 
+				    FROM events e
+				    LEFT JOIN member_events me ON me.memvnt_event_id = e.event_id 
+				        AND me.memvnt_member_id = :memberId 
+				        AND me.deleted = false
+				    JOIN node_hierarchy nh ON e.event_host_id = nh.node_id
+				    WHERE e.deleted = false
+	        """);
+	    
+	    //queryBuilder.append(" ORDER BY ").append(sortField).append(" ").append(sortDir);
+
+	    Query query = entityManager.createNativeQuery(queryBuilder.toString(), Tuple.class);
+	    
+	    query.setParameter("nodeId", nodeId);  
+	    query.setParameter("memberId", userId);
+	    
+	    return query.getResultList();
+    	
+    	
+    	
+    }
+
+
+    
 
     public List<EventDTO> findByYear(Integer year) {
         return eventRepository.findByYearAndNotDeleted(year).stream()
