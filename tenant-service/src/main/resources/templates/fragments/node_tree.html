@@ -174,8 +174,7 @@ ul.collapsed {
 				class="form-check-label" for="option1">Branches</label>
 		</div>
 
-		<div class="form-check form-check-inline"
-			th:if="${nodeType} != 'KALARI'">
+		<div class="form-check form-check-inline">
 			<input class="form-check-input" type="radio" name="choice"
 				id="option2" value="officials"> <label
 				class="form-check-label" for="option2">Officials</label>
@@ -184,7 +183,7 @@ ul.collapsed {
 		<!-- show (and pre-check) only when userType equals KALARI -->
 		<div class="form-check form-check-inline"
 			th:if="${nodeType} == 'KALARI'"
-			th:onclick="|loadContent('/users/html/bynodeglobal', '#users_target'); clearTreeForm()|">
+			th:onclick="|loadContent('/users/html/bynode', '#users_target'); clearTreeForm()|">
 			<input class="form-check-input" type="radio" name="choice"
 				id="option3" value="members" checked> <label
 				class="form-check-label" for="option3">Members</label>
@@ -361,7 +360,7 @@ function toggleTreeNode(event, nodeElement) {
 	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
 	}
   
-  loadContent('/users/html/bynodeglobal', '#users_target');
+  loadContent('/users/html/bynode', '#users_target');
   
 </script>
 

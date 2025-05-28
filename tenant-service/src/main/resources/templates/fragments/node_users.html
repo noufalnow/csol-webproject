@@ -2,10 +2,14 @@
 <div th:fragment="content">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">Members</h4>
-        <a class="btn btn-primary ajax-link" href="javascript:void(0);" 
-           onclick="loadContent('/users/html/addmember', 'modal')">
-            <i class="fas fa-plus me-1"></i> Add New Members
-        </a>
+        
+		<a th:if="${allowAddMember}" 
+		   class="btn btn-primary ajax-link" 
+		   href="javascript:void(0);" 
+		   onclick="loadContent('/users/html/addmember', 'modal')">
+		    <i class="fas fa-plus me-1"></i> Add New Members
+		</a>
+        
     </div>
 
     <div class="table-responsive">

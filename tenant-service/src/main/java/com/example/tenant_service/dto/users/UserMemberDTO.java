@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import com.example.tenant_service.common.BaseDTO;
 import com.example.tenant_service.dto.DesignationDTO;
 import com.example.tenant_service.dto.validation.PasswordMatches;
+import com.example.tenant_service.entity.CoreUser.UserType;
 
 @Data
 @NoArgsConstructor
@@ -49,4 +50,6 @@ public class UserMemberDTO extends BaseDTO {
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
+    private UserType userType = UserType.MEMBER;
+    private String userPassword;
 }

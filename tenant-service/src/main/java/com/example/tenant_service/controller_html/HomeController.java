@@ -46,7 +46,7 @@ public class HomeController {
 
 		HttpSession session = request.getSession(false);
 
-		long parentId = (Long) session.getAttribute("ParentId");
+		long parentId = (Long) session.getAttribute("NODE_ID");
 		long userId = (Long) session.getAttribute("USER_ID");
 
 		List<Object[]> eventList = eventService.findByHostNodeHierarchy(parentId, userId);

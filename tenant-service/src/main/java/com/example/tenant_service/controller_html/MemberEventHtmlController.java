@@ -112,7 +112,7 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 		
  	    HttpSession session = request.getSession(false);
 		memberEventDTO.setMemberId((Long) session.getAttribute("USER_ID"));
-		memberEventDTO.setMemberNodeId((Long) session.getAttribute("ParentId"));
+		memberEventDTO.setMemberNodeId((Long) session.getAttribute("NODE_ID"));
 		memberEventDTO.setNodeId((Long) eventDTO.getEventHostId());
 
 		

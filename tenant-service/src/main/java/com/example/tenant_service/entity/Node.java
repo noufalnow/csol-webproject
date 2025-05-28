@@ -15,13 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 public class Node extends BaseEntity {
 
-    public enum Type {
-        ROOT,
-        COUNTRY,
-        STATE,
-        DISTRICT,
-        KALARI
-    }
+	public enum Type {
+	    ROOT(0), COUNTRY(1), STATE(2), DISTRICT(3), KALARI(4);
+
+	    private final int level;
+	    Type(int level) { this.level = level; }
+	    public int getLevel() { return level; }
+	}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

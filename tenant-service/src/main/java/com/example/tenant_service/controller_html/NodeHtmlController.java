@@ -140,7 +140,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 	public String showTreeView(Model model, HttpServletRequest request) {
 		
  	    HttpSession session = request.getSession(false);
- 	    model.addAttribute("parentId", (Long) session.getAttribute("ParentId"));
+ 	    model.addAttribute("parentId", (Long) session.getAttribute("NODE_ID"));
  	    
  	    model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
  	    model.addAttribute("nodeType",session.getAttribute("NODE_TYPE").toString().trim());

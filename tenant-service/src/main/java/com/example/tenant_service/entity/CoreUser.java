@@ -52,8 +52,8 @@ public class CoreUser extends BaseEntity {
     private String userEmail;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_type") //, nullable = false
-    private UserType userType = UserType.MEMBER;
+    @Column(name = "user_type", nullable = false) 
+    private UserType userType;
 
     @Column(name = "user_dob")
     private LocalDate userDob;
