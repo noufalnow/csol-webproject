@@ -1,12 +1,14 @@
 package com.example.tenant_service.controller_html;
 
 import com.example.tenant_service.service.EventService;
+import com.example.tenant_service.service.MemberEventService;
 import com.example.tenant_service.service.NodeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import com.example.tenant_service.common.BaseController;
 import com.example.tenant_service.dto.EventDTO;
+import com.example.tenant_service.dto.MemberEventDTO;
 import com.example.tenant_service.dto.NodeDTO;
 import com.example.tenant_service.entity.Event;
 
@@ -31,10 +33,13 @@ import java.util.Map;
 public class EventHtmlController extends BaseController<EventDTO, EventService> {
 
     private final NodeService nodeService;
+    private final MemberEventService memberEventService;
+    
 
-    public EventHtmlController(EventService eventService, NodeService nodeService) {
+    public EventHtmlController(EventService eventService, NodeService nodeService, MemberEventService memberEventService) {
         super(eventService);
         this.nodeService = nodeService;
+        this.memberEventService = memberEventService;
     }
 
     @GetMapping("/html")
@@ -126,6 +131,8 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("loadnext", "/events/html/byhost");
+        
+        
         additionalData.put("target", "users_target");
 
         return handleRequest(result, 
@@ -159,6 +166,22 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
                 "Event updated successfully", 
                 additionalData);
     }
+    
+    
+    @GetMapping("/html/listparticipants")
+    public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId,Model model) {
+
+
+        List<MemberEventDTO> memberEeventDTO =memberEventService.findByEvent(eventId);
+    	
+        model.addAttribute("partList", memberEeventDTO);
+        model.addAttribute("pageTitle", "List of Participants");
+        model.addAttribute("event", new EventDTO());
+        
+
+        return "fragments/events/list_participants";
+    }
+    
 
     @PostMapping("/html/cancel/{id}")
     @ResponseBody

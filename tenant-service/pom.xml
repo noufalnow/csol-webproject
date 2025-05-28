@@ -162,6 +162,14 @@
 	    	<artifactId>csol-webproject</artifactId>
 	    	<version>1.0-SNAPSHOT</version>
 	    </dependency>
+	    
+	    
+	    <dependency>
+		    <groupId>org.xhtmlrenderer</groupId>
+		    <artifactId>flying-saucer-pdf</artifactId>
+		    <version>9.1.22</version>
+		</dependency>
+	    
 	</dependencies>
 
 	<dependencyManagement>

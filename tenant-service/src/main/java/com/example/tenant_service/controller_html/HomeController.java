@@ -1,5 +1,6 @@
 package com.example.tenant_service.controller_html;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -12,55 +13,58 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import com.example.tenant_service.service.CoreUserService;
 import com.example.tenant_service.service.EventService;
+import com.example.tenant_service.service.NodeService;
+import com.example.tenant_service.config.SessionUtils;
 import com.example.tenant_service.dto.EventDTO;
+import com.example.tenant_service.dto.NodeDTO;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.entity.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import groovy.lang.Tuple;
+
 @Controller
 public class HomeController {
-	
-    private final CoreUserService coreUserService;
-    private final EventService eventService;
-    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-    
 
-    @Autowired  // Constructor injection (recommended)
-    public HomeController(CoreUserService coreUserService, EventService eventService) {
-        this.coreUserService = coreUserService;
-        this.eventService = eventService;
-    }
+	private final MisPropertyPayOptionHtmlController misPropertyPayOptionHtmlController;
+
+	private final EventService eventService;
+
+	@Autowired
+	private SessionUtils sessionUtils;
+
+	public HomeController(EventService eventService, HttpServletRequest request,
+			MisPropertyPayOptionHtmlController misPropertyPayOptionHtmlController) {
+		this.eventService = eventService;
+		this.misPropertyPayOptionHtmlController = misPropertyPayOptionHtmlController;
+	}
 
 	@GetMapping("/home")
-    public String home(Authentication authentication, Model model, HttpServletRequest request) {
-		
-        String userEmail = authentication.getName();
-        CoreUserDTO userDto  = coreUserService.getUserByEmailAddress(userEmail);
-        
-        HttpSession session = request.getSession();
-        session.setAttribute("ParentId", userDto.getUserNode());
-        session.setAttribute("USER_ID", userDto.getUserId());
-		
-		
-        //List<EventDTO> eventList  = eventService.findByHostNode(userDto.getUserNode()); 
-        //model.addAttribute("eventList", eventList);
-        
-        List<Object[]> eventList = eventService.findByHostNodeHierarchy(userDto.getUserNode(), userDto.getUserId());
-        model.addAttribute("eventList", eventList);
-        
-        
+	public String home(Authentication authentication, Model model, HttpServletRequest request) {
 
-		
-        model.addAttribute("pageTitle", "Home - My Application");
-        model.addAttribute("content", "fragments/profile/profile");
-        
-        
+		HttpSession session = request.getSession(false);
+
+		long parentId = (Long) session.getAttribute("ParentId");
+		long userId = (Long) session.getAttribute("USER_ID");
+
+		List<Object[]> eventList = eventService.findByHostNodeHierarchy(parentId, userId);
+
+		model.addAttribute("eventList", eventList);
+		model.addAttribute("pageTitle", "Home - My Application");
+		model.addAttribute("nodeType", session.getAttribute("NODE_TYPE"));
+		model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
 
 
-        return "layout";
-    }
+		if (session.getAttribute("USER_TYPE") != null
+				&& "MEMBER".equals(session.getAttribute("USER_TYPE").toString().trim())) {
+			model.addAttribute("content", "fragments/profile/profile");
+		} else {
+			model.addAttribute("content", "fragments/profile/official");
+		}
+
+		return "layout";
+	}
 
 }
-

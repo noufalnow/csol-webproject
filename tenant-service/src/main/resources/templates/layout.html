@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Your custom CSS -->
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+	<link href="https://fonts.googleapis.com/css2?family=Courgette&display=swap" rel="stylesheet">
+
 
     <!-- jQuery (keep if you need it) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -19,9 +21,12 @@
 
 </head>
 <body>
-<header th:include="fragments/menu :: menu"></header>
+<header 
+  th:if="${userType} eq 'OFFICIAL'"
+  th:include="fragments/menu :: menu">
+</header>
 
-<div id="content" class="container mt-4" style=" min-width: 99%;">
+<div id="content" class="container mt-2" style=" min-width: 99%;">
     <div th:replace="${content}"></div>
 </div>
 
@@ -64,14 +69,36 @@
     .floating-section input {
         width: 100px;
     }
+    
+    #nestedModal {
+    z-index: 1080; /* Higher than the first modal */
+	}
+	
+	/* Optional: Adjust backdrop opacity for clarity */
+	.modal-backdrop.show:not(:first-of-type) {
+	    opacity: 0.8; /* Darker backdrop for nested modals */
+	}
+    
 </style>
 
 
 
+<!-- First Modal (existing) -->
 <div class="modal fade" id="dynamicModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content" style="overflow: auto;">
+            <!-- Your first modal content -->
+            
+        </div>
+    </div>
+</div>
 
+<!-- Second Modal (new) -->
+<div class="modal fade" id="nestedModal"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="overflow: auto;">
+            <!-- Your first modal content -->
+            
         </div>
     </div>
 </div>

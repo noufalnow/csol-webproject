@@ -1,6 +1,6 @@
 <!-- fragments/node_list.html -->
 <div th:fragment="content">
-    <h1 th:text="${pageTitle}">Node List</h1>
+    <h1 th:text="${pageTitle}">Node List D</h1>
 
     <!-- Search Form -->
     <form id="search-form" method="GET" class="mb-3 d-flex">
@@ -13,10 +13,6 @@
         <a class="ajax-link btn btn-outline-success me-2" href="javascript:void(0);"
            th:onclick="'loadContent(\'/nodes/html/add?parentId=' + ${parentId} + '\', \'modal\')'">
             <i class="fas fa-plus"></i> Add New Node
-        </a>
-        <a class="ajax-link btn btn-outline-secondary" href="javascript:void(0);"
-           th:onclick="'loadContent(\'/nodes/html/tree\', \'#content\')'">
-            <i class="fas fa-sitemap"></i> Node Tree
         </a>
     </div>
 

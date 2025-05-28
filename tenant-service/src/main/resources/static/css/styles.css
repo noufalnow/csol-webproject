@@ -1,14 +1,28 @@
 /* ===== DMS Theme Variables ===== */
-:root {
-    --dms-primary: #2c3e50;
+  :root {
+    /* Primary & Accent */
+    --dms-primary:   #2c3e50;
     --dms-secondary: #34495e;
-    --dms-accent: #3498db;
-    --dms-light: #ecf0f1;
-    --dms-dark: #333;
-    --dms-success: #4CAF50;
-    --dms-danger: #e74c3c;
-    --dms-warning: #f1c40f;
-}
+    --dms-accent:    #3498db;
+    /* Status */
+    --dms-success:   #4CAF50;
+    --dms-warning:   #f1c40f;
+    --dms-danger:    #e74c3c;
+    --dms-info:      #17a2b8;
+    /* Neutrals */
+    --dms-light:     #ecf0f1;
+    --dms-dark:      #333333;
+    --dms-gray-100:  #f8f9fa;
+    --dms-gray-200:  #e9ecef;
+    --dms-gray-300:  #dee2e6;
+    --dms-gray-400:  #ced4da;
+    --dms-gray-500:  #adb5bd;
+    --dms-gray-600:  #6c757d;
+    --dms-gray-700:  #495057;
+    --dms-gray-800:  #343a40;
+    --dms-gray-900:  #212529;
+  }
+
 
 /* ===== Base Styles ===== */
 body {
@@ -123,16 +137,21 @@ nav a:hover {
 }
 
 .dms-card-header {
-    background-color: var(--dms-primary);
-    color: white;
+    background-color: #fdfeff;
+    color: #0a0000;
     padding: 16px 20px;
     font-weight: 600;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgb(0 0 0 / 36%);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .dms-card-body {
     padding: 25px;
     background-color: white;
+    border: 1px solid rgb(0 0 0 / 36%);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 /* ===== Profile Styles ===== */

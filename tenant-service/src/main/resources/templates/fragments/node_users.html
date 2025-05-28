@@ -1,7 +1,12 @@
 <!-- fragments/node_users.html -->
 <div th:fragment="content">
-    <h4>Members</h4>
-    <a class="ajax-link" href="javascript:void(0);" onclick="loadContent('/users/html/addmember', 'modal')">Add New Members</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Members</h4>
+        <a class="btn btn-primary ajax-link" href="javascript:void(0);" 
+           onclick="loadContent('/users/html/addmember', 'modal')">
+            <i class="fas fa-plus me-1"></i> Add New Members
+        </a>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-striped table-hover table-bordered">

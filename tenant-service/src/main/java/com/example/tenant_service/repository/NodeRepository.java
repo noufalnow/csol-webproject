@@ -5,6 +5,7 @@ import com.example.tenant_service.entity.Node;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,5 +35,14 @@ public interface NodeRepository extends BaseRepository<Node, Long> {
     
     @Query("SELECT COUNT(n) FROM Node n WHERE n.parent IS NULL AND n.deleted = false")
     long countRootNodes();
+    
+    
+    @Query("""
+    	    SELECT n 
+    	    FROM Node n 
+    	    LEFT JOIN FETCH n.children 
+    	    WHERE n.nodeId = :nodeId AND n.deleted = false
+    	    """)
+    	Optional<Node> findByIdWithChildren(@Param("nodeId") Long nodeId);
 
 }

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import com.example.tenant_service.common.BaseDTO;
 
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,9 @@ import java.util.Map;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MemberEventDTO extends BaseDTO {
+	private Long meId;
     private Long memberId;
+    private Long memberNodeId;
     private Long eventId;
     private Long nodeId;
     private LocalDateTime applyDate;
@@ -27,6 +28,9 @@ public class MemberEventDTO extends BaseDTO {
     private Long resultEntryBy;
     private LocalDateTime resultApprovalDate;
     private Long resultApprovedBy;
+    
+    private String memberName;  // from CoreUsers
+    private String memberNodeName;  // from Node
     
     public enum KalariItem {
         CHUVADU(1, "CHUVADU"),
@@ -65,5 +69,5 @@ public class MemberEventDTO extends BaseDTO {
             throw new IllegalArgumentException("Invalid KalariItem ID: " + id);
         }
     }
+    
 }
-

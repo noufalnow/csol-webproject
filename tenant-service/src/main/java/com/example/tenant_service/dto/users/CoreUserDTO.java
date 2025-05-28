@@ -10,9 +10,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDate;
+
 import com.example.tenant_service.common.BaseDTO;
 import com.example.tenant_service.dto.DesignationDTO;
 import com.example.tenant_service.dto.validation.PasswordMatches;
+import com.example.tenant_service.entity.CoreUser.Gender;
+import com.example.tenant_service.entity.CoreUser.MemberCategory;
+import com.example.tenant_service.entity.CoreUser.UserType;
 
 @Data
 @NoArgsConstructor
@@ -65,4 +71,21 @@ public class CoreUserDTO extends BaseDTO {
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
+    
+    
+    private UserType userType = UserType.MEMBER;
+    private LocalDate userDob;
+    private MemberCategory userMemberCategory;
+    private Gender gender;
+    private String aadhaarNumber;   // format: XXXX-XXXX-XXXX
+    private String fatherName;
+    private String motherName;
+    private String addressLine1;
+    private String addressLine2;
+    private String addressLine3;
+    private String addressState;
+    private String addressPin;
+    private String state;
+    private String nationality;
+    private String mobileNumber;
 }

@@ -1,5 +1,7 @@
 package com.example.tenant_service.entity;
 
+import java.time.LocalDate;
+
 import com.example.tenant_service.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -48,4 +50,73 @@ public class CoreUser extends BaseEntity {
 
     @Column(name = "user_email", nullable = false ,unique = true)
     private String userEmail;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type") //, nullable = false
+    private UserType userType = UserType.MEMBER;
+
+    @Column(name = "user_dob")
+    private LocalDate userDob;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_member_category")
+    private MemberCategory userMemberCategory;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_gender")
+    private Gender gender;
+
+    @Column(name = "user_aadhaar_number", length = 14)
+    private String aadhaarNumber;
+
+    @Column(name = "user_father_name")
+    private String fatherName;
+
+    @Column(name = "user_mother_name")
+    private String motherName;
+
+    @Column(name = "user_address_line1")
+    private String addressLine1;
+
+    @Column(name = "user_address_line2")
+    private String addressLine2;
+
+    @Column(name = "user_address_line3")
+    private String addressLine3;
+
+    @Column(name = "user_address_state")
+    private String addressState;
+
+    @Column(name = "user_address_pin", length = 6)
+    private String addressPin;
+
+    @Column(name = "user_state")
+    private String state;
+
+    @Column(name = "user_nationality")
+    private String nationality;
+
+    @Column(name = "user_mobile_number", length = 15)
+    private String mobileNumber;
+
+    @Column(name = "user_emergency_contact", length = 15)
+    private String emergencyContact;
+    
+    public enum UserType {
+        MEMBER,
+        OFFICIAL
+    }
+
+    public enum MemberCategory {
+        SUB_JUNIOR,
+        JUNIOR,
+        SENIOR
+    }
+
+    public enum Gender {
+        MALE,
+        FEMALE
+    }
 }
+
+

@@ -17,11 +17,11 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
-	    componentModel = "spring",
-	    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-	    uses = {CoreUserMapper.class, EventMapper.class, NodeMapper.class}
-	)
-	public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDTO> {
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {CoreUserMapper.class, EventMapper.class, NodeMapper.class}
+)
+public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDTO> {
 
     /**
      * Alias so service calls toDto(...) compile.
@@ -32,12 +32,19 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
     @Override
     @Mapping(target = "memberId", source = "member.userId")
+    @Mapping(
+    	    target     = "memberName",
+    	    expression = "java(entity.getMember().getUserFname() + \" \" + entity.getMember().getUserLname())"
+    	  )
+    @Mapping(target = "meId", source = "meId")
+    @Mapping(target = "memberNodeId", source = "memberNode.nodeId")
+    @Mapping(target = "memberNodeName", source = "memberNode.nodeName")
     @Mapping(target = "eventId", source = "event.eventId")
     @Mapping(target = "nodeId", source = "node.nodeId")
     @Mapping(target = "approvedBy", source = "approvedBy.userId")
     @Mapping(target = "resultEntryBy", source = "resultEntryBy.userId")
     @Mapping(target = "resultApprovedBy", source = "resultApprovedBy.userId")
-    @Mapping(target = "items", expression = "java(convertItemsToIntegerMap(entity.getItems()))")
+    @Mapping(target = "items", expression = "java(KalariItemMapper.convertToDtoMap(entity.getItems()))")
     @Mapping(target = "deleted", ignore = true)
     MemberEventDTO toDTO(MemberEvent entity);
 
@@ -48,7 +55,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
     @Mapping(target = "approvedBy", ignore = true)
     @Mapping(target = "resultEntryBy", ignore = true)
     @Mapping(target = "resultApprovedBy", ignore = true)
-    @Mapping(target = "items", expression = "java(convertItemsToStringMap(dto.getItems()))")
+    @Mapping(target = "memberNode", ignore = true)
+    @Mapping(target = "items", expression = "java(KalariItemMapper.convertToEntityMap(dto.getItems()))")
     @Mapping(target = "deleted", ignore = true)
     MemberEvent toEntity(MemberEventDTO dto);
 
@@ -61,16 +69,23 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
     @Mapping(target = "approvedBy", ignore = true)
     @Mapping(target = "resultEntryBy", ignore = true)
     @Mapping(target = "resultApprovedBy", ignore = true)
+    @Mapping(target = "memberNode", ignore = true)
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     void updateEntityFromDto(MemberEventDTO dto, @MappingTarget MemberEvent entity);
 
     @AfterMapping
     default void mapRelations(MemberEventDTO dto, @MappingTarget MemberEvent entity) {
+    	    	
         if (dto.getMemberId() != null) {
             CoreUser member = new CoreUser();
             member.setUserId(dto.getMemberId());
             entity.setMember(member);
+        }
+        if (dto.getMemberNodeId() != null) {
+            Node memberNode = new Node();
+            memberNode.setNodeId(dto.getMemberNodeId());
+            entity.setMemberNode(memberNode);
         }
         if (dto.getEventId() != null) {
             Event event = new Event();
@@ -98,19 +113,17 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
             entity.setResultApprovedBy(approvedBy);
         }
     }
-    
-    public class KalariItemMapper {
 
-        // Convert entity's Map<String, String> to DTO's Map<Integer, Integer>
-        public static Map<Integer, Integer> convertToDtoMap(Map<String, String> entityMap) {
+    class KalariItemMapper {
+
+        // Convert entity's Map<String, String> to DTO's Map<Integer, String>
+        public static Map<Integer, String> convertToDtoMap(Map<String, String> entityMap) {
             if (entityMap == null) return new HashMap<>();
-            
-            Map<Integer, Integer> dtoMap = new HashMap<>();
+            Map<Integer, String> dtoMap = new HashMap<>();
             entityMap.forEach((key, value) -> {
                 try {
                     int intKey = Integer.parseInt(key);
-                    Integer intValue = value != null ? Integer.parseInt(value) : null;
-                    dtoMap.put(intKey, intValue);
+                    dtoMap.put(intKey, value);
                 } catch (NumberFormatException e) {
                     // Handle or log invalid entries
                 }
@@ -118,16 +131,12 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
             return dtoMap;
         }
 
-        // Convert DTO's Map<Integer, Integer> to entity's Map<String, String>
-        public static Map<String, String> convertToEntityMap(Map<Integer, Integer> dtoMap) {
+        // Convert DTO's Map<Integer, String> to entity's Map<String, String>
+        public static Map<String, String> convertToEntityMap(Map<Integer, String> dtoMap) {
             if (dtoMap == null) return new HashMap<>();
-            
             Map<String, String> entityMap = new HashMap<>();
-            dtoMap.forEach((key, value) -> {
-                entityMap.put(key.toString(), value != null ? value.toString() : null);
-            });
+            dtoMap.forEach((key, value) -> entityMap.put(key.toString(), value));
             return entityMap;
         }
     }
-    
 }

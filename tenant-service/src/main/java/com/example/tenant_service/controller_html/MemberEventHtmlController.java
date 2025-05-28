@@ -1,16 +1,22 @@
 package com.example.tenant_service.controller_html;
 
 import com.example.tenant_service.common.BaseController;
+import com.example.tenant_service.dto.EventDTO;
 import com.example.tenant_service.dto.MemberEventDTO;
 import com.example.tenant_service.dto.NodeDTO;
+import com.example.tenant_service.service.EventService;
 import com.example.tenant_service.service.MemberEventService;
 import com.example.tenant_service.service.NodeService;
+import com.example.tenant_service.service.PdfGenerationService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,16 +24,26 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/member-events")
 public class MemberEventHtmlController extends BaseController<MemberEventDTO, MemberEventService> {
+	
+	private final EventService eventService;
+	private final PdfGenerationService pdfGenerationService;
+	
 
-	public MemberEventHtmlController(MemberEventService memberEventService) {
+	public MemberEventHtmlController(MemberEventService memberEventService , EventService eventService, PdfGenerationService pdfGenerationService) {
 		super(memberEventService);
+		this.eventService = eventService;
+		this.pdfGenerationService = pdfGenerationService;
+	
 	}
 
 	/*
@@ -91,13 +107,17 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 		}
 		
 		memberEventDTO.setApplyDate(LocalDateTime.now());
-						
+
+        EventDTO eventDTO =eventService.findById(memberEventDTO.getEventId());
+		
  	    HttpSession session = request.getSession(false);
 		memberEventDTO.setMemberId((Long) session.getAttribute("USER_ID"));
-		memberEventDTO.setNodeId((Long) session.getAttribute("ParentId"));
+		memberEventDTO.setMemberNodeId((Long) session.getAttribute("ParentId"));
+		memberEventDTO.setNodeId((Long) eventDTO.getEventHostId());
 
 		
-		//additionalData.put("loadnext", "/nodes/html");
+		
+		additionalData.put("loadnext", "reload");
 
 		return handleRequest(result, () -> service.save(memberEventDTO), "Applied successfully", additionalData);
 	}
@@ -116,11 +136,152 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 	 * "Node added successfully", additionalData); }
 	 */
 
-	@PostMapping("/{id}/approve")
-	public String approveApplication(@PathVariable Long id, @RequestParam Long approvedBy) {
-		service.approveApplication(id, approvedBy);
-		return "redirect:/member-events/pending-approvals";
+	@GetMapping("/html/approve/{meId}")
+	public ResponseEntity<Map<String, Object>> approveApplication(
+	        @PathVariable Long meId,
+	        //BindingResult result,  // Must come right after the validated object (if any)
+	        HttpServletRequest request) {
+	    
+	    HttpSession session = request.getSession(false);
+	    Long approvedBy = session != null ? (Long) session.getAttribute("USER_ID") : null;
+	    
+	    MemberEventDTO memberEvent = service.findById(meId);
+	    
+	    
+
+	    Map<String, Object> additionalData = new HashMap<>();
+	    additionalData.put("loadnext", "events/html/listparticipants?eventId="+memberEvent.getEventId());
+	    additionalData.put("target", "modal");
+        service.approveApplication(meId, approvedBy);
+        
+        
+	    return buildResponse("Approved successfully", additionalData);
 	}
+	
+	
+    @GetMapping("/html/score/{meId}")
+    public String showScoreEntryForm(@PathVariable Long meId, Model model) {
+        MemberEventDTO participant = service.findById(meId);
+        
+        // Create a map of KalariItems for easy lookup
+        Map<Integer, String> kalariItemMap = new HashMap<>();
+        for (MemberEventDTO.KalariItem item : MemberEventDTO.KalariItem.values()) {
+            kalariItemMap.put(item.getId(), item.getDisplayName());
+        }
+        
+        // Ensure items map exists
+        if (participant.getItems() == null) {
+            participant.setItems(new HashMap<>());
+        }
+        
+        model.addAttribute("participant", participant);
+        model.addAttribute("kalariItemMap", kalariItemMap);
+        return "fragments/events/score_entry";
+    }
+    
+    @PostMapping("/html/score/{meId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveScores(
+            @PathVariable Long meId,
+            @ModelAttribute MemberEventDTO participantUpdate,
+            BindingResult result,
+            HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        Long resultEntryBy = session != null ? (Long) session.getAttribute("userId") : null;
+
+        // Prepare additional data for the response
+        Map<String, Object> additionalData = new HashMap<>();
+
+
+        try {
+            MemberEventDTO existing = service.findById(meId);
+            if (existing != null) {
+                // Update items with scores
+                existing.setItems(participantUpdate.getItems());
+                existing.setResultDate(LocalDateTime.now());
+                existing.setResultEntryBy(resultEntryBy);
+                //service.save(existing);
+            }
+            
+            additionalData.put("loadnext", "/events/html/listparticipants?eventId="+existing.getEventId());
+            additionalData.put("target", "modal");
+
+            return handleRequest(result, () ->service.save(existing), "Scores saved successfully", additionalData);
+        } catch (Exception e) {
+            return handleRequest(result, null, "Error saving scores: " + e.getMessage(), additionalData);
+        }
+    }
+    
+    
+    @GetMapping("/html/certificate/{meId}")
+    public ResponseEntity<byte[]> generateCertificate(@PathVariable Long meId) throws Exception {
+        MemberEventDTO participant = service.findById(meId);
+
+        EventDTO event = eventService.findById(participant.getEventId());
+        
+        // Organize items by medal type
+        Map<String, List<String>> medalItems = organizeItemsByMedal(participant.getItems());
+
+        // Prepare data for the template
+        Map<String, Object> data = new HashMap<>();
+        data.put("participant", participant);
+        data.put("eventName", event.getEventName());
+        data.put("resultDate", participant.getResultDate() != null ? 
+            participant.getResultDate() : LocalDateTime.now());
+        data.put("goldItems", medalItems.get("gold"));
+        data.put("silverItems", medalItems.get("silver"));
+        data.put("bronzeItems", medalItems.get("bronze"));
+        data.put("participationItems", medalItems.get("participation"));
+
+        // Generate PDF
+        byte[] pdfBytes = pdfGenerationService.generatePdf("fragments/events/certificate_template", data);
+        
+
+        // Return PDF as response
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("filename", 
+            "certificate_" + participant.getMemberName() + ".pdf");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    private Map<String, List<String>> organizeItemsByMedal(Map<Integer, String> items) {
+        Map<String, List<String>> medalItems = new HashMap<>();
+        medalItems.put("gold", new ArrayList<>());
+        medalItems.put("silver", new ArrayList<>());
+        medalItems.put("bronze", new ArrayList<>());
+        medalItems.put("participation", new ArrayList<>());
+
+        if (items != null) {
+            for (Map.Entry<Integer, String> entry : items.entrySet()) {
+                String itemName = MemberEventDTO.KalariItem.fromId(entry.getKey()).getDisplayName();
+                switch (entry.getValue()) {
+                    case "A":
+                        medalItems.get("gold").add(itemName);
+                        break;
+                    case "B":
+                        medalItems.get("silver").add(itemName);
+                        break;
+                    case "C":
+                        medalItems.get("bronze").add(itemName);
+                        break;
+                    case "P":
+                    default:
+                        medalItems.get("participation").add(itemName);
+                        break;
+                }
+            }
+        }
+
+        return medalItems;
+    }
+
+
+	
+	
 
 	@GetMapping("/pending-result-approvals")
 	public String pendingResultApprovals(Model model) {

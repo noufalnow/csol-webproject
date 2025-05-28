@@ -12,9 +12,11 @@ import com.example.tenant_service.dto.users.CoreUserToggleDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
 import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
+import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.dto.DesignationDTO;
-
+import com.example.tenant_service.dto.NodeDTO;
 import com.example.tenant_service.service.MisDesignationService;
+import com.example.tenant_service.service.NodeService;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -38,11 +40,14 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 	
 	
     private final MisDesignationService designationService;
+    private final NodeService nodeService;
+    
 
     // Inject both services via constructor
-    public CoreUserHtmlController(CoreUserService coreUserService, MisDesignationService designationService) {
+    public CoreUserHtmlController(CoreUserService coreUserService, MisDesignationService designationService,NodeService nodeService) {
         super(coreUserService);
         this.designationService = designationService; // Properly assign the designationService
+        this.nodeService = nodeService;
     }
 
 
@@ -81,11 +86,16 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
     @GetMapping("/html/bynode/{id}")
     public String listUsersByNode(@PathVariable("id") Long nodeId, Model model, HttpServletRequest request) {
     	
-    	if(nodeId !=null) {
+    	/*if(nodeId !=null) {
 	        HttpSession session = request.getSession();
 	        session.setAttribute("ParentId", nodeId);
-    	}
+    	}*/
+    	NodeDTO node = nodeService.findById(nodeId);
+    	HttpSession session = request.getSession(false);
+    	Node.Type nodeType = node.getNodeType();
+    	Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
     	
+    	//Type mismatch: cannot convert from Object to Node.Type
     	
         List<CoreUser> users = service.listUsersByNode(nodeId);
         model.addAttribute("users", users);
@@ -111,6 +121,14 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
         model.addAttribute("user", service.findById(id));
         model.addAttribute("pageTitle", "User Detail - My Application");
         return "fragments/core_user_detail";
+    }
+    
+    
+    @GetMapping("/html/view/{id}")
+    public String viewUserBiewById(@PathVariable Long id, Model model) {
+        model.addAttribute("user", service.findById(id));
+        model.addAttribute("pageTitle", "User Detail - My Application");
+        return "fragments/profile/view";
     }
 
     @GetMapping("/html/add")

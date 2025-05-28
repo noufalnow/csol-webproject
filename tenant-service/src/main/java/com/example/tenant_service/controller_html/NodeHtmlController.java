@@ -63,7 +63,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 
         model.addAttribute("search", search);
         model.addAttribute("parentId", parentId);
-        model.addAttribute("pageTitle", "Node List - My Application");
+        model.addAttribute("pageTitle", " ");
         model.addAttribute("pageUrl", "/nodes/html");
         model.addAttribute("breadcrumbs", service.generateBreadcrumbs(parentId));
 
@@ -138,15 +138,14 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
     
 	@GetMapping("/html/tree")
 	public String showTreeView(Model model, HttpServletRequest request) {
-		List<Map<String, Object>> fullTree = service.getFullTree();
-		logInfo("Tree Data: {}", fullTree);
 		
  	    HttpSession session = request.getSession(false);
  	    model.addAttribute("parentId", (Long) session.getAttribute("ParentId"));
  	    
- 	    logInfo(">>>>>>>>: {}", session.getAttribute("ParentId"));
+ 	    model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
+ 	    model.addAttribute("nodeType",session.getAttribute("NODE_TYPE").toString().trim());
  	    
-		model.addAttribute("treeData", service.getFullTree());
+		model.addAttribute("treeData", service.getFullTreeWithActivePath((Long) session.getAttribute("ParentId")));
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/node_tree";
 	}

@@ -18,11 +18,15 @@ import org.hibernate.type.SqlTypes;
 public class MemberEvent extends BaseEntity {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "memvnt_id")
-    private Long id;
+    private Long meId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memvnt_member_id", nullable = false)
     private CoreUser member;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memvnt_member_node_id", nullable = false)
+    private Node memberNode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memvnt_event_id", nullable = false)

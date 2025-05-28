@@ -1,26 +1,26 @@
 <div th:fragment="menu">
-    <nav>
-        <ul>
-            <li><a th:href="@{/home}">Home</a></li>
-             <li><a class="ajax-link" th:href="@{/nodes/html}">Node</a></li>
-            <li><a class="ajax-link" th:href="@{/users/html}">Users</a></li>
-            <li><a class="ajax-link" th:href="@{/view/documents/html}">Agreements</a></li>
+	<nav>
+		<ul>
+			<li><a class="menu dropbtn" th:href="@{/home}">HOME</a></li>
+			<li><a class="ajax-link menu" th:href="@{/nodes/html/tree}">ORGANIZATION</a></li>
+			<li><a class="ajax-link menu" th:href="@{/nodes/html}">BRANCHES</a></li>
+			<li><a class="ajax-link menu" th:href="@{/events/html}">EVENTS</a></li>
+			<li><a class="ajax-link menu" th:href="@{/users/html}">MEMBERS</a></li>
+			<!--  li><a class="ajax-link" th:href="@{/view/documents/html}">Agreements</a></li>
             <li><a class="ajax-link" th:href="@{/collections/html}">Cash</a></li>
             <li><a th:href="@{/about}">About</a></li>
             <li><a th:href="@{/contact}">Contact</a></li>
-            <li><a th:href="@{/profile}">Profile</a></li>
-            <li><a th:href="@{/settings}">Settings</a></li>
-            
-            <!-- Reports Dropdown -->
-            <li class="dropdown">
-                <a href="javascript:void(0)" class="dropbtn">Reports</a>
-                <div class="dropdown-content">
-                    <a class="ajax-link" th:href="@{/collections/html/report}">Collection Report</a>
+            <li><a th:href="@{/profile}">Profile</a></li>-->
+			<li><a class="ajax-link menu" th:href="@{/settings}">SETTINGS</a></li>
+
+			<!-- Reports Dropdown -->
+			<li class="dropdown"><a href="javascript:void(0)">REPORTS</a>
+				<div class="dropdown-content">
+					<!--<a class="ajax-link" th:href="@{/collections/html/report}">Collection Report</a>
                     <a class="ajax-link" th:href="@{/collections/html/payments}">Customer Payments</a>
-                    <a class="ajax-link" th:href="@{/collections/html/property}">Properties</a>
-                </div>
-            </li>
-        </ul>
-    </nav>
+                    <a class="ajax-link" th:href="@{/collections/html/property}">Properties</a>-->
+				</div></li>
+		</ul>
+	</nav>
 </div>
 

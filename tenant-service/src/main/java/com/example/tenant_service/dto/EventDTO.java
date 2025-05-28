@@ -61,6 +61,7 @@ public class EventDTO extends BaseDTO {
                eventPeriodEnd.isAfter(eventPeriodStart) || 
                eventPeriodEnd.isEqual(eventPeriodStart);
     }
+
     
     
     
