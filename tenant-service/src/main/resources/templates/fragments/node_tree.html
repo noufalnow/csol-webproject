@@ -165,7 +165,7 @@ ul.collapsed {
 
 <div class="container mt-1 mb-3">
 	<div class="d-flex justify-content-end align-items-center gap-3">
-
+<input type="hidden" id="tempSelectedId" name="tempSelectedId" th:value="${parentId}" />
 		<!-- show for anyone whose userType is not KALARI -->
 		<div class="form-check form-check-inline"
 			th:if="${nodeType} != 'KALARI'">
@@ -174,24 +174,25 @@ ul.collapsed {
 				class="form-check-label" for="option1">Branches</label>
 		</div>
 
-		<div class="form-check form-check-inline">
+		<div class="form-check form-check-inline"
+			th:onclick="|loadContent('/users/html/bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()|">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option2" value="officials"> <label
+				id="option2" value="officials" checked> <label
 				class="form-check-label" for="option2">Officials</label>
 		</div>
 
 		<!-- show (and pre-check) only when userType equals KALARI -->
 		<div class="form-check form-check-inline"
-			th:if="${nodeType} == 'KALARI'"
-			th:onclick="|loadContent('/users/html/bynode', '#users_target'); clearTreeForm()|">
+			/*th:if="${nodeType} == 'KALARI'"*/
+			th:onclick="|loadContent('/users/html/bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()|">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option3" value="members" checked> <label
+				id="option3" value="members" > <label
 				class="form-check-label" for="option3">Members</label>
 		</div>
 		<div class="form-check form-check-inline"
-			onclick="loadContent('/events/html/byhost', '#users_target');clearTreeForm()">
+		     onclick="loadContent('/events/html/byhost/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option4" value="option3"> <label
+				id="option4" value="events"> <label
 				class="form-check-label" for="option4">Events</label>
 		</div>
 
@@ -224,8 +225,8 @@ ul.collapsed {
 				<th:block th:if="${node != null}">
 					<div
 						th:class="'tree-node ' + ${node.nodeType}
-             + (${node.nodeId==parentId} ? ' active' : '')
-             + (${node.isActivePath} ? ' in-active-path' : '')"
+			             + (${node.nodeId==parentId} ? ' active' : '')
+			             + (${node.isActivePath} ? ' in-active-path' : '')"
 						th:data-node-id="${node.nodeId}"
 						th:onclick="|onTreeNodeClick(event, this);|">
 
@@ -277,7 +278,24 @@ function onTreeNodeClick(event, nodeEl) {
 
   // 3) load content into your target
   const id = nodeEl.getAttribute('data-node-id');
-  loadContent(`/users/html/bynode/${id}`, '#users_target');
+  //loadContent(`/users/html/bynode/${id}`, '#users_target');
+  //loadContent('/events/html/byhost', '#users_target');
+  
+  const selectedValue = document.querySelector('input[name="choice"]:checked')?.value;
+  
+  $('#tempSelectedId').val(id);
+
+  if (selectedValue === 'events') {
+    loadContent(`/events/html/byhost/${id}`, '#users_target');
+  } 
+  else if (selectedValue === 'officials') {
+	loadContent(`/users/html/bynodeoff/${id}`, '#users_target');
+  }
+  else {
+    loadContent(`/users/html/bynode/${id}`, '#users_target');
+  }
+
+  
 
   // 4) clear the form
   clearTreeForm();
@@ -360,7 +378,7 @@ function toggleTreeNode(event, nodeElement) {
 	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
 	}
   
-  loadContent('/users/html/bynode', '#users_target');
+  loadContent('/users/html/bynodeoff', '#users_target');
   
 </script>
 

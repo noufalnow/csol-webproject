@@ -84,7 +84,6 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
 		// HttpSession session = request.getSession();
 		if (nodeId != null) {
-
 			session.setAttribute("ParentId", nodeId); // for data entry
 		} else {
 			nodeId = (Long) session.getAttribute("NODE_ID");
@@ -95,16 +94,47 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		Node.Type nodeType = (Node.Type) node.getNodeType();
 		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
 		
+		if (userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) {
+			model.addAttribute("allowAddMember", true);
+		}  
 		
-		logInfo("Request Parameters - Node Type: {}, User Node Type: {}", nodeType.getLevel(), userNodeType.getLevel());
+		if (nodeType == Node.Type.KALARI) {
+			model.addAttribute("showMemberPanel", true);
+		}
+		model.addAttribute("pageTitle", "Members");
+		
 
-		if (nodeType.getLevel() > userNodeType.getLevel()) {
-			model.addAttribute("allowAddMember", true);
-		} else if (userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) {
-			model.addAttribute("allowAddMember", true);
+		List<CoreUser> users = service.listUsersByNodeAndType(nodeId,UserType.MEMBER);
+		model.addAttribute("users", users);
+		model.addAttribute("target", "users_target");
+		return "fragments/node_users";
+	}
+	
+	
+	@GetMapping({ "/html/bynodeoff", "/html/bynodeoff/{id}" }) // Supports both patterns
+	public String listUsersByNodeOfficial(@PathVariable(value = "id", required = false) Long nodeId, HttpSession session,
+			Model model) {
+
+		// HttpSession session = request.getSession();
+		if (nodeId != null) {
+			session.setAttribute("ParentId", nodeId); // for data entry
+		} else {
+			nodeId = (Long) session.getAttribute("NODE_ID");
 		}
 
-		List<CoreUser> users = service.listUsersByNode(nodeId);
+		NodeDTO node = nodeService.findById(nodeId);
+
+		Node.Type nodeType = (Node.Type) node.getNodeType();
+		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
+		
+		if (nodeType.getLevel() > userNodeType.getLevel() && (userNodeType != Node.Type.KALARI)) {
+			model.addAttribute("allowAddMember", true); /* official*/
+		} 
+		model.addAttribute("showMemberPanel", true);
+		
+		model.addAttribute("pageTitle", "Officials");
+
+		List<CoreUser> users = service.listUsersByNodeAndType(nodeId,UserType.OFFICIAL);
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
 		return "fragments/node_users";

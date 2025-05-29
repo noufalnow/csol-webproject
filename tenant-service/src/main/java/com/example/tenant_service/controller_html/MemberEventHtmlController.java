@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,12 +38,14 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 	
 	private final EventService eventService;
 	private final PdfGenerationService pdfGenerationService;
+	private final NodeService nodeService;
 	
 
-	public MemberEventHtmlController(MemberEventService memberEventService , EventService eventService, PdfGenerationService pdfGenerationService) {
+	public MemberEventHtmlController(MemberEventService memberEventService , EventService eventService, PdfGenerationService pdfGenerationService,NodeService nodeService) {
 		super(memberEventService);
 		this.eventService = eventService;
 		this.pdfGenerationService = pdfGenerationService;
+		this.nodeService = nodeService;
 	
 	}
 
@@ -217,8 +220,9 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
     @GetMapping("/html/certificate/{meId}")
     public ResponseEntity<byte[]> generateCertificate(@PathVariable Long meId) throws Exception {
         MemberEventDTO participant = service.findById(meId);
-
         EventDTO event = eventService.findById(participant.getEventId());
+        
+        NodeDTO node = nodeService.findNodeById(event.getEventHostId());
         
         // Organize items by medal type
         Map<String, List<String>> medalItems = organizeItemsByMedal(participant.getItems());
@@ -227,6 +231,7 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
         Map<String, Object> data = new HashMap<>();
         data.put("participant", participant);
         data.put("eventName", event.getEventName());
+        data.put("hostName", node.getNodeName());
         data.put("resultDate", participant.getResultDate() != null ? 
             participant.getResultDate() : LocalDateTime.now());
         data.put("goldItems", medalItems.get("gold"));
@@ -234,10 +239,9 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
         data.put("bronzeItems", medalItems.get("bronze"));
         data.put("participationItems", medalItems.get("participation"));
 
-        // Generate PDF
-        byte[] pdfBytes = pdfGenerationService.generatePdf("fragments/events/certificate_template", data);
+        // Generate PDF using the correct method name
+        byte[] pdfBytes = pdfGenerationService.generateMultiPageCertificate(data);
         
-
         // Return PDF as response
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -246,6 +250,28 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+    
+    
+    @GetMapping("/html/certificate2/{meId}")
+    public String previewCertificate(@PathVariable Long meId, Model model) throws Exception {
+        MemberEventDTO participant = service.findById(meId);
+        EventDTO event = eventService.findById(participant.getEventId());
+        NodeDTO node = nodeService.findNodeById(event.getEventHostId());
+        
+        Map<String, List<String>> medalItems = organizeItemsByMedal(participant.getItems());
+
+        model.addAttribute("participant", participant);
+        model.addAttribute("eventName", event.getEventName());
+        model.addAttribute("hostName", node.getNodeName());
+        model.addAttribute("resultDate", participant.getResultDate() != null ? 
+            participant.getResultDate() : LocalDateTime.now());
+        model.addAttribute("goldItems", medalItems.get("gold"));
+        model.addAttribute("silverItems", medalItems.get("silver"));
+        model.addAttribute("bronzeItems", medalItems.get("bronze"));
+        model.addAttribute("participationItems", medalItems.get("participation"));
+
+        return "fragments/events/certificate-multi"; // Returns the Thymeleaf template as HTML
     }
 
     private Map<String, List<String>> organizeItemsByMedal(Map<Integer, String> items) {

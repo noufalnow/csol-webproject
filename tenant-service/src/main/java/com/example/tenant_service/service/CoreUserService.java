@@ -7,6 +7,7 @@ import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
 import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
+import com.example.tenant_service.entity.CoreUser.UserType;
 import com.example.tenant_service.entity.MisDesignation;
 import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.mapper.CoreUserMapper;
@@ -183,5 +184,9 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     
     public List<CoreUser> listUsersByNode(Long nodeId) {
         return coreUserRepository.findByUserNodeIdAndNotDeleted(nodeId);
+    }
+    
+    public List<CoreUser> listUsersByNodeAndType(Long nodeId, UserType userType) {
+        return coreUserRepository.findByUserNodeIdAndTypeAndNotDeleted(nodeId, userType);
     }
 }

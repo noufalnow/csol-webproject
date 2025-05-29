@@ -3,6 +3,7 @@ package com.example.tenant_service.service;
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.NodeDTO;
+import com.example.tenant_service.dto.TenantDTO;
 import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.mapper.NodeMapper;
 import com.example.tenant_service.repository.NodeRepository;
@@ -85,6 +86,14 @@ public class NodeService implements BaseService<NodeDTO> {
     @Transactional // Keep this for write operations
     public NodeDTO findById(Long nodeId) {
         return nodeRepository.findByIdWithChildren(nodeId)
+                .map(nodeMapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Node", nodeId));
+    }
+    
+    
+    
+    public NodeDTO findNodeById(Long nodeId) {
+        return nodeRepository.findByIdAndNotDeleted(nodeId)
                 .map(nodeMapper::toDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Node", nodeId));
     }

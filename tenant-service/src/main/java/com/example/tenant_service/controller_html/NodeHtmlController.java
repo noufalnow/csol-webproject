@@ -145,7 +145,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
  	    model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
  	    model.addAttribute("nodeType",session.getAttribute("NODE_TYPE").toString().trim());
  	    
-		model.addAttribute("treeData", service.getFullTreeWithActivePath((Long) session.getAttribute("ParentId")));
+		model.addAttribute("treeData", service.getFullTreeWithActivePath((Long) session.getAttribute("NODE_ID")));
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/node_tree";
 	}

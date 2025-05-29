@@ -41,5 +41,7 @@ public class AuthenticationSuccessListener {
         session.setAttribute("USER_ID", userDto.getUserId());
         session.setAttribute("NODE_TYPE", node.getNodeType());
         session.setAttribute("USER_TYPE", userDto.getUserType());
+        session.setAttribute("USER_NAME", userDto.getUserFname()+ ' '+ userDto.getUserLname());
+        session.setAttribute("NODE_NAME", node.getNodeName());
     }
 }

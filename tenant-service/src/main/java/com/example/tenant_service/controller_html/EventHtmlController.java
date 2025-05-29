@@ -11,6 +11,7 @@ import com.example.tenant_service.dto.EventDTO;
 import com.example.tenant_service.dto.MemberEventDTO;
 import com.example.tenant_service.dto.NodeDTO;
 import com.example.tenant_service.entity.Event;
+import com.example.tenant_service.entity.Node;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -67,19 +68,37 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
         return "fragments/event_list";
     }
 
-    @GetMapping("/html/byhost")
-    public String listEventsByHost(Model model, HttpServletRequest request) {
+    //@GetMapping("/html/byhost")
+    //public String listEventsByHost(Model model, HttpServletRequest request) {
+    
+	@GetMapping({ "/html/byhost", "/html/byhost/{id}" }) // Supports both patterns
+	public String listEventsByHost(@PathVariable(value = "id", required = false) Long parentId, HttpSession session,
+			Model model) {
     	
- 	   HttpSession session = request.getSession(false);
-	    Long parentId = null;
-	    if (session != null) {
-	        Object attr = session.getAttribute("ParentId");
-	        if (attr instanceof Long) {
-	            parentId = (Long) attr;
-	        } else if (attr instanceof String) {
-	            parentId = Long.valueOf((String) attr);
-	        }
-	    }
+
+		if (parentId != null) {
+			session.setAttribute("ParentId", parentId); // for data entry
+		} else {
+			parentId = (Long) session.getAttribute("NODE_ID");
+		}
+	    
+		NodeDTO node = nodeService.findById(parentId);
+
+		Node.Type nodeType = (Node.Type) node.getNodeType();
+		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
+		
+		
+		logInfo("Request Parameters - Node Type: {}, User Node Type: {},Selected Node: {}", nodeType.getLevel(), userNodeType.getLevel(),parentId);
+
+		if (nodeType.getLevel() > userNodeType.getLevel()) {
+			model.addAttribute("allowAddEvent", true);
+		} else if (userNodeType == nodeType) {
+			model.addAttribute("allowAddEvent", true);
+		}
+		
+	    
+	    
+	    
 
         List<EventDTO> events = service.findByHostNode(parentId);
         model.addAttribute("events", events);

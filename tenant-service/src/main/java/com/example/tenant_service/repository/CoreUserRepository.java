@@ -2,6 +2,7 @@ package com.example.tenant_service.repository;
 
 import com.example.tenant_service.common.BaseRepository;
 import com.example.tenant_service.entity.CoreUser;
+import com.example.tenant_service.entity.CoreUser.UserType;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,9 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     
     @Query("SELECT u FROM CoreUser u WHERE u.userNode.id = :nodeId AND u.deleted = false")
     List<CoreUser> findByUserNodeIdAndNotDeleted(@Param("nodeId") Long nodeId);
+    
+    @Query("SELECT u FROM CoreUser u WHERE u.userNode.id = :nodeId AND u.userType = :userType AND u.deleted = false")
+    List<CoreUser> findByUserNodeIdAndTypeAndNotDeleted(@Param("nodeId") Long nodeId, @Param("userType") UserType userType);
     
 
     Optional<CoreUser> findByUserEmail(String userEmail);

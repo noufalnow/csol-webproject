@@ -2,10 +2,15 @@
 <div th:fragment="content">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">Events</h4>
-        <a class="btn btn-primary ajax-link" href="javascript:void(0);" 
+                
+        <a th:if="${allowAddEvent}" 
+		   class="btn btn-primary ajax-link" 
+		   href="javascript:void(0);" 
            onclick="loadContent('/events/html/addevent', 'modal')">
-            <i class="fas fa-plus me-1"></i> Add New Event
-        </a>
+		    <i class="fas fa-plus me-1"></i> Add New Event
+		</a>
+        
+        
     </div>
 
     <div class="table-responsive">

@@ -55,7 +55,9 @@ public class HomeController {
 		model.addAttribute("pageTitle", "Home - My Application");
 		model.addAttribute("nodeType", session.getAttribute("NODE_TYPE"));
 		model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
-
+		
+		model.addAttribute("nodeName", session.getAttribute("NODE_NAME"));
+		model.addAttribute("userName",session.getAttribute("USER_NAME"));
 
 		if (session.getAttribute("USER_TYPE") != null
 				&& "MEMBER".equals(session.getAttribute("USER_TYPE").toString().trim())) {

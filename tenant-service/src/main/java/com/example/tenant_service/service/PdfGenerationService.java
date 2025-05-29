@@ -22,20 +22,15 @@ public class PdfGenerationService {
         this.resourceLoader = resourceLoader;
     }
 
-    public byte[] generatePdf(String templateName, Map<String, Object> data) throws Exception {
+    public byte[] generateMultiPageCertificate(Map<String, Object> data) throws Exception {
         Context context = new Context();
         context.setVariables(data);
-        
-        // Add base URL for resource resolution
         String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
         
-        // Process template
-        String htmlContent = templateEngine.process(templateName, context);
-
-        // Configure PDF renderer
-        ITextRenderer renderer = new ITextRenderer();
+        // Process template with page breaks
+        String htmlContent = templateEngine.process("fragments/events/certificate-multi", context);
         
-        // For image resolution from classpath
+        ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext().setBaseURL(baseUrl);
         
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

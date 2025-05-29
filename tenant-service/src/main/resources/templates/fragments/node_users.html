@@ -1,13 +1,13 @@
 <!-- fragments/node_users.html -->
-<div th:fragment="content">
+<div th:fragment="content"   th:if="${showMemberPanel}" >
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Members</h4>
+        <h4 class="mb-0" th:text="${pageTitle}">Members</h4>
         
 		<a th:if="${allowAddMember}" 
 		   class="btn btn-primary ajax-link" 
 		   href="javascript:void(0);" 
 		   onclick="loadContent('/users/html/addmember', 'modal')">
-		    <i class="fas fa-plus me-1"></i> Add New Members
+		    <i class="fas fa-plus me-1"></i> <span th:text="${pageTitle}"></span>
 		</a>
         
     </div>

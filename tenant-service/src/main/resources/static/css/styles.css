@@ -122,9 +122,9 @@ nav a:hover {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     flex: 1;
-    max-width: 1200px;
+    /*max-width: 1200px;*/
     margin: 2rem auto;
-    width: 95%;
+    width: 98%;
 }
 
 /* ===== Card Styles ===== */
@@ -402,4 +402,54 @@ footer {
 
 a {
     text-decoration: auto;
+}
+
+
+/* Custom navbar styling */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-family: 'Courgette', cursive;
+    font-size: 1.5rem;
+}
+
+/* Dropdown menu enhancements */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dropdown-item:focus, .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+/* Active menu item styling */
+.nav-link.active {
+    font-weight: 600;
+    border-bottom: 2px solid white;
+}
+
+/* Mobile menu adjustments */
+@media (max-width: 992px) {
+    .navbar-collapse {
+        padding: 1rem;
+        background-color: #0d6efd;
+    }
+    
+    .dropdown-menu {
+        background-color: rgba(255,255,255,0.1);
+        border: none;
+    }
+    
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .dropdown-item:hover {
+        color: white;
+        background-color: transparent;
+    }
 }
