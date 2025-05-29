@@ -92,7 +92,7 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 
 		if (nodeType.getLevel() > userNodeType.getLevel()) {
 			model.addAttribute("allowAddEvent", true);
-		} else if (userNodeType == nodeType) {
+		} else if (userNodeType == nodeType && (node.getNodeId() == session.getAttribute("NODE_ID"))) {
 			model.addAttribute("allowAddEvent", true);
 		}
 		

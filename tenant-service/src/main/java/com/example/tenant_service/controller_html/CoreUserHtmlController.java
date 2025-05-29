@@ -94,7 +94,10 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		Node.Type nodeType = (Node.Type) node.getNodeType();
 		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
 		
-		if (userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) {
+		logInfo("My Node ID: {}", session.getAttribute("NODE_ID"));
+		logInfo("Selected Node ID: {}", node.getNodeId());
+		
+		if ((userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) && (node.getNodeId() == session.getAttribute("NODE_ID"))) {
 			model.addAttribute("allowAddMember", true);
 		}  
 		

@@ -84,32 +84,31 @@ $(document).ready(function() {
 				} else if (response.status === 'success') {
 					$('#dynamicModal').modal('hide');
 					$('#nestedModal').modal('hide');
-					$('<div>' + response.message + '</div>').dialog({
-						title: 'Success',
-						modal: true,
-						buttons: {
-							Ok: function() {
-								$(this).dialog('close');
-								if (response.loadnext) {
+					Swal.fire({
+					    title: 'Success',
+					    html: response.message,
+					    icon: 'success',
+					    confirmButtonText: 'Ok',
+					    allowOutsideClick: false
+					}).then((result) => {
+					    if (result.isConfirmed) {
+					        if (response.loadnext) {
 
-									if (response.loadnext == 'reload') {
-										window.location.reload();
-										return;
-									}
+					            if (response.loadnext === 'reload') {
+					                window.location.reload();
+					                return;
+					            }
 
-									else if (response.target == 'modal') {
-										loadContent(response.loadnext, response.target);
-									}
-
-									else {
-
-										loadContent(response.loadnext, ('#' + (response.target || 'content')));
-										form.parent().html('');
-									}
-								}
-							}
-						}
+					            if (response.target === 'modal') {
+					                loadContent(response.loadnext, response.target);
+					            } else {
+					                loadContent(response.loadnext, '#' + (response.target || 'content'));
+					                form.parent().html('');
+					            }
+					        }
+					    }
 					});
+
 				}
 			},
 			error: function(xhr, status, error) {
@@ -273,31 +272,31 @@ function loadContent(url, targetSelector) {
 
 			if (data.status === 'success') {
 				$('#dynamicModal').modal('hide');
-				$('<div>' + data.message + '</div>').dialog({
-					title: 'Success',
-					modal: true,
-					buttons: {
-						Ok: function() {
-							$(this).dialog('close');
-							if (data.loadnext) {
+				Swal.fire({
+				    title: 'Success',
+				    html: data.message,
+				    icon: 'success',
+				    confirmButtonText: 'Ok',
+				    allowOutsideClick: false
+				}).then((result) => {
+				    if (result.isConfirmed) {
+				        if (data.loadnext) {
 
-								if (data.loadnext == 'reload') {
-									window.location.reload();
-									return;
-								}
-								else if (data.target == 'modal') {
-									loadContent(data.loadnext, data.target);
-								}
+				            if (data.loadnext === 'reload') {
+				                window.location.reload();
+				                return;
+				            }
 
-								else {
-
-									loadContent(data.loadnext, ('#' + (data.target || 'content')));
-									form.parent().html('');
-								}
-							}
-						}
-					}
+				            if (data.target === 'modal') {
+				                loadContent(data.loadnext, data.target);
+				            } else {
+				                loadContent(data.loadnext, '#' + (data.target || 'content'));
+				                form.parent().html('');
+				            }
+				        }
+				    }
 				});
+
 			}
 
 
