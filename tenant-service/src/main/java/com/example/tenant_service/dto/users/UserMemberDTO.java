@@ -45,6 +45,8 @@ public class UserMemberDTO extends BaseDTO {
     private String designationName; 
     
     private Long userNode;
+    
+    private String userUname;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")

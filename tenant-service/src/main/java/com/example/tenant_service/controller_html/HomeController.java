@@ -50,7 +50,11 @@ public class HomeController {
 		long userId = (Long) session.getAttribute("USER_ID");
 
 		List<Object[]> eventList = eventService.findByHostNodeHierarchy(parentId, userId);
-
+		
+		List<Object[]> resultList = eventService.getMemberEventsWithFilters(
+	              null, null, userId, null, null, true);
+		
+		model.addAttribute("resultList", resultList);
 		model.addAttribute("eventList", eventList);
 		model.addAttribute("pageTitle", "Home - My Application");
 		model.addAttribute("nodeType", session.getAttribute("NODE_TYPE"));

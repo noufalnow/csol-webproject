@@ -240,6 +240,7 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 				.forEach(name -> System.out.println(name + " = " + session.getAttribute(name)));*/
 
 		userMemberDTO.setUserPassword("123456");
+		userMemberDTO.setUserUname("uname");
 
 		Map<String, Object> additionalData = new HashMap<>();
 		additionalData.put("loadnext", "users/html/bynode/" + parentId);
