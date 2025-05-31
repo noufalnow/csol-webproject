@@ -97,6 +97,14 @@ public class MemberEventService implements BaseService<MemberEventDTO> {
                 .map(memberEventMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    
+    @Transactional(readOnly = true)
+    public MemberEventDTO findByEventAndMember(Long eventId, Long memberId) {
+        return memberEventRepository.findByEventByEventAndMemberId(eventId, memberId)
+                .map(memberEventMapper::toDTO)
+                .orElseThrow(() -> new EntityNotFoundException("MemberEvent not found with eventId: " + eventId + " and memberId: " + memberId));
+    }
+
 
     @Transactional
     public MemberEventDTO approveApplication(Long id, Long approvedByUserId) {

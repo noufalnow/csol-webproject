@@ -159,7 +159,7 @@ public class EventService implements BaseService<EventDTO> {
 	 * !eventRepository.existsByEventNameAndDeletedFalse(eventName); }
 	 */
 
-	public List<Object[]> getMemberEventsWithFilters(Long approvedBy, Long eventId, Long memberId, Long memberNodeId,
+	public List<Object[]> getMemberEventsWithFilters(Long itemId, Long eventId, Long memberId, Long memberNodeId,
 			Long nodeId, Boolean approvedDatePresent) {
 		StringBuilder queryBuilder = new StringBuilder("""
 				    SELECT
@@ -185,6 +185,7 @@ public class EventService implements BaseService<EventDTO> {
 				        WHEN 10 THEN 'KAIPPORU/UNARMED COMBAT (Seniors only)'
 				        ELSE 'UNKNOWN'
 				      END as item_name,
+				      kv.value as item_result,
 				      CASE kv.value
 				        WHEN 'A' THEN 'Gold'
 				        WHEN 'B' THEN 'Silver'
@@ -206,8 +207,8 @@ public class EventService implements BaseService<EventDTO> {
 				""");
 
 		// Add dynamic conditions
-		if (approvedBy != null) {
-			queryBuilder.append(" AND me.memvnt_approved_by = :approvedBy");
+		if (itemId != null) {  // New condition for item
+		    queryBuilder.append(" AND kv.key::int = :itemId");
 		}
 		if (eventId != null) {
 			queryBuilder.append(" AND me.memvnt_event_id = :eventId");
@@ -231,8 +232,8 @@ public class EventService implements BaseService<EventDTO> {
 		Query query = entityManager.createNativeQuery(queryBuilder.toString(), Tuple.class);
 
 		// Set parameters
-		if (approvedBy != null)
-			query.setParameter("approvedBy", approvedBy);
+		if (itemId != null) 
+			query.setParameter("itemId", itemId);
 		if (eventId != null)
 			query.setParameter("eventId", eventId);
 		if (memberId != null)

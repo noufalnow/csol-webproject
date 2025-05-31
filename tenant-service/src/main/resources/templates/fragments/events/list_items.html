@@ -1,0 +1,67 @@
+<!-- fragments/add_node.html -->
+<div th:fragment="content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Select Event Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+        <form th:action="@{/events/html/selectitems}" method="post" id="kalariItemForm">
+            <input type="hidden" name="eventId" th:value="${eventId}">
+
+            <div class="form-group">
+                <div class="row">
+					<div th:each="item, iterStat : ${T(com.example.tenant_service.dto.MemberEventDTO.KalariItem).values()}"
+					     class="col-md-6 mb-2">
+						<div class="form-check border rounded p-3 h-100 bg-light hover-shadow">
+<input th:id="${'item_' + item.id}" 
+       class="form-check-input" 
+       type="radio" 
+       th:name="selectedItemId" 
+       th:value="${item.id}" 
+       required 
+       th:onclick="'loadContent(\'/events/html/selectitems?eventId=' + ${eventId} + '&selectedItemId=' + ${item.id} + '\', \'modal\')'">
+<label th:for="${'item_' + item.id}" 
+						           class="form-check-label fw-bold"
+						           th:text="${item.displayName}"></label>
+						</div>
+
+					</div>
+
+                </div>
+            </div>
+
+            <div id="error-messages" class="text-danger"></div>
+        </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+</div>
+
+<style>
+form {
+	max-width: 100%;
+}
+
+.modal-dialog {
+    max-width: 90%;  /* Responsive width */
+    margin: 0.75rem auto;
+}
+
+form label {
+    margin-bottom: 0px;
+    }
+    
+    .hover-shadow:hover {
+    background-color: lightgreen !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.hover-shadow, .form-check, .form-check-label{
+    cursor: pointer;
+    }
+</style>

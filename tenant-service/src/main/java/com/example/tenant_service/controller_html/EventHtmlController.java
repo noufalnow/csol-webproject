@@ -14,6 +14,7 @@ import com.example.tenant_service.entity.Event;
 import com.example.tenant_service.entity.Node;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,6 +202,106 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 
         return "fragments/events/list_participants";
     }
+    
+    @GetMapping("/html/listitems")
+    public String listItems(@RequestParam(name = "eventId", required = false) Long eventId,Model model) {
+
+
+        List<MemberEventDTO> memberEeventDTO =memberEventService.findByEvent(eventId);
+    	
+        model.addAttribute("partList", memberEeventDTO);
+        model.addAttribute("pageTitle", "Event Items");
+        model.addAttribute("eventId", eventId);
+        
+
+        return "fragments/events/list_items";
+    }
+    
+    
+
+    @GetMapping("/html/selectitems")
+    public String selectItems(
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("selectedItemId") Long selectedItemId,
+            HttpServletRequest request,
+            Model model) {
+
+        // Fetch filtered event member list
+        List<Object[]> resultList = service.getMemberEventsWithFilters(
+        		selectedItemId, eventId, null, null, null, null);
+
+        // Populate model attributes for rendering
+        model.addAttribute("resultList", resultList);
+        model.addAttribute("eventId", eventId);
+        model.addAttribute("selectedItemId", selectedItemId);
+
+        return "fragments/events/list_items_members";
+    }
+    
+    
+    @PostMapping("/html/save_scores")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveScores(
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("itemId") Integer selectedItemId,
+            @RequestParam Map<String, String> allParams,
+            HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        Long resultEntryBy = session != null ? (Long) session.getAttribute("USER_ID") : null;
+
+        Map<String, Object> additionalData = new HashMap<>();
+
+        try {
+            // Loop through all "scores[memberId]" entries
+            for (Map.Entry<String, String> entry : allParams.entrySet()) {
+                String key = entry.getKey();
+
+                if (key.startsWith("scores[")) {
+                    try {
+                        // Extract the memberEventId from key "scores[60]"
+                        String memberEventIdStr = key.substring("scores[".length(), key.length() - 1);
+                        Long memberEventId = Long.parseLong(memberEventIdStr);
+                        String scoreValue = entry.getValue(); // e.g., "A"
+
+                        // Fetch MemberEventDTO by memberEventId (more efficient than eventId+memberId)
+                        MemberEventDTO memberEvent = (MemberEventDTO) memberEventService.findByEventAndMember(eventId, memberEventId);
+                        if (memberEvent != null) {
+                            // Set or update the score for selectedItemId
+                            Map<Integer, String> items = memberEvent.getItems();
+                            if (items == null) {
+                                items = new HashMap<>();
+                                memberEvent.setItems(items);
+                            }
+                            // Changed to String key to match your previous implementation
+                            items.put(selectedItemId, scoreValue);
+                            
+                            memberEvent.setResultDate(LocalDateTime.now());
+                            memberEvent.setResultEntryBy(resultEntryBy);
+
+                            // Save updated data
+                            memberEventService.save(memberEvent);
+                        }
+                    } catch (NumberFormatException e) {
+                        // Handle invalid memberEventId format
+                        return ResponseEntity.badRequest()
+                                .body(Map.of("error", "Invalid member ID format in parameter: " + key));
+                    }
+                }
+            }
+
+            return ResponseEntity.ok()
+                    .body(Map.of("status", "success", 
+                                "message", "Scores updated successfully",
+                                "additionalData", additionalData));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Error saving scores: " + e.getMessage()));
+        }
+    }
+
+
+
     
 
     @PostMapping("/html/cancel/{id}")

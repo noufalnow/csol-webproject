@@ -28,8 +28,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -193,28 +195,50 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
         HttpSession session = request.getSession(false);
         Long resultEntryBy = session != null ? (Long) session.getAttribute("userId") : null;
 
-        // Prepare additional data for the response
         Map<String, Object> additionalData = new HashMap<>();
-
 
         try {
             MemberEventDTO existing = service.findById(meId);
             if (existing != null) {
-                // Update items with scores
-                existing.setItems(participantUpdate.getItems());
-                existing.setResultDate(LocalDateTime.now());
+                Map<Integer, String> existingItems = existing.getItems();
+                if (existingItems == null) {
+                    existingItems = new HashMap<>();
+                }
+
+                Map<Integer, String> newItems = participantUpdate.getItems();
+                if (newItems != null && !newItems.isEmpty()) {
+                    // Snapshot of keys before update
+                    Set<Integer> previousKeys = new HashSet<>(existingItems.keySet());
+
+                    // Apply new values (update or insert)
+                    for (Map.Entry<Integer, String> entry : newItems.entrySet()) {
+                        existingItems.put(entry.getKey(), entry.getValue());
+                    }
+
+                    // Set missing keys (not in new submission) to "P"
+                    for (Integer key : previousKeys) {
+                        if (!newItems.containsKey(key)) {
+                            existingItems.put(key, "P");
+                        }
+                    }
+
+                    existing.setResultDate(LocalDateTime.now());
+                }
+
+                existing.setItems(existingItems);
                 existing.setResultEntryBy(resultEntryBy);
-                //service.save(existing);
             }
-            
-            additionalData.put("loadnext", "/events/html/listparticipants?eventId="+existing.getEventId());
+
+            additionalData.put("loadnext", "/events/html/listparticipants?eventId=" + existing.getEventId());
             additionalData.put("target", "modal");
 
-            return handleRequest(result, () ->service.save(existing), "Scores saved successfully", additionalData);
+            return handleRequest(result, () -> service.save(existing), "Scores saved successfully", additionalData);
         } catch (Exception e) {
             return handleRequest(result, null, "Error saving scores: " + e.getMessage(), additionalData);
         }
+
     }
+
     
     
     @GetMapping("/html/certificate/{meId}")

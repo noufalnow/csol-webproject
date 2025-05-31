@@ -30,19 +30,19 @@ $(document).ready(function() {
 
 	// Handle AJAX link clicks
 	$(document).on('click', '.ajax-link', function(event) {
-	    event.preventDefault();
-	    
-	    // Remove 'dropbtn' class from all other menu items first
-	    $('.menu.dropbtn').removeClass('dropbtn');
-	    
-	    // Check if clicked element is a menu item
-	    var $clickedLink = $(this);
-	    if ($clickedLink.hasClass('menu')) {
-	        $clickedLink.addClass('dropbtn'); // Add only to current clicked menu
-	    }
-	    
-	    // Proceed with AJAX load
-	    loadContent($clickedLink.attr('href'), '#content');
+		event.preventDefault();
+
+		// Remove 'dropbtn' class from all other menu items first
+		$('.menu.dropbtn').removeClass('dropbtn');
+
+		// Check if clicked element is a menu item
+		var $clickedLink = $(this);
+		if ($clickedLink.hasClass('menu')) {
+			$clickedLink.addClass('dropbtn'); // Add only to current clicked menu
+		}
+
+		// Proceed with AJAX load
+		loadContent($clickedLink.attr('href'), '#content');
 	});
 	// Form submission with AJAX
 	window.submitHtmlForm = function(formId) {
@@ -81,32 +81,42 @@ $(document).ready(function() {
 			success: function(response) {
 				if (response.status === 'error') {
 					handleFormErrors(response);
-				} else if (response.status === 'success') {
+				}
+
+				/*else if (!empty(response.proceed)) { // not used > to implement
+
+					loadContent(response.loadnext, '#' + (response.target || 'content'));
+
+				}*/
+
+
+
+				else if (response.status === 'success') {
 					$('#dynamicModal').modal('hide');
 					$('#nestedModal').modal('hide');
 					Swal.fire({
-					    title: 'Success',
-					    html: response.message,
-					    icon: 'success',
-					    confirmButtonText: 'Ok',
-					    allowOutsideClick: false
+						title: 'Success',
+						html: response.message,
+						icon: 'success',
+						confirmButtonText: 'Ok',
+						allowOutsideClick: false
 					}).then((result) => {
-					    if (result.isConfirmed) {
-					        if (response.loadnext) {
+						if (result.isConfirmed) {
+							if (response.loadnext) {
 
-					            if (response.loadnext === 'reload') {
-					                window.location.reload();
-					                return;
-					            }
+								if (response.loadnext === 'reload') {
+									window.location.reload();
+									return;
+								}
 
-					            if (response.target === 'modal') {
-					                loadContent(response.loadnext, response.target);
-					            } else {
-					                loadContent(response.loadnext, '#' + (response.target || 'content'));
-					                form.parent().html('');
-					            }
-					        }
-					    }
+								if (response.target === 'modal' || response.target === 'modal2') {
+									loadContent(response.loadnext, response.target);
+								} else {
+									loadContent(response.loadnext, '#' + (response.target || 'content'));
+									form.parent().html('');
+								}
+							}
+						}
 					});
 
 				}
@@ -273,28 +283,28 @@ function loadContent(url, targetSelector) {
 			if (data.status === 'success') {
 				$('#dynamicModal').modal('hide');
 				Swal.fire({
-				    title: 'Success',
-				    html: data.message,
-				    icon: 'success',
-				    confirmButtonText: 'Ok',
-				    allowOutsideClick: false
+					title: 'Success',
+					html: data.message,
+					icon: 'success',
+					confirmButtonText: 'Ok',
+					allowOutsideClick: false
 				}).then((result) => {
-				    if (result.isConfirmed) {
-				        if (data.loadnext) {
+					if (result.isConfirmed) {
+						if (data.loadnext) {
 
-				            if (data.loadnext === 'reload') {
-				                window.location.reload();
-				                return;
-				            }
+							if (data.loadnext === 'reload') {
+								window.location.reload();
+								return;
+							}
 
-				            if (data.target === 'modal') {
-				                loadContent(data.loadnext, data.target);
-				            } else {
-				                loadContent(data.loadnext, '#' + (data.target || 'content'));
-				                form.parent().html('');
-				            }
-				        }
-				    }
+							if (data.target === 'modal') {
+								loadContent(data.loadnext, data.target);
+							} else {
+								loadContent(data.loadnext, '#' + (data.target || 'content'));
+								form.parent().html('');
+							}
+						}
+					}
 				});
 
 			}

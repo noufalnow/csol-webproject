@@ -39,8 +39,14 @@
                         <div class="d-flex gap-1">
 							<button th:onclick="'loadContent(\'/events/html/listparticipants?eventId=' + ${event.eventId} + '\', \'modal\')'" 
 							        class="btn btn-sm btn-outline-primary">
-							    <i class="fas fa-eye"></i> View
+							    <i class="fa-solid fa-user-group">‌</i> View
 							</button>
+							
+							<button th:onclick="'loadContent(\'/events/html/listitems?eventId=' + ${event.eventId} + '\', \'modal\')'" 
+							        class="btn btn-sm btn-outline-primary">
+							    <i class="fa-solid fa-clipboard-check">‌</i> Items
+							</button>
+							
                             <a th:href="@{/events/html/edit/{id}(id=${event.eventId})}" 
                                class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-edit"></i> Edit

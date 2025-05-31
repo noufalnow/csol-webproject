@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MemberEventRepository extends JpaRepository<MemberEvent, Long> {
@@ -21,6 +22,11 @@ public interface MemberEventRepository extends JpaRepository<MemberEvent, Long> 
     // Original method with added soft-delete check
     @Query("SELECT me FROM MemberEvent me WHERE me.event.eventId = :eventId AND me.deleted = false")
     List<MemberEvent> findByEventByEventId(Long eventId);
+    
+    @Query("SELECT me FROM MemberEvent me WHERE me.event.eventId = :eventId AND me.member.userId = :memberId AND me.deleted = false")
+    Optional<MemberEvent> findByEventByEventAndMemberId(Long eventId, Long memberId);
+
+    
 
     // Original method with added soft-delete check
     @Query("SELECT me FROM MemberEvent me WHERE me.approvedBy IS NULL AND me.deleted = false")

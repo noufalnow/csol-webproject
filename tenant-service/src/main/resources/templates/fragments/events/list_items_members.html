@@ -1,0 +1,94 @@
+<div th:fragment="content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="addNodeModalLabel">
+            Score Entry for <span th:text="${T(com.example.tenant_service.dto.MemberEventDTO.KalariItem).fromId(selectedItemId)}"></span>
+        </h5>
+       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="modal-body">
+        <form id="scoreEntryForm" th:action="@{/events/html/save_scores}" method="post">
+            <input type="hidden" name="eventId" th:value="${eventId}">
+            <input type="hidden" name="itemId" th:value="${selectedItemId}">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Participant</th>
+                            <th class="text-center">Gold (A)</th>
+                            <th class="text-center">Silver (B)</th>
+                            <th class="text-center">Bronze (C)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="result, iterStat : ${resultList}">
+                            <!-- Row Number -->
+                            <td th:text="${iterStat.count}">1</td>
+                            
+                           <td>
+                                <span th:text="${result.get('member_name')}"></span>
+                                <span th:if="${result.get('item_status_label') != null}" 
+                                      th:text="' (' + ${result.get('item_status_label')} + ')'"></span>
+                            </td>
+                                                        
+                            <!-- Gold Radio -->
+								<!-- Gold Radio (A) -->
+								<td class="text-center">
+								    <input type="radio" 
+								           class="form-check-input"
+								           th:name="|scores[${result.get('memvnt_member_id')}]|"
+								           value="A"
+								           th:checked="${result.get('memvnt_item') != null 
+								                        and result.get('item_result') == 'A'}">
+								</td>
+								
+								<!-- Silver Radio (B) -->
+								<td class="text-center">
+								    <input type="radio" 
+								           class="form-check-input"
+								           th:name="|scores[${result.get('memvnt_member_id')}]|"
+								           value="B"
+								           th:checked="${result.get('memvnt_item') != null 
+								                       and result.get('item_result') == 'B'}">
+								</td>
+
+							<!-- Bronze Radio (C) -->
+							<td class="text-center"><input type="radio"
+								class="form-check-input"
+								th:name="|scores[${result.get('memvnt_member_id')}]|" value="C"
+								th:checked="${result.get('memvnt_item') != null 
+								                        and result.get('item_result') == 'C'}">
+							</td>
+						</tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="submitHtmlForm('scoreEntryForm')">
+            <i class="fas fa-save me-2"></i>Save Scores
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+    
+ <style>
+form {
+	max-width: 100%;
+}
+
+.modal-dialog {
+    max-width: 75%;  /* Responsive width */
+    margin: 0.75rem auto;
+    min-height: 150VH;
+}
+
+
+
+</style>   
+    
+</div>
