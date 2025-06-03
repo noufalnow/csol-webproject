@@ -1,20 +1,20 @@
 <!-- fragments/node_list.html -->
-<div th:fragment="content">
-    <h1 th:text="${pageTitle}">Node List D</h1>
+ <div th:fragment="content">
+ <div class="d-flex justify-content-between align-items-center mb-3">
+       <h4 class="mb-0" th:text="${pageTitle}">Members</h4>
 
-    <!-- Search Form -->
+    <!-- Search Form 
     <form id="search-form" method="GET" class="mb-3 d-flex">
         <input type="text" name="search" class="form-control me-2" placeholder="Search..." th:value="${search}">
         <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
-    <!-- Action Links -->
-    <div class="mb-3">
-        <a class="ajax-link btn btn-outline-success me-2" href="javascript:void(0);"
-           th:onclick="'loadContent(\'/nodes/html/add?parentId=' + ${parentId} + '\', \'modal\')'">
-            <i class="fas fa-plus"></i> Add New Node
-        </a>
-    </div>
+    </form>-->
+    
+      <a th:if="${allowAddNode}" 
+      class="btn btn-primary ajax-link" href="javascript:void(0);"
+         th:onclick="'loadContent(\'/nodes/html/add?parentId=' + ${parentId} + '\', \'modal\')'">
+          <i class="fas fa-plus"></i> Add New Branch
+      </a>
+</div>
 
     <!-- Node Table -->
     <div class="table-responsive">
@@ -22,26 +22,20 @@
             <thead class="table-light">
                 <tr>
                     <th scope="col">
-                        <a href="#" class="sort text-decoration-none" data-field="nodeId"
-                           th:attr="data-dir=${sortStatus['nodeId'] != null ? sortStatus['nodeId'] : 'asc'}"
-                           onclick="sortEntities('nodeId')">ID</a>
+                        <a href="#" class="" data-field="nodeId">ID</a>
                     </th>
                     <th scope="col">
-                        <a href="#" class="sort text-decoration-none" data-field="nodeName"
-                           th:attr="data-dir=${sortStatus['nodeName'] != null ? sortStatus['nodeName'] : 'asc'}"
-                           onclick="sortEntities('nodeName')">Name</a>
+                        <a href="#" class="" data-field="nodeName">Name</a>
                     </th>
                     <th scope="col">
-                        <a href="#" class="sort text-decoration-none" data-field="nodeType"
-                           th:attr="data-dir=${sortStatus['nodeType'] != null ? sortStatus['nodeType'] : 'asc'}"
-                           onclick="sortEntities('nodeType')">Type</a>
+                        <a href="#" class="" data-field="nodeType">Type</a>
                     </th>
                     <th scope="col">Status</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="node : ${items}">
+                <tr th:each="node : ${nodeList}">
                     <td th:text="${node.nodeId}">1</td>
                     <td th:text="${node.nodeName}">Node Name</td>
                     <td th:text="${node.nodeType}">Type</td>
@@ -61,14 +55,11 @@
                     </td>
                 </tr>
                 <!-- Empty state -->
-                <tr th:if="${#lists.isEmpty(items)}">
+                <tr th:if="${#lists.isEmpty(nodeList)}">
                     <td colspan="5" class="text-center">No nodes found</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Pagination -->
-    <div th:replace="~{fragments/pagination :: pagination}"
-         th:with="currentPage=${currentPage}, totalPages=${totalPages}, size=${size}, sortField=${sortField}, sortDir=${sortDir}, pageUrl='/nodes/html'"></div>
 </div>

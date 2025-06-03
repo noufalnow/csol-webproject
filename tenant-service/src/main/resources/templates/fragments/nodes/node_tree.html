@@ -165,17 +165,19 @@ ul.collapsed {
 
 <div class="container mt-1 mb-3">
 	<div class="d-flex justify-content-end align-items-center gap-3">
-<input type="hidden" id="tempSelectedId" name="tempSelectedId" th:value="${parentId}" />
+		<input type="hidden" id="tempSelectedId" name="tempSelectedId"
+			th:value="${parentId}" />
 		<!-- show for anyone whose userType is not KALARI -->
 		<div class="form-check form-check-inline"
-			th:if="${nodeType} != 'KALARI'">
+			th:if="${nodeType} != 'KALARI'"
+			onclick="document.getElementById('option1').checked = true;loadContent('/nodes/html/nodelist', '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option1" value="branches"> <label
-				class="form-check-label" for="option1">Branches</label>
+				id="option1" value="nodes"> <label class="form-check-label"
+				for="option1">Branches</label>
 		</div>
 
 		<div class="form-check form-check-inline"
-			th:onclick="|loadContent('/users/html/bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()|">
+			onclick="document.getElementById('option2').checked = true;loadContent('/users/html/bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
 				id="option2" value="officials" checked> <label
 				class="form-check-label" for="option2">Officials</label>
@@ -183,17 +185,18 @@ ul.collapsed {
 
 		<!-- show (and pre-check) only when userType equals KALARI -->
 		<div class="form-check form-check-inline"
-			/*th:if="${nodeType} == 'KALARI'"*/
-			th:onclick="|loadContent('/users/html/bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()|">
+			/*th:if="${nodeType} == 'KALARI'"
+			*/
+			onclick="document.getElementById('option3').checked = true;loadContent('/users/html/bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option3" value="members" > <label
+				id="option3" value="members"> <label
 				class="form-check-label" for="option3">Members</label>
 		</div>
 		<div class="form-check form-check-inline"
-		     onclick="loadContent('/events/html/byhost/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			onclick="document.getElementById('option4').checked = true;loadContent('/events/html/byhost/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
-				id="option4" value="events"> <label
-				class="form-check-label" for="option4">Events</label>
+				id="option4" value="events"> <label class="form-check-label"
+				for="option4">Events</label>
 		</div>
 
 
@@ -214,7 +217,7 @@ ul.collapsed {
 						<li th:each="node : ${treeData}"><th:block
 								th:if="${node != null}">
 								<div
-									th:replace="~{fragments/node_tree :: nodeItem(node=${node}, parentId=${parentId})}"></div>
+									th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${node}, parentId=${parentId})}"></div>
 							</th:block></li>
 					</ul>
 				</div>
@@ -247,7 +250,7 @@ ul.collapsed {
 						th:classappend="${node.isActivePath} ? 'expanded' : 'collapsed'">
 						<li th:each="child : ${node.children}">
 							<div
-								th:replace="~{fragments/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
+								th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
 						</li>
 					</ul>
 				</th:block>
@@ -291,9 +294,13 @@ function onTreeNodeClick(event, nodeEl) {
   else if (selectedValue === 'officials') {
 	loadContent(`/users/html/bynodeoff/${id}`, '#users_target');
   }
+  else if (selectedValue === 'nodes') {
+	loadContent(`/nodes/html/nodelist/${id}`, '#users_target');
+  } 
   else {
     loadContent(`/users/html/bynode/${id}`, '#users_target');
   }
+  
 
   
 

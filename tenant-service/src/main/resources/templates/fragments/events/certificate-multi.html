@@ -142,12 +142,62 @@ body {
     opacity: 0.7;
     width: 40mm;
 }
+/* Add these styles */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5mm;
+    position: relative;
+}
+
+.verification {
+    font-size: 10pt;
+    font-style: italic;
+    color: gray;
+    flex-grow: 1;
+    text-align: right;
+}
+
+.qr-container {
+    position: absolute;
+    right: 0;
+    top: 5;
+}
+
+/* Adjust header positioning */
+.header {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Adjust organization text alignment */
+.organization {
+    margin-left: 35mm; /* Compensate for medal width */
+}
+
 </style>
 </head>
 <body>
 
 	<!-- Gold Items -->
+	
+
+	
+	
 	<div th:each="item : ${goldItems}" class="certificate-page">
+	
+
+<div class="top-bar">
+    <div class="verification">
+        <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+    </div>
+    <div class="qr-container">
+        <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
+    </div>
+</div>
+	
+	
 		<div class="header">
 			<img class="medal-image gold"
 				th:src="'classpath:/static/images/Gold.png'" alt="Gold Medal" /> <img
@@ -177,6 +227,16 @@ body {
 
 	<!-- Silver Items -->
 	<div th:each="item : ${silverItems}" class="certificate-page">
+	
+	<div class="top-bar">
+    <div class="verification">
+        <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+    </div>
+    <div class="qr-container">
+        <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
+    </div>
+</div>
+	
 		<div class="header">
 			<img class="medal-image silver"
 				th:src="'classpath:/static/images/Silver.png'" alt="Silver Medal" />
@@ -206,6 +266,16 @@ body {
 
 	<!-- Bronze Items -->
 	<div th:each="item : ${bronzeItems}" class="certificate-page">
+	
+	<div class="top-bar">
+    <div class="verification">
+        <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+    </div>
+    <div class="qr-container">
+        <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
+    </div>
+</div>
+	
 		<div class="header">
 			<img class="medal-image gold"
 				th:src="'classpath:/static/images/Bronze.png'" alt="Bronze Medal" />
@@ -236,6 +306,18 @@ body {
 
 	<!-- Participation Items -->
 	<div th:each="item : ${participationItems}" class="certificate-page">
+	
+<div class="top-bar">
+    <div class="verification">
+        <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+    </div>
+    <div class="qr-container">
+        <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
+    </div>
+</div>
+	
+	
+	
 		<div class="header">
 			<img class="medal-image gold"
 				th:src="'classpath:/static/images/gold-medal.png'" alt="Gold Medal" />

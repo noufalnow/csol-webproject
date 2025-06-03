@@ -242,19 +242,26 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
     
     
     @GetMapping("/html/certificate/{meId}")
-    public ResponseEntity<byte[]> generateCertificate(@PathVariable Long meId) throws Exception {
+    public ResponseEntity<byte[]> generateCertificate(
+            @PathVariable Long meId,
+            @RequestParam(required = false) Integer itemId) throws Exception {
+
         MemberEventDTO participant = service.findById(meId);
         EventDTO event = eventService.findById(participant.getEventId());
-        
         NodeDTO node = nodeService.findNodeById(event.getEventHostId());
-        
-        // Organize items by medal type
-        Map<String, List<String>> medalItems = organizeItemsByMedal(participant.getItems());
 
-        // Prepare data for the template
+        Map<Integer, String> allItems = participant.getItems();
+        Map<Integer, String> filteredItems = itemId != null && allItems != null && allItems.containsKey(itemId)
+                ? Map.of(itemId, allItems.get(itemId))
+                : allItems;
+
+        Map<String, List<String>> medalItems = organizeItemsByMedal(filteredItems);
+
         Map<String, Object> data = new HashMap<>();
         data.put("participant", participant);
         data.put("eventName", event.getEventName());
+        data.put("meEvent", meId);
+        data.put("itemId", itemId);
         data.put("hostName", node.getNodeName());
         data.put("resultDate", participant.getResultDate() != null ? 
             participant.getResultDate() : LocalDateTime.now());
@@ -262,11 +269,16 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
         data.put("silverItems", medalItems.get("silver"));
         data.put("bronzeItems", medalItems.get("bronze"));
         data.put("participationItems", medalItems.get("participation"));
-
-        // Generate PDF using the correct method name
-        byte[] pdfBytes = pdfGenerationService.generateMultiPageCertificate(data);
         
-        // Return PDF as response
+        //Long meId = (Long) data.get("meEvemt");
+        //Integer itemId = (Integer) data.get("itemId");
+
+        String verificationId = itemId != null ? meId + "-" + itemId : meId.toString();
+        data.put("verificationId", verificationId);
+        
+
+        byte[] pdfBytes = pdfGenerationService.generateMultiPageCertificate(data);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("filename", 
@@ -275,6 +287,7 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
+
     
     
     @GetMapping("/html/certificate2/{meId}")

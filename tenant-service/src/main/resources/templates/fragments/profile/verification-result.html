@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Certificate Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h5 mb-0">Certificate Verification</h2>
+            </div>
+            
+            <div class="card-body">
+                <div th:if="${not #lists.isEmpty(results)}">
+                    <!-- Access tuple elements using get() -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4 th:text="${results[0].get('event_name')}">Event Name</h4>
+                            <p class="text-muted mb-1">
+                                Organized by: <span th:text="${results[0].get('event_node_name')}"></span>
+                            </p>
+                            <p class="text-muted">
+                                Date: <span th:text="${results[0].get('memvnt_result_date')}"></span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="d-inline-block bg-light p-3 rounded">
+                                <h5 th:text="${results[0].get('member_name')}"></h5>
+                                <p class="mb-0">
+                                    Representing: <span th:text="${results[0].get('member_node_name')}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Result</th>
+                                    <th>Award</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="row : ${results}">
+                                    <td th:text="${row.get('item_name')}"></td>
+                                    <td>
+                                        <span th:text="${row.get('item_result')}"
+                                              th:class="${'badge ' + 
+                                                         (row.get('item_result') == 'A' ? 'bg-success' : 
+                                                          row.get('item_result') == 'P' ? 'bg-info text-dark' : 
+                                                          'bg-secondary')}">
+                                        </span>
+                                    </td>
+                                    <td th:text="${row.get('item_status_label')}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>Event Details</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Event ID</dt>
+                                <dd class="col-sm-8" th:text="${results[0].get('event_id')}"></dd>
+                                
+                                <dt class="col-sm-4">Member ID</dt>
+                                <dd class="col-sm-8" th:text="${results[0].get('memvnt_member_id')}"></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Technical Details</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Certificate ID</dt>
+                                <dd class="col-sm-8" th:text="${results[0].get('memvnt_id')}"></dd>
+                                
+                                <dt class="col-sm-4">Verification Date</dt>
+                                <dd class="col-sm-8" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${#lists.isEmpty(results)}" class="alert alert-warning">
+                    No certificate found with the provided verification ID.
+                </div>
+            </div>
+            
+            <div class="card-footer text-muted text-center">
+                <small>This is an officially verified certificate.</small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

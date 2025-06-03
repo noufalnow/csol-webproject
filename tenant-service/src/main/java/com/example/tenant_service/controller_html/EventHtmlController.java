@@ -92,7 +92,7 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 		
 		logInfo("Request Parameters - Node Type: {}, User Node Type: {},Selected Node: {}", nodeType.getLevel(), userNodeType.getLevel(),parentId);
 
-		if (nodeType.getLevel() > userNodeType.getLevel()) {
+		if (nodeType.getLevel() >= userNodeType.getLevel()) {
 			model.addAttribute("allowAddEvent", true);
 		} else if (userNodeType == nodeType && (node.getNodeId() == session.getAttribute("NODE_ID"))) {
 			model.addAttribute("allowAddEvent", true);
@@ -228,7 +228,7 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 
         // Fetch filtered event member list
         List<Object[]> resultList = service.getMemberEventsWithFilters(
-        		selectedItemId, eventId, null, null, null, null);
+        		selectedItemId, eventId, null, null, null, null,null);
 
         // Populate model attributes for rendering
         model.addAttribute("resultList", resultList);

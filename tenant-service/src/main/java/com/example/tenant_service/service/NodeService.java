@@ -91,6 +91,14 @@ public class NodeService implements BaseService<NodeDTO> {
     }
     
     
+    public List<NodeDTO> findByParentId(Long parentId) {
+        return nodeRepository.findByParentId(parentId).stream().map(node -> nodeMapper.toDTO(node))
+    			.collect(Collectors.toList());
+    }
+    
+    
+    
+    
     
     public NodeDTO findNodeById(Long nodeId) {
         return nodeRepository.findByIdAndNotDeleted(nodeId)

@@ -160,7 +160,7 @@ public class EventService implements BaseService<EventDTO> {
 	 */
 
 	public List<Object[]> getMemberEventsWithFilters(Long itemId, Long eventId, Long memberId, Long memberNodeId,
-			Long nodeId, Boolean approvedDatePresent) {
+			Long nodeId, Boolean approvedDatePresent, Long memvntId) {
 		StringBuilder queryBuilder = new StringBuilder("""
 				    SELECT
 				      e.event_id as event_id,
@@ -210,6 +210,9 @@ public class EventService implements BaseService<EventDTO> {
 		if (itemId != null) {  // New condition for item
 		    queryBuilder.append(" AND kv.key::int = :itemId");
 		}
+		if (memvntId != null) {  // New condition for item
+		    queryBuilder.append(" AND me.memvnt_id = :memvntId");
+		}
 		if (eventId != null) {
 			queryBuilder.append(" AND me.memvnt_event_id = :eventId");
 		}
@@ -234,6 +237,8 @@ public class EventService implements BaseService<EventDTO> {
 		// Set parameters
 		if (itemId != null) 
 			query.setParameter("itemId", itemId);
+		if (memvntId != null) 
+			query.setParameter("memvntId", memvntId);
 		if (eventId != null)
 			query.setParameter("eventId", eventId);
 		if (memberId != null)

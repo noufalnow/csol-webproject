@@ -52,7 +52,7 @@ public class HomeController {
 		List<Object[]> eventList = eventService.findByHostNodeHierarchy(parentId, userId);
 		
 		List<Object[]> resultList = eventService.getMemberEventsWithFilters(
-	              null, null, userId, null, null, true);
+	              null, null, userId, null, null, true,null);
 		
 		model.addAttribute("resultList", resultList);
 		model.addAttribute("eventList", eventList);

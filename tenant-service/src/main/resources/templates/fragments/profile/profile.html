@@ -187,10 +187,14 @@
                 <td th:text="${result.get('memvnt_result_date')}" 
                     th:if="${result.get('memvnt_result_date') != null}">Date</td>
                 <td th:unless="${result.get('memvnt_result_date') != null}">-</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-certificate"></i> Certificate
-                    </button>
+                <td>                   
+				<a th:if="${result.get('memvnt_result_date') != null and result.get('item_result') != '1'}"
+				   th:href="@{|/member-events/html/certificate/${result.get('memvnt_id')}?itemId=${result.get('item_id')}|}"
+				   class="btn btn-sm btn-outline-secondary">
+				   <i class="fa-solid fa-award"></i> Certificate
+				</a>
+
+                    
                 </td>
             </tr>
         </tbody>
