@@ -43,22 +43,24 @@ public class EventService implements BaseService<EventDTO> {
 
 	@Override
 	public EventDTO update(Long eventId, EventDTO eventDTO) {
-		Event existingEvent = eventRepository.findByIdAndNotDeleted(eventId)
-				.orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+	    // Find existing event or throw exception
+	    Event existingEvent = eventRepository.findByIdAndNotDeleted(eventId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
-		// Update host node if changed
-		if (eventDTO.getEventHostId() != null
-				&& !eventDTO.getEventHostId().equals(existingEvent.getHostNode().getNodeId())) {
-			Node hostNode = nodeRepository.findById(eventDTO.getEventHostId())
-					.orElseThrow(() -> new ResourceNotFoundException("Node", eventDTO.getEventHostId()));
-			existingEvent.setHostNode(hostNode);
-		}
+	    // Update individual fields from DTO
+	    existingEvent.setEventName(eventDTO.getEventName());
+	    existingEvent.setEventPeriodStart(eventDTO.getEventPeriodStart());
+	    existingEvent.setEventPeriodEnd(eventDTO.getEventPeriodEnd());
+	    existingEvent.setEventVenue(eventDTO.getEventVenue());
+	    existingEvent.setEventOfficialPhone(eventDTO.getEventOfficialPhone());
+	    existingEvent.setEventYear(eventDTO.getEventYear());
+	    
+	    // Set modification timestamp
+	    existingEvent.setTModified(LocalDateTime.now());
 
-		eventMapper.updateEventFromDto(eventDTO, existingEvent);
-		existingEvent.setTModified(LocalDateTime.now());
-
-		Event updatedEvent = eventRepository.save(existingEvent);
-		return eventMapper.toDTO(updatedEvent);
+	    // Save and return updated event
+	    Event updatedEvent = eventRepository.save(existingEvent);
+	    return eventMapper.toDTO(updatedEvent);
 	}
 
 	@Override

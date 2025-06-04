@@ -55,9 +55,16 @@
                                 <li><a class="dropdown-item ajax-link" th:href="@{/users/html}">MEMBERS</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link ajax-link" th:href="@{/settings}">SETTINGS</a>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="peopleDropdown" role="button" data-bs-toggle="dropdown">
+                                MASTERS
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item ajax-link" th:href="@{/event-items/html}">ITEMS</a></li>
+                            </ul>
                         </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
                                 REPORTS

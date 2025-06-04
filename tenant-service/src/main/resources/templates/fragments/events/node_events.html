@@ -46,11 +46,13 @@
 							        class="btn btn-sm btn-outline-primary">
 							    <i class="fa-solid fa-clipboard-check">‌</i> Items
 							</button>
-							
-                            <a th:href="@{/events/html/edit/{id}(id=${event.eventId})}" 
-                               class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
+							                            
+	                         <a class="ajax-link btn btn-sm btn-outline-secondary"
+	                           href="javascript:void(0);"
+	                           th:onclick="'loadContent(\'/events/html/edit/' + ${event.eventId} + '\', \'modal\')'">
+	                            <i class="fas fa-edit"></i>
+	                        </a>
+                            
                         </div>
                     </td>
                 </tr>

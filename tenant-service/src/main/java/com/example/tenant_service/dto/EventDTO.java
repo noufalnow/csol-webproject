@@ -1,5 +1,7 @@
 package com.example.tenant_service.dto;
 
+import java.util.List;  // Correct List import
+import java.util.ArrayList; // For initialization
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,9 @@ import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.entity.Node.Type;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+
+
 
 @Data
 @NoArgsConstructor
@@ -53,7 +58,11 @@ public class EventDTO extends BaseDTO {
              message = "Invalid phone number format")
     @Size(max = 20, message = "Phone number must be less than 20 characters")
     private String eventOfficialPhone;
-
+    
+    
+    private List<EventItemDTO> seniorEventItems = new ArrayList<>();
+    private List<EventItemDTO> juniorEventItems = new ArrayList<>();
+    
     // Validation for date consistency
     @AssertTrue(message = "End date must be after start date")
     private boolean isValidDateRange() {
