@@ -40,37 +40,33 @@
 			method="post" style="max-width: 96%;">
 			<input type="hidden" name="meId" th:value="${participant.meId}">
 
-			<div class="item-row" th:each="itemEntry : ${participant.items}">
-				<div class="d-flex justify-content-between align-items-center">
-					<div>
-						<strong
-							th:text="${kalariItemMap.containsKey(itemEntry.key) ? kalariItemMap.get(itemEntry.key) : 'Item ' + itemEntry.key}"></strong>
-					</div>
+<div class="item-row" th:each="itemEntry : ${participant.items}">
+	<div class="d-flex justify-content-between align-items-center">
+		<div>
+			<strong th:text="${itemNameMap[T(java.lang.Long).parseLong(itemEntry.key)]} ?: 'Item ' + itemEntry.key"></strong>
+		</div>
 
-					<div class="radio-group">
-						<div class="radio-option">
-							<input type="radio" th:name="|items[${itemEntry.key}]|" value="A"
-								th:checked="${itemEntry.value == 'A'}"> <label>Gold
-								(A)</label>
-						</div>
-						<div class="radio-option">
-							<input type="radio" th:name="|items[${itemEntry.key}]|" value="B"
-								th:checked="${itemEntry.value == 'B'}"> <label>Silver
-								(B)</label>
-						</div>
-						<div class="radio-option">
-							<input type="radio" th:name="|items[${itemEntry.key}]|" value="C"
-								th:checked="${itemEntry.value == 'C'}"> <label>Bronze
-								(C)</label>
-						</div>
-						<div class="radio-option">
-							<input type="radio" th:name="|items[${itemEntry.key}]|" value="P"
-								th:checked="${itemEntry.value == 'P'}"> <label>Participation
-								(P)</label>
-						</div>
-					</div>
-				</div>
+		<div class="radio-group">
+			<div class="radio-option">
+				<input type="radio" th:name="|items[${itemEntry.key}]|" value="A"
+					   th:checked="${itemEntry.value == 'A'}"> <label>Gold (A)</label>
 			</div>
+			<div class="radio-option">
+				<input type="radio" th:name="|items[${itemEntry.key}]|" value="B"
+					   th:checked="${itemEntry.value == 'B'}"> <label>Silver (B)</label>
+			</div>
+			<div class="radio-option">
+				<input type="radio" th:name="|items[${itemEntry.key}]|" value="C"
+					   th:checked="${itemEntry.value == 'C'}"> <label>Bronze (C)</label>
+			</div>
+			<div class="radio-option">
+				<input type="radio" th:name="|items[${itemEntry.key}]|" value="P"
+					   th:checked="${itemEntry.value == 'P'}"> <label>Participation (P)</label>
+			</div>
+		</div>
+	</div>
+</div>
+
 		</form>
 	</div>
 	<!-- Modal Footer -->

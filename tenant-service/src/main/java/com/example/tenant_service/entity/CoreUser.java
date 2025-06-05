@@ -60,7 +60,7 @@ public class CoreUser extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_member_category")
-    private MemberCategory userMemberCategory;
+    private MemberCategory userMemberCategory = MemberCategory.JUNIOR;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_gender")

@@ -32,7 +32,7 @@ public class MemberEventDTO extends BaseDTO {
     private String memberName;  // from CoreUsers
     private String memberNodeName;  // from Node
     
-    public enum KalariItem {
+    /*public enum KalariItem {
         CHUVADU(1, "CHUVADU"),
         HIGHKICK_CHAVITTIPONGHAL(2, "HIGH KICK(CHAVITTIPONGHAL)"),
         MEYPPAYATTU(3, "MEYPPAYATTU"),
@@ -68,6 +68,6 @@ public class MemberEventDTO extends BaseDTO {
             }
             throw new IllegalArgumentException("Invalid KalariItem ID: " + id);
         }
-    }
+    }*/
     
 }

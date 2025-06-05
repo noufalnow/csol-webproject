@@ -1,5 +1,6 @@
 package com.example.tenant_service.repository;
 
+import com.example.tenant_service.entity.EventItem;
 import com.example.tenant_service.entity.EventItemMap;
 import com.example.tenant_service.common.BaseRepository;
 import org.springframework.stereotype.Repository;
@@ -39,4 +40,14 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
     @Modifying
     @Query("UPDATE EventItemMap eim SET eim.deleted = true WHERE eim.event.eventId = :eventId")
     void softDeleteByEvent_EventId(@Param("eventId") Long eventId);
+    
+    
+    @Query("""
+    	    SELECT i FROM EventItemMap m
+    	    JOIN m.item i
+    	    WHERE m.event.id = :eventId AND m.category = :category
+    	""")
+    	List<EventItem> findItemsByEventIdAndCategory(@Param("eventId") Long eventId,
+    	                                              @Param("category") EventItemMap.Category category);
+
 }

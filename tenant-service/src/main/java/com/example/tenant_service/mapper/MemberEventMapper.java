@@ -6,36 +6,21 @@ import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.Event;
 import com.example.tenant_service.entity.MemberEvent;
 import com.example.tenant_service.entity.Node;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = {CoreUserMapper.class, EventMapper.class, NodeMapper.class}
+    uses = {CoreUserMapper.class, EventMapper.class, NodeMapper.class, ItemsMapper.class}
 )
 public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDTO> {
-
-    /**
-     * Alias so service calls toDto(...) compile.
-     */
-    default MemberEventDTO toDto(MemberEvent entity) {
-        return toDTO(entity);
-    }
 
     @Override
     @Mapping(target = "memberId", source = "member.userId")
     @Mapping(
-    	    target     = "memberName",
-    	    expression = "java(entity.getMember().getUserFname() + \" \" + entity.getMember().getUserLname())"
-    	  )
+        target = "memberName",
+        expression = "java(entity.getMember().getUserFname() + \" \" + entity.getMember().getUserLname())"
+    )
     @Mapping(target = "meId", source = "meId")
     @Mapping(target = "memberNodeId", source = "memberNode.nodeId")
     @Mapping(target = "memberNodeName", source = "memberNode.nodeName")
@@ -44,8 +29,8 @@ public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDT
     @Mapping(target = "approvedBy", source = "approvedBy.userId")
     @Mapping(target = "resultEntryBy", source = "resultEntryBy.userId")
     @Mapping(target = "resultApprovedBy", source = "resultApprovedBy.userId")
-    @Mapping(target = "items", expression = "java(KalariItemMapper.convertToDtoMap(entity.getItems()))")
-    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "items", source = "items", qualifiedByName = "convertToDtoMap")
+    @Mapping(target = "deleted", expression = "java(mapMemberEventDeletedToShort(entity.getDeleted()))")
     MemberEventDTO toDTO(MemberEvent entity);
 
     @Override
@@ -56,9 +41,20 @@ public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDT
     @Mapping(target = "resultEntryBy", ignore = true)
     @Mapping(target = "resultApprovedBy", ignore = true)
     @Mapping(target = "memberNode", ignore = true)
-    @Mapping(target = "items", expression = "java(KalariItemMapper.convertToEntityMap(dto.getItems()))")
-    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "items", source = "items", qualifiedByName = "convertToEntityMap")
+    @Mapping(target = "deleted", expression = "java(mapShortToMemberEventDeleted(dto.getDeleted()))")
     MemberEvent toEntity(MemberEventDTO dto);
+
+    /**
+     * Very specific conversion methods for MemberEvent's deleted field only
+     */
+    default Short mapMemberEventDeletedToShort(Boolean deleted) {
+        return deleted != null ? (short) (deleted ? 1 : 0) : null;
+    }
+
+    default Boolean mapShortToMemberEventDeleted(Short deleted) {
+        return deleted != null ? deleted == 1 : null;
+    }
 
     /**
      * For service.update: copy only non-relational, non-items fields.
@@ -76,7 +72,6 @@ public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDT
 
     @AfterMapping
     default void mapRelations(MemberEventDTO dto, @MappingTarget MemberEvent entity) {
-    	    	
         if (dto.getMemberId() != null) {
             CoreUser member = new CoreUser();
             member.setUserId(dto.getMemberId());
@@ -111,32 +106,6 @@ public interface MemberEventMapper extends BaseMapper<MemberEvent, MemberEventDT
             CoreUser approvedBy = new CoreUser();
             approvedBy.setUserId(dto.getResultApprovedBy());
             entity.setResultApprovedBy(approvedBy);
-        }
-    }
-
-    class KalariItemMapper {
-
-        // Convert entity's Map<String, String> to DTO's Map<Integer, String>
-        public static Map<Integer, String> convertToDtoMap(Map<String, String> entityMap) {
-            if (entityMap == null) return new HashMap<>();
-            Map<Integer, String> dtoMap = new HashMap<>();
-            entityMap.forEach((key, value) -> {
-                try {
-                    int intKey = Integer.parseInt(key);
-                    dtoMap.put(intKey, value);
-                } catch (NumberFormatException e) {
-                    // Handle or log invalid entries
-                }
-            });
-            return dtoMap;
-        }
-
-        // Convert DTO's Map<Integer, String> to entity's Map<String, String>
-        public static Map<String, String> convertToEntityMap(Map<Integer, String> dtoMap) {
-            if (dtoMap == null) return new HashMap<>();
-            Map<String, String> entityMap = new HashMap<>();
-            dtoMap.forEach((key, value) -> entityMap.put(key.toString(), value));
-            return entityMap;
         }
     }
 }

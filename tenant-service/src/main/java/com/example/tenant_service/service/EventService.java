@@ -3,9 +3,15 @@ package com.example.tenant_service.service;
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.EventDTO;
+import com.example.tenant_service.dto.EventItemDTO;
+import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.Event;
+import com.example.tenant_service.entity.EventItem;
+import com.example.tenant_service.entity.EventItemMap;
 import com.example.tenant_service.entity.Node;
+import com.example.tenant_service.mapper.EventItemMapper;
 import com.example.tenant_service.mapper.EventMapper;
+import com.example.tenant_service.repository.EventItemMapRepository;
 import com.example.tenant_service.repository.EventRepository;
 import com.example.tenant_service.repository.NodeRepository;
 
@@ -31,15 +37,22 @@ public class EventService implements BaseService<EventDTO> {
 	private final EventMapper eventMapper;
 	private final NodeRepository nodeRepository;
 	private final EntityManager entityManager;
+	private final EventItemMapRepository eventItemMapRepository;
+	
+	
 
 	@Autowired
 	public EventService(EventRepository eventRepository, EventMapper eventMapper, NodeRepository nodeRepository,
-			EntityManager entityManager) {
+			EntityManager entityManager, EventItemMapRepository eventItemMapRepository) {
 		this.eventRepository = eventRepository;
 		this.eventMapper = eventMapper;
 		this.nodeRepository = nodeRepository;
 		this.entityManager = entityManager;
+		this.eventItemMapRepository = eventItemMapRepository;
 	}
+	
+	@Autowired
+	private EventItemMapper eventItemMapper;
 
 	@Override
 	public EventDTO update(Long eventId, EventDTO eventDTO) {
@@ -78,6 +91,39 @@ public class EventService implements BaseService<EventDTO> {
 		return eventRepository.findByIdAndNotDeleted(eventId).map(eventMapper::toDTO)
 				.orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 	}
+	
+	public EventDTO findByIdWithItemsByCategory(Long eventId, EventItemMap.Category category) {
+		
+	    Event event = eventRepository.findByIdWithItemsByCategory(eventId, category)
+	        .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+
+	    EventDTO dto = eventMapper.toDTO(event);
+
+	    List<EventItemDTO> categoryItems = event.getEventItemMaps().stream()
+	        .map(m -> eventItemMapper.toDTO(m.getItem()))
+	        .toList();
+
+	    // set the list depending on the category
+	    if (category == EventItemMap.Category.JUNIOR) {
+	        dto.setJuniorEventItems(categoryItems);
+	    } else if (category == EventItemMap.Category.SENIOR) {
+	        dto.setSeniorEventItems(categoryItems);
+	    }
+
+	    return dto;
+	}
+	
+	public List<EventItemDTO> getEventItemsByCategory(Long eventId, EventItemMap.Category category) {
+	    List<EventItem> items = eventItemMapRepository.findItemsByEventIdAndCategory(eventId, category);
+	    return items.stream()
+	                .map(eventItemMapper::toDTO)
+	                .collect(Collectors.toList());
+	}
+
+
+
+
+
 
 	@Override
 	public EventDTO save(EventDTO eventDTO) {
@@ -164,49 +210,38 @@ public class EventService implements BaseService<EventDTO> {
 	public List<Object[]> getMemberEventsWithFilters(Long itemId, Long eventId, Long memberId, Long memberNodeId,
 			Long nodeId, Boolean approvedDatePresent, Long memvntId) {
 		StringBuilder queryBuilder = new StringBuilder("""
-				    SELECT
-				      e.event_id as event_id,
-				      me.memvnt_id as memvnt_id,
-				      me.memvnt_item as memvnt_item,
-				      me.memvnt_event_id as memvnt_event_id,
-				      me.memvnt_member_id as memvnt_member_id,
-				      me.memvnt_member_node_id as memvnt_member_node_id,
-				      me.memvnt_node_id as memvnt_node_id,
-				      kv.key::int as item_id,
-				      user_fname || ' ' || user_lname as member_name,
-				      CASE kv.key::int
-				        WHEN 1 THEN 'CHUVADU'
-				        WHEN 2 THEN 'HIGH KICK(CHAVITTIPONGHAL)'
-				        WHEN 3 THEN 'MEYPPAYATTU'
-				        WHEN 4 THEN 'WIELDINGOF URUMI (FLEXIBLE SWORD)'
-				        WHEN 5 THEN 'SWORD & SWORD (Seniors only)'
-				        WHEN 6 THEN 'SWORD & SHIELD'
-				        WHEN 7 THEN 'URUMI & SHIELD'
-				        WHEN 8 THEN 'LONG STAFF FIGHT'
-				        WHEN 9 THEN 'KURUVADI (SHORT STAFF FIGHT)'
-				        WHEN 10 THEN 'KAIPPORU/UNARMED COMBAT (Seniors only)'
-				        ELSE 'UNKNOWN'
-				      END as item_name,
-				      kv.value as item_result,
-				      CASE kv.value
-				        WHEN 'A' THEN 'Gold'
-				        WHEN 'B' THEN 'Silver'
-				        WHEN 'C' THEN 'Bronze'
-				        WHEN 'P' THEN 'Participation'
-				        ELSE 'Pending'
-				      END as item_status_label,
-				      mn.node_name as member_node_name,
-				      en.node_name as event_node_name,
-				      e.event_name as event_name,
-				      TO_CHAR("memvnt_result_date", 'DD/MM/YYYY')  as memvnt_result_date
-				    FROM member_events me
-				    LEFT JOIN core_users as member on member.user_id = me.memvnt_member_id
-				    LEFT JOIN events e ON e.event_id = me.memvnt_event_id
-				    LEFT JOIN nodes mn ON mn.node_id = me.memvnt_member_node_id
-				    LEFT JOIN nodes en ON en.node_id = me.memvnt_node_id,
-				    jsonb_each_text(me.memvnt_item::jsonb) as kv
-				    WHERE me.deleted = false
-				""");
+							SELECT
+							  e.event_id AS event_id,
+							  me.memvnt_id AS memvnt_id,
+							  me.memvnt_item AS memvnt_item,
+							  me.memvnt_event_id AS memvnt_event_id,
+							  me.memvnt_member_id AS memvnt_member_id,
+							  me.memvnt_member_node_id AS memvnt_member_node_id,
+							  me.memvnt_node_id AS memvnt_node_id,
+							  kv.key::int AS item_id,
+							  ev.evitem_name AS item_name,
+							  kv.value AS item_result,
+							  CASE kv.value
+							    WHEN 'A' THEN 'Gold'
+							    WHEN 'B' THEN 'Silver'
+							    WHEN 'C' THEN 'Bronze'
+							    WHEN 'P' THEN 'Participation'
+							    ELSE 'Pending'
+							  END AS item_status_label,
+							  user_fname || ' ' || user_lname AS member_name,
+							  mn.node_name AS member_node_name,
+							  en.node_name AS event_node_name,
+							  e.event_name AS event_name,
+							  TO_CHAR(me.memvnt_result_date, 'DD/MM/YYYY') AS memvnt_result_date
+							FROM member_events me
+							LEFT JOIN core_users AS member ON member.user_id = me.memvnt_member_id
+							LEFT JOIN events e ON e.event_id = me.memvnt_event_id
+							LEFT JOIN nodes mn ON mn.node_id = me.memvnt_member_node_id
+							LEFT JOIN nodes en ON en.node_id = me.memvnt_node_id
+							JOIN LATERAL jsonb_each_text(me.memvnt_item::jsonb) AS kv(key, value) ON TRUE
+							LEFT JOIN event_items ev ON ev.evitem_id = kv.key::int
+							WHERE me.deleted = false
+							""");
 
 		// Add dynamic conditions
 		if (itemId != null) {  // New condition for item

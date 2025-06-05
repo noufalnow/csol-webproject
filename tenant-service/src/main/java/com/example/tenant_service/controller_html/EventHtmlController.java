@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/events")
@@ -248,7 +249,15 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 	public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
 
 		List<MemberEventDTO> memberEeventDTO = memberEventService.findByEvent(eventId);
+		
+	    List<EventItemDTO> allItems = eventItemService.findAll(); // or eventService.getItemsByEventId(eventId)
 
+	    Map<Long, String> itemIdToName = allItems.stream()
+	        .collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+	    
+	    //logInfo("eventItems: {}",itemIdToName);
+
+	    model.addAttribute("itemNameMap", itemIdToName);
 		model.addAttribute("partList", memberEeventDTO);
 		model.addAttribute("pageTitle", "List of Participants");
 		model.addAttribute("event", new EventDTO());
@@ -257,16 +266,24 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 	}
 
 	@GetMapping("/html/listitems")
-	public String listItems(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
+	public String listItems(@RequestParam(name = "eventId") Long eventId, Model model) {
 
-		List<MemberEventDTO> memberEeventDTO = memberEventService.findByEvent(eventId);
+	    List<EventItemDTO> juniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.JUNIOR);
+	    List<EventItemDTO> seniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.SENIOR);
+	    
+	    logInfo("juniorItems: {}",juniorItems);
+	    logInfo("seniorItems: {}",seniorItems);
+	    
 
-		model.addAttribute("partList", memberEeventDTO);
-		model.addAttribute("pageTitle", "Event Items");
-		model.addAttribute("eventId", eventId);
+	    model.addAttribute("juniorItems", juniorItems);
+	    model.addAttribute("seniorItems", seniorItems);
+	    model.addAttribute("eventId", eventId);
+	    model.addAttribute("pageTitle", "Event Items");
 
-		return "fragments/events/list_items";
+	    return "fragments/events/list_items";
 	}
+
+
 
 	@GetMapping("/html/selectitems")
 	public String selectItems(@RequestParam("eventId") Long eventId,
@@ -275,11 +292,17 @@ public class EventHtmlController extends BaseController<EventDTO, EventService> 
 		// Fetch filtered event member list
 		List<Object[]> resultList = service.getMemberEventsWithFilters(selectedItemId, eventId, null, null, null, null,
 				null);
+		
+	    List<EventItemDTO> allItems = eventItemService.findAll();  // Or fetch only for this event if optimized
+	    Map<Long, String> itemIdToName = allItems.stream()
+	            .collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+
 
 		// Populate model attributes for rendering
 		model.addAttribute("resultList", resultList);
 		model.addAttribute("eventId", eventId);
 		model.addAttribute("selectedItemId", selectedItemId);
+		model.addAttribute("itemNameMap", itemIdToName);
 
 		return "fragments/events/list_items_members";
 	}

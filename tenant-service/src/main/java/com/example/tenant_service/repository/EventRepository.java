@@ -1,7 +1,9 @@
 package com.example.tenant_service.repository;
 
 import com.example.tenant_service.common.BaseRepository;
+import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.Event;
+import com.example.tenant_service.entity.EventItemMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -46,6 +48,18 @@ public interface EventRepository extends BaseRepository<Event, Long> {
            "e.eventHost = :hostType AND e.hostNode.nodeId = :hostId AND e.deleted = false")
     List<Event> findByHostTypeAndHostId(@Param("hostType") String hostType, 
                                       @Param("hostId") Long hostId);
+    
+    
+    @Query("""
+    	    SELECT DISTINCT e FROM Event e
+    	    JOIN FETCH e.eventItemMaps m
+    	    JOIN FETCH m.item i
+    	    WHERE e.id = :eventId AND e.deleted = false AND m.category = :category
+    	""")
+    	Optional<Event> findByIdWithItemsByCategory(@Param("eventId") Long eventId,
+    	                                            @Param("category") EventItemMap.Category category);
+
+
     
     
     /*@Query(value = """

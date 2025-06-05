@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Table(name = "events")
@@ -52,4 +55,14 @@ public class Event extends BaseEntity {
         DISTRICT,
         KALARI
     }
+    
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<EventItemMap> eventItemMaps;
+
+
+    public List<EventItemMap> getEventItemMaps() {
+        return eventItemMaps;
+    }
+
+
 }
