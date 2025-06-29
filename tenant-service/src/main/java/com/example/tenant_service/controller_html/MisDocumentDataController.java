@@ -51,7 +51,7 @@ public class MisDocumentDataController extends BaseController<DocumentsDTO, MisD
         model.addAttribute("properties", properties);
         model.addAttribute("tenants", tenants);
 
-        model.addAttribute("pageTitle", "Add Document - My Application");
+        model.addAttribute("pageTitle", "Add Document ");
         return "fragments/add_document"; // Adjust to your template
     }
 
@@ -79,7 +79,7 @@ public class MisDocumentDataController extends BaseController<DocumentsDTO, MisD
         model.addAttribute("properties", properties);
         model.addAttribute("tenants", tenants);
 
-        model.addAttribute("pageTitle", "Edit Document - My Application");
+        model.addAttribute("pageTitle", "Edit Document ");
         return "fragments/edit_document"; // Adjust to your template
     }
 
@@ -110,7 +110,7 @@ public class MisDocumentDataController extends BaseController<DocumentsDTO, MisD
         
         model.addAttribute("documentView", documentViewService.findById(refId));
         
-        model.addAttribute("pageTitle", "Renew Document - My Application");
+        model.addAttribute("pageTitle", "Renew Document ");
         return "fragments/renew_document"; // Adjust to your template
     }
     

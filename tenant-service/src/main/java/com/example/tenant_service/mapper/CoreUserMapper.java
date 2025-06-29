@@ -3,6 +3,7 @@ package com.example.tenant_service.mapper;
 import com.example.tenant_service.common.BaseMapper;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.CoreUserUpdateMemberDTO;
 import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.Node;
@@ -41,13 +42,16 @@ public interface CoreUserMapper extends BaseMapper<CoreUser, CoreUserDTO> {
     
     
     @Mapping(source = "userDesig", target = "designation.desigId")
-    
     @Mapping(source = "userFname", target = "userFname")
     @Mapping(source = "userLname", target = "userLname")
     @Mapping(source = "userEmail", target = "userEmail")
     @Mapping(source = "userStatus", target = "userStatus")
     @Mapping(source = "userNode", target = "userNode")
     CoreUser toEntity(UserMemberDTO userMemberDTO);
+    
+    
+    @Mapping(source = "userDesig", target = "designation.desigId")
+    void updateCoreUserFromMemberDto(CoreUserUpdateMemberDTO updateMemberDTO, @MappingTarget CoreUser coreUser);
     
     
     default Long map(Node value) {

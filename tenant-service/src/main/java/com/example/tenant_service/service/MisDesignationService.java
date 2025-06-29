@@ -52,6 +52,15 @@ public class MisDesignationService implements BaseService<DesignationDTO> {
                 .map(misDesignationMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    
+    public List<DesignationDTO> findAllByType(Short type) {
+        return misDesignationRepository.findByDeletedFalseAndDesigType(type).stream()
+                .map(misDesignationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    
+    
 
     @Override
     public DesignationDTO findById(Long desigId) {

@@ -5,6 +5,7 @@ import com.example.tenant_service.common.BaseService;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.CoreUserUpdateMemberDTO;
 import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.CoreUser.UserType;
@@ -77,6 +78,32 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
 
         // Map other fields from CoreUserUpdateDTO to CoreUser
         coreUserMapper.updateCoreUserFromDto(updateUserDetailsDTO, existingUser);
+
+        // Update the modified timestamp
+        existingUser.setTModified(LocalDateTime.now());
+
+        // Save the updated user entity
+        CoreUser updatedUser = coreUserRepository.save(existingUser);
+
+        // Return the updated user as a DTO
+        return coreUserMapper.toDTO(updatedUser);
+    }
+    
+    
+    public CoreUserDTO updateMember(Long userId, CoreUserUpdateMemberDTO updateMemberDTO) {
+        // Fetch the existing user from the repository
+        CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+
+        // If the designation ID is provided, fetch the designation and set it
+        if (updateMemberDTO.getUserDesig() != null) {
+            MisDesignation designation = misDesignationRepository.findById(updateMemberDTO.getUserDesig())
+                    .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", updateMemberDTO.getUserDesig()));
+            existingUser.setDesignation(designation);
+        }
+
+        // Map other fields from CoreUserUpdateMemberDTO to CoreUser
+        coreUserMapper.updateCoreUserFromMemberDto(updateMemberDTO, existingUser);
 
         // Update the modified timestamp
         existingUser.setTModified(LocalDateTime.now());

@@ -22,5 +22,7 @@ public interface MisDesignationRepository extends BaseRepository<MisDesignation,
 
     @Query("SELECT b FROM MisDesignation b WHERE b.deleted = false")
     Page<MisDesignation> findAllNotDeleted(String search, Pageable pageable);
+    
+    List<MisDesignation> findByDeletedFalseAndDesigType(Short desigType);
 }
 

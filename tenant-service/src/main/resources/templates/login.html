@@ -53,25 +53,28 @@
             
         }
         
-        .brand-section {
-            background-color: var(--dms-primary);
-            color: white;
-            padding: 3rem 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 75%;
-            min-height: 200px;
-            opacity: 0.5;
-            margin-top: 30%;
-        }
-        
-        .logo {
-            height: 120px;
-            margin-bottom: 1.5rem;
-            filter: brightness(1) invert(0);
-        }
+.brand-section {
+    background-color: var(--dms-primary);
+    color: white;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 75%;
+    min-height: 200px;
+    opacity: 0.9;
+    margin-top: 30%;
+}
+
+.logo {
+    height: auto;
+    max-height: 120px;
+    width: auto;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+    filter: brightness(1) invert(0);
+}
         
         .brand-title {
             font-family: 'Oswald', sans-serif;
@@ -107,11 +110,11 @@
         
         .form-control {
             border-radius: 4px;
-            padding: 12px 15px;
+            padding: 8px 15px;
             margin-bottom: 1rem;
             border: 1px solid var(--dms-gray-300);
             transition: all 0.3s;
-            opacity: .5;
+            opacity: .8;
         }
         
         .form-control:focus {
@@ -172,28 +175,43 @@
             text-decoration: none;
         }
         
-        @media (max-width: 768px) {
-            .brand-section {
-                min-height: 200px;
-                padding: 2rem 1rem;
-            }
-            .form-section {
-                min-height: auto;
-                padding: 2rem 1rem;
-            }
-            .logo {
-                height: 80px;
-            }
-        }
+@media (max-width: 768px) {
+    .brand-section {
+        padding: 2rem 1rem;
+        text-align: center;
+        opacity: 1;
+    }
+
+    .brand-title {
+        font-size: 1.5rem;
+    }
+
+    .brand-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .form-section {
+        padding: 2rem 1rem;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-login {
+        font-size: 1rem;
+        padding: 10px;
+    }
+}
     </style>
 </head>
 <body>
     <div class="container login-wrapper">
-        <div class="row g-0">
+        <div class="row g-0 flex-column-reverse flex-lg-row align-items-stretch">
             <!-- Left Column - Brand Section -->
             <div class="col-lg-5">
                 <div class="brand-section">
-                    <img class="logo" th:src="@{/public/images/logo.png}" alt="Organization Logo">
+                    <img class="logo img-fluid" th:src="@{/public/images/logo.png}" alt="Organization Logo">
                     <h1 class="brand-title">THE KALARI WORLD</h1>
                     <p class="brand-subtitle">Martial Arts Management System</p>
                 </div>

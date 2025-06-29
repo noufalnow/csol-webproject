@@ -2,6 +2,7 @@ package com.example.tenant_service.controller_html;
 
 import com.example.tenant_service.service.CoreUserService;
 
+import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserToggleDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
+import com.example.tenant_service.dto.users.CoreUserUpdateMemberDTO;
 import com.example.tenant_service.dto.users.UserMemberDTO;
 import com.example.tenant_service.entity.CoreUser;
 import com.example.tenant_service.entity.Node;
@@ -72,75 +74,65 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		setupPagination(model, userPage, sortField, sortDir);
 
 		model.addAttribute("search", search);
-		model.addAttribute("pageTitle", "User List - My Application");
+		model.addAttribute("pageTitle", "User List ");
 		model.addAttribute("pageUrl", "/users/html");
 
 		return "fragments/core_user_list";
 	}
 
-	@GetMapping({ "/html/bynode", "/html/bynode/{id}" }) // Supports both patterns
-	public String listUsersByNode(@PathVariable(value = "id", required = false) Long nodeId, HttpSession session,
-			Model model) {
+	@GetMapping({"/html/bynode", "/html/bynode/{id}", "/html/bynodeoff", "/html/bynodeoff/{id}"})
+	public String listUsersByNode(
+	    @PathVariable(value = "id", required = false) Long nodeId,
+	    HttpServletRequest request,
+	    HttpSession session,
+	    Model model) {
 
-		// HttpSession session = request.getSession();
-		if (nodeId != null) {
-			session.setAttribute("ParentId", nodeId); // for data entry
-		} else {
-			nodeId = (Long) session.getAttribute("NODE_ID");
-		}
+	    // Determine if this is for members or officials
+	    boolean isOfficialRequest = request.getRequestURI().contains("/bynodeoff");
+	    
+	    // Set or get node ID
+	    if (nodeId != null) {
+	        session.setAttribute("ParentId", nodeId); // for data entry
+	    } else {
+	        nodeId = (Long) session.getAttribute("NODE_ID");
+	    }
 
-		NodeDTO node = nodeService.findById(nodeId);
+	    // Get node information
+	    NodeDTO node = nodeService.findById(nodeId);
+	    Node.Type nodeType = node.getNodeType();
+	    Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
 
-		Node.Type nodeType = (Node.Type) node.getNodeType();
-		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
-		
-		logInfo("My Node ID: {}", session.getAttribute("NODE_ID"));
-		logInfo("Selected Node ID: {}", node.getNodeId());
-		
-		if ((userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) && (node.getNodeId() == session.getAttribute("NODE_ID"))) {
-			model.addAttribute("allowAddMember", true);
-		}  
-		
-		if (nodeType == Node.Type.KALARI) {
-			model.addAttribute("showMemberPanel", true);
-		}
-		model.addAttribute("pageTitle", "Members");
-		
+	    // Log node information
+	    logInfo("My Node ID: {}", session.getAttribute("NODE_ID"));
+	    logInfo("Selected Node ID: {}", node.getNodeId());
 
-		List<CoreUser> users = service.listUsersByNodeAndType(nodeId,UserType.MEMBER);
-		model.addAttribute("users", users);
-		model.addAttribute("target", "users_target");
-		return "fragments/node_users";
-	}
-	
-	
-	@GetMapping({ "/html/bynodeoff", "/html/bynodeoff/{id}" }) // Supports both patterns
-	public String listUsersByNodeOfficial(@PathVariable(value = "id", required = false) Long nodeId, HttpSession session,
-			Model model) {
+	    // Set model attributes based on request type and node types
+	    if (!isOfficialRequest) {
+	        model.addAttribute("pageTitle", "Members");
+	        if ((userNodeType == Node.Type.KALARI && nodeType == Node.Type.KALARI) && 
+	            (node.getNodeId().equals(session.getAttribute("NODE_ID")))) {
+	            model.addAttribute("allowAddMember", true);
+	        }
+	        if (nodeType == Node.Type.KALARI) {
+	            model.addAttribute("showMemberPanel", true);
+	        }
+	    } else { // Official request
+	        model.addAttribute("pageTitle", "Officials");
+	        if (nodeType.getLevel() > userNodeType.getLevel() && (userNodeType != Node.Type.KALARI)) {
+	            model.addAttribute("allowAddMember", true);
+	        }
+	        model.addAttribute("showMemberPanel", true);
+	    }
 
-		// HttpSession session = request.getSession();
-		if (nodeId != null) {
-			session.setAttribute("ParentId", nodeId); // for data entry
-		} else {
-			nodeId = (Long) session.getAttribute("NODE_ID");
-		}
-
-		NodeDTO node = nodeService.findById(nodeId);
-
-		Node.Type nodeType = (Node.Type) node.getNodeType();
-		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
-		
-		if (nodeType.getLevel() > userNodeType.getLevel() && (userNodeType != Node.Type.KALARI)) {
-			model.addAttribute("allowAddMember", true); /* official*/
-		} 
-		model.addAttribute("showMemberPanel", true);
-		
-		model.addAttribute("pageTitle", "Officials");
-
-		List<CoreUser> users = service.listUsersByNodeAndType(nodeId,UserType.OFFICIAL);
-		model.addAttribute("users", users);
-		model.addAttribute("target", "users_target");
-		return "fragments/node_users";
+	    // Get users based on type
+	    UserType userType = isOfficialRequest ? UserType.OFFICIAL : UserType.MEMBER;
+	    List<CoreUser> users = service.listUsersByNodeAndType(nodeId, userType);
+	    
+	    model.addAttribute("users", users);
+	    model.addAttribute("target", "users_target");
+	    model.addAttribute("isOfficialView", isOfficialRequest);
+	    
+	    return "fragments/node_users";
 	}
 
 	@GetMapping("/html/bynodeglobal")
@@ -158,20 +150,20 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 	@GetMapping("/html/{id}")
 	public String viewUserById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(id));
-		model.addAttribute("pageTitle", "User Detail - My Application");
+		model.addAttribute("pageTitle", "User Detail ");
 		return "fragments/core_user_detail";
 	}
 
 	@GetMapping("/html/view/{id}")
 	public String viewUserBiewById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(id));
-		model.addAttribute("pageTitle", "User Detail - My Application");
+		model.addAttribute("pageTitle", "User Detail ");
 		return "fragments/profile/view";
 	}
 
 	@GetMapping("/html/add")
 	public String showAddUserForm(Model model) {
-		model.addAttribute("pageTitle", "Add User - My Application");
+		model.addAttribute("pageTitle", "Add User ");
 		model.addAttribute("user", new CoreUserDTO());
 		// Fetch designations from the service and pass them to the model
 		List<DesignationDTO> designations = designationService.findAll();
@@ -190,21 +182,32 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 	}
 
 	@GetMapping("/html/addmember")
-	public String showAddMemberUserForm(Model model, HttpServletRequest request) {
-		model.addAttribute("pageTitle", "Add New Official - ##");
+	public String showAddMemberUserForm(Model model, HttpServletRequest request, HttpSession session) {
 		model.addAttribute("user", new UserMemberDTO());
-		// Fetch designations from the service and pass them to the model
-		List<DesignationDTO> designations = designationService.findAll();
-		model.addAttribute("designations", designations);
+		
+		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
 
-		/*HttpSession session = request.getSession(false);
-		System.out.println("=== Session Attributes ===");
-		Collections.list(session.getAttributeNames())
-				.forEach(name -> System.out.println(name + " = " + session.getAttribute(name)));*/
+		List<DesignationDTO> designations  = null;
+		
+		if (userNodeType == Node.Type.KALARI) {
+			model.addAttribute("pageTitle", "Add Members");
+			designations = designationService.findAllByType((short) 2);
+		}
+		else
+		{
+			model.addAttribute("pageTitle", "Add Officials");
+			designations = designationService.findAllByType((short) 1);
+		}
+		
+		logInfo("My Node userNodeType: {}", userNodeType);
+		logInfo("My Node Node.Type.KALARI: {}", userNodeType);
+
+		model.addAttribute("designations", designations);
 
 		return "fragments/add_memberuser";
 	}
-
+	
+	
 	@PostMapping("/html/addmember")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addMember(@Valid @ModelAttribute UserMemberDTO userMemberDTO,
@@ -243,9 +246,56 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		userMemberDTO.setUserUname("uname");
 
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "users/html/bynode/" + parentId);
+		if (Node.Type.KALARI.equals(session.getAttribute("NODE_TYPE"))) 
+			additionalData.put("loadnext", "users/html/bynode/" + parentId);
+		else
+			additionalData.put("loadnext", "users/html/bynodeoff/" + parentId);
+			
 		additionalData.put("target", "users_target");
 		return handleRequest(result, () -> service.saveMamber(userMemberDTO), "User added successfully",
+				additionalData);
+	}
+	
+	
+	@GetMapping("/html/editmember/{id}")
+	public String editMember(@PathVariable Long id, Model model, HttpSession session) {
+		model.addAttribute("user", service.findById(id));
+		List<DesignationDTO> designations  = null;
+		
+		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
+		
+		if (userNodeType == Node.Type.KALARI) {
+			model.addAttribute("pageTitle", "Edit Members");
+			designations = designationService.findAllByType((short) 2);
+		}
+		else
+		{
+			model.addAttribute("pageTitle", "Edit Officials");
+			designations = designationService.findAllByType((short) 1);
+		}
+		model.addAttribute("designations", designations);
+		return "fragments/edit_member_user";
+	}
+
+	@PostMapping("/html/updatemember/{refId}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> updateMember(@PathVariable("refId") Long userId,
+			@Valid @ModelAttribute CoreUserUpdateMemberDTO coreUserUpdateDTO, BindingResult result,HttpSession session) {
+		Map<String, Object> additionalData = new HashMap<>();
+		
+		Object parentId = session.getAttribute("ParentId");
+		
+		
+		
+		if (Node.Type.KALARI.equals(session.getAttribute("NODE_TYPE"))) 
+			additionalData.put("loadnext", "users/html/bynode/" + parentId);
+		else
+			additionalData.put("loadnext", "users/html/bynodeoff/" + parentId);
+		
+		
+		additionalData.put("target", "users_target");
+
+		return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO), "User updated successfully",
 				additionalData);
 	}
 

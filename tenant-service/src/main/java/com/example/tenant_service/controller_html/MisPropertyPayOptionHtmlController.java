@@ -72,7 +72,7 @@ public class MisPropertyPayOptionHtmlController
 		setupPagination(model, payOptionPage, sortField, sortDir);
 
 		model.addAttribute("search", search);
-		model.addAttribute("pageTitle", "Property Payment Options - My Application");
+		model.addAttribute("pageTitle", "Property Payment Options ");
 		model.addAttribute("pageUrl", "/propertyPayOptions/html");
 
 		return "fragments/property_pay_option_list";
@@ -81,13 +81,13 @@ public class MisPropertyPayOptionHtmlController
 	@GetMapping("/html/{id}")
 	public String viewPayOptionById(@PathVariable Long id, Model model) {
 		model.addAttribute("payOption", service.findById(id));
-		model.addAttribute("pageTitle", "Pay Option Detail - My Application");
+		model.addAttribute("pageTitle", "Pay Option Detail ");
 		return "fragments/property_pay_option_detail";
 	}
 
 	@GetMapping("/html/add/{refId}")
 	public String showAddPayOptionForm(@PathVariable("refId") Long refId, Model model) {
-		model.addAttribute("pageTitle", "Add Property Payment Option - My Application");
+		model.addAttribute("pageTitle", "Add Property Payment Option ");
 		model.addAttribute("payOption", new PropertyPayOptionDTO());
 		model.addAttribute("refId", refId);
 		

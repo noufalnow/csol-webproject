@@ -4,7 +4,7 @@
             Score Entry for <span th:text="${itemNameMap[T(java.lang.Long).parseLong(selectedItemId)]}">Item Name</span>
 
         </h5>
-       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+       <button type="button" class="btn-close" aria-label="Close" th:onclick="'loadContent(\'' + @{/events/html/listitems(eventId=${eventId})} + '\', \'modal\')'"></button>
     </div>
     
     <!-- Modal Body -->
@@ -74,8 +74,10 @@
         <button type="button" class="btn btn-primary" onclick="submitHtmlForm('scoreEntryForm')">
             <i class="fas fa-save me-2"></i>Save Scores
         </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-    </div>
+<button type="button" class="btn btn-secondary"
+        th:onclick="'loadContent(\'' + @{/events/html/listitems(eventId=${eventId})} + '\', \'modal\')'">
+    Close
+</button>   </div>
     
  <style>
 form {

@@ -52,7 +52,7 @@ public class MisDocumentViewController extends BaseController<DocumentsViewDTO, 
 
         setupPagination(model, documentPage, sortField, sortDir);
         model.addAttribute("search", search);
-        model.addAttribute("pageTitle", "Document List - My Application");
+        model.addAttribute("pageTitle", "Document List ");
         model.addAttribute("pageUrl",  "/view/documents/html");
 
         return "fragments/document_list"; // Adjust to your template
@@ -70,7 +70,7 @@ public class MisDocumentViewController extends BaseController<DocumentsViewDTO, 
         model.addAttribute("versions", versions);
 
         
-        model.addAttribute("pageTitle", "Document Detail - My Application");
+        model.addAttribute("pageTitle", "Document Detail ");
         return "fragments/document_details"; // Adjust to your template
     }
     

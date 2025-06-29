@@ -56,7 +56,7 @@ public class HomeController {
 		
 		model.addAttribute("resultList", resultList);
 		model.addAttribute("eventList", eventList);
-		model.addAttribute("pageTitle", "Home - My Application");
+		model.addAttribute("pageTitle", "Home ");
 		model.addAttribute("nodeType", session.getAttribute("NODE_TYPE"));
 		model.addAttribute("userType",session.getAttribute("USER_TYPE").toString().trim());
 		
