@@ -1,0 +1,149 @@
+<div th:fragment="content">
+    <h1>Property Report</h1>
+
+    <!-- Filter Form -->
+    <form id="search-form" method="GET" action="/collections/html/property">
+        <input type="hidden" name="sortField" th:value="${sortField}"/>
+    	<input type="hidden" name="sortDir" th:value="${sortDir}"/>
+        <input type="text" name="prop_no" placeholder="Property No" th:value="${propNo}"/>
+        <input type="text" name="prop_name" placeholder="Property Name" th:value="${propName}"/>
+        <input type="text" name="prop_fileno" placeholder="File No" th:value="${propFileno}"/>
+        <input type="text" name="prop_building" placeholder="Building" th:value="${propBuilding}"/>
+
+        <select name="status">
+            <option value="">All</option>
+            <option value="active" th:selected="${status == 'active'}">Active</option>
+            <option value="inactive" th:selected="${status == 'inactive'}">Inactive</option>
+        </select>
+
+        <button type="button" onclick="filterReports('/collections/html/property', '#content', 'prop_name')">Filter</button>
+    </form>
+
+    <!-- Properties Report Table -->
+    <table id="properties-container">
+        <thead>
+	        <tr>
+<th>
+    <a href="#" 
+       th:onclick="'sortTable(\'search-form\', \'propId\')'" 
+       th:classappend="${sortField == 'propId'} ? ('sorted-' + sortDir) : ''">
+        Property ID
+    </a>
+</th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propNo\')'" th:classappend="${sortField == 'propNo'} ? 'sorted-' + sortDir : ''">Property No</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propName\')'" th:classappend="${sortField == 'propName'} ? 'sorted-' + sortDir : ''">Property Name</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propFileno\')'" th:classappend="${sortField == 'propFileno'} ? 'sorted-' + sortDir : ''">File No</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propBuilding\')'" th:classappend="${sortField == 'propBuilding'} ? 'sorted-' + sortDir : ''">Building</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propResponsible\')'" th:classappend="${sortField == 'propResponsible'} ? 'sorted-' + sortDir : ''">Responsible</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propRemarks\')'" th:classappend="${sortField == 'propRemarks'} ? 'sorted-' + sortDir : ''">Remarks</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'uCreated\')'" th:classappend="${sortField == 'uCreated'} ? 'sorted-' + sortDir : ''">Created By</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'uModified\')'" th:classappend="${sortField == 'uModified'} ? 'sorted-' + sortDir : ''">Modified By</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'active\')'" th:classappend="${sortField == 'active'} ? 'sorted-' + sortDir : ''">Status</a></th>
+	            <th><a href="#" th:onclick="'sortTable(\'search-form\', \'propAccount\')'" th:classappend="${sortField == 'propAccount'} ? 'sorted-' + sortDir : ''">Account</a></th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(properties)}">
+                <td colspan="11">No records found.</td> <!-- Updated colspan to match the number of headers -->
+            </tr>
+            <tr th:each="record : ${properties}">
+                <td th:text="${record.get('propId')}"></td> <!-- Property ID -->
+                <td th:text="${record.get('propNo')}"></td> <!-- Property No -->
+                <td th:text="${record.get('propName')}"></td> <!-- Property Name -->
+                <td th:text="${record.get('propFileno')}"></td> <!-- File No -->
+                <td th:text="${record.get('propBuilding')}"></td> <!-- Building -->
+                <td th:text="${record.get('propResponsible')}"></td> <!-- Responsible -->
+                <td th:text="${record.get('propRemarks')}"></td> <!-- Remarks -->
+                <td th:text="${record.get('uCreated')}"></td> <!-- Created By -->
+                <td th:text="${record.get('uModified')}"></td> <!-- Modified By -->
+                <td th:text="${record.get('active') == 1 ? 'Active' : 'Inactive'}"></td> <!-- Status -->           
+                <td th:text="${record.get('propAccount')}"></td> <!-- Account -->
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+
+
+//JavaScript function to handle sorting
+function sortTable(formId, sortField) {
+    // Get the form element by its ID
+    const form = document.getElementById(formId);
+
+    // Get the hidden input fields for sortField and sortDir
+    const sortFieldInput = form.querySelector("input[name='sortField']");
+    const sortDirInput = form.querySelector("input[name='sortDir']");
+
+    // Get the current sort direction (asc or desc) from the hidden input
+    let currentSortDir = sortDirInput.value || 'asc';
+
+    // If the sortField is the same as the current one, toggle the sort direction
+    let newSortDir = (sortFieldInput.value === sortField && currentSortDir === 'asc') ? 'desc' : 'asc';
+
+    // Update the hidden input fields
+    sortFieldInput.value = sortField;
+    sortDirInput.value = newSortDir;
+
+    // Trigger the filterReports function to update the content dynamically
+    filterReports(form.action, '#content');
+}
+
+
+
+
+function filterReports(listingUrl, targetContainer) {
+    // Get the current URL and ensure no fragment (`#`) is used
+    var url = new URL(listingUrl);
+
+    // Collect all input values from the filter form
+    var inputs = document.querySelectorAll("#search-form input, #search-form select");
+
+    // Update query parameters with filter values
+    inputs.forEach(input => {
+        if (input.value) {
+            // Append filter parameters
+            url.searchParams.set(input.name, input.value);  // Set the filters in the URL
+        } else {
+            url.searchParams.delete(input.name);  // Remove empty filters
+        }
+    });
+
+    // Build final URL and load content
+    console.log(url.toString());  // For debugging purposes
+    loadContent(url.toString(), targetContainer);  // Load the filtered content into the target container
+}
+
+
+</script>
+
+
+
+<style>
+    #search-form {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Adjust spacing between the fields */
+    }
+    
+    #search-form input,
+    #search-form select {
+        padding: 5px;  /* Adjust padding for consistent sizing */
+        font-size: 14px;
+    }
+    
+    #search-form button {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+    
+    .sorted-asc::after {
+    content: " ⬆"; /* Ascending indicator */
+}
+
+.sorted-desc::after {
+    content: " ⬇"; /* Descending indicator */
+}
+    
+</style>

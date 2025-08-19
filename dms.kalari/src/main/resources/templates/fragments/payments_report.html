@@ -1,0 +1,69 @@
+<div th:fragment="content">
+    <h1>Customer Payments and Dues Report</h1>
+
+    <!-- Filter Form -->
+    <form id="search-form" method="GET" action="/collections/html/payments" onsubmit="event.preventDefault(); filterReports('@{/collections/html/payments}', '#payments-container', 'customerName');">
+        <input type="text" name="customer" placeholder="Customer" th:value="${customer}"/>
+        <select name="status">
+            <option value="">All</option>
+            <option value="paid" th:selected="${status == 'paid'}">Paid</option>
+            <option value="due" th:selected="${status == 'due'}">Due</option>
+        </select>
+        <input type="date" name="fromDate" th:value="${fromDate}"/>
+        <input type="date" name="toDate" th:value="${toDate}"/>
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Payments Report Table -->
+    <table id="payments-container">
+        <thead>
+            <tr>
+                <th>Customer Name</a></th>
+                <th>Company Name</a></th>
+                <th>Phone</a></th>
+                <th>Due Amount</a></th>
+                <th>Total Amount</a></th>
+                <th>Paid Amount</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(payments)}">
+                <td colspan="6">No records found.</td> <!-- Updated colspan to match the number of headers -->
+            </tr>
+            <tr th:each="record : ${payments}">
+                <td th:text="${record[0]}"></td> <!-- Customer Name -->
+                <td th:text="${record[1]}"></td> <!-- Company Name -->
+                <td th:text="${record[2]}"></td> <!-- Phone -->
+                <td th:text="${#numbers.formatDecimal(record[3], 2, 2)}"></td> <!-- Due Amount -->
+                <td th:text="${#numbers.formatDecimal(record[4], 2, 2)}"></td> <!-- Total Amount -->
+                <td th:text="${#numbers.formatDecimal(record[5], 2, 2)}"></td> <!-- Paid Amount -->
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+function filterReports(listingUrl, targetContainer, defaultSortField) {
+    var queryParams = [];
+    var inputs = document.querySelectorAll("#search-form input, #search-form select");
+
+    // Collect all input values from the filter form
+    inputs.forEach(input => {
+        if (input.value) {
+            queryParams.push(input.name + '=' + encodeURIComponent(input.value));
+        }
+    });
+
+    // Default sorting field
+    var sortField = defaultSortField; // Use the default sort field passed as parameter
+    var sortDir = 'asc'; // You can set default sort direction or handle it accordingly
+
+    // Append sort parameters
+    queryParams.push('sortField=' + sortField);
+    queryParams.push('sortDir=' + sortDir);
+
+    var url = listingUrl + '?' + queryParams.join('&');
+    loadContent(url, targetContainer);  // Use AJAX to load the filtered content
+}
+</script>

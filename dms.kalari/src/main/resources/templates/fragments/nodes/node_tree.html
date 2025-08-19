@@ -1,0 +1,393 @@
+<style>
+/*─── Tree Container & Structure ──────────────────────────────────────────*/
+.tree-container {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tree-title {
+	color: var(--dms-dark);
+	margin-bottom: 1.25rem;
+	padding-bottom: 0.625rem;
+	border-bottom: 2px solid var(--dms-gray-200);
+}
+
+.tree {
+	list-style: none;
+	padding-left: 0.25rem;
+}
+
+.tree ul {
+	list-style: none;
+	padding-left: 1.25rem;
+}
+
+.tree li {
+	margin: 0.2rem 0;
+	position: relative;
+}
+
+/*─── Base Tree Node ─────────────────────────────────────────────────────*/
+.tree-node {
+	display: flex;
+	align-items: center;
+	padding: 0.25rem 0.625rem;
+	border-radius: 0.25rem;
+	margin: 0.125rem 0;
+	white-space: nowrap;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	min-width: min-content;
+}
+
+/*─── Node Type-Specific Styling ──────────────────────────────────────────*/
+.tree-node.ROOT {
+	background-color: rgba(44, 62, 80, 0.15);
+	border-left: 3px solid var(--dms-primary);
+	font-weight: bold;
+}
+
+.tree-node.COUNTRY {
+	background-color: rgba(52, 73, 94, 0.15);
+	border-left: 3px solid var(--dms-secondary);
+}
+
+.tree-node.STATE {
+	background-color: rgba(241, 196, 15, 0.15);
+	border-left: 3px solid var(--dms-warning);
+}
+
+.tree-node.DISTRICT {
+	background-color: rgba(231, 76, 60, 0.15);
+	border-left: 3px solid var(--dms-danger);
+}
+
+.tree-node.KALARI {
+	background-color: rgba(108, 117, 125, 0.15);
+	border-left: 3px solid var(--dms-gray-600);
+}
+
+/*─── Interactive States ─────────────────────────────────────────────────*/
+.tree-node:hover {
+	background-color: var(--dms-gray-100);
+}
+
+.tree-node.active {
+	/*background-color: var(--dms-accent) !important;
+    color: #fff;
+    font-weight: bolder;
+    position: relative;
+    padding-left: 1.5rem;*/
+	font-weight: bolder;
+	position: relative;
+	padding-left: 1.5rem;
+	font-family: 'Courgette', cursive;
+}
+
+.tree-node.active::before {
+	content: "•";
+	position: absolute;
+	left: 0.5rem;
+	font-size: 1.5rem;
+	line-height: 1;
+	color: green;
+}
+
+/*─── Links ───────────────────────────────────────────────────────────────*/
+.tree-node>span .aspan {
+	color: inherit;
+	text-decoration: none;
+	flex-grow: 1;
+	cursor: pointer;
+	pointer-events: auto;
+}
+
+.tree-node>span .aspan:hover {
+	text-decoration: underline;
+}
+
+/*─── Toggle Elements ────────────────────────────────────────────────────*/
+.toggle-btn {
+	width: 1.5rem;
+	height: 1.5rem;
+	margin-right: 0.5rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--dms-gray-200);
+	border-radius: 0.25rem;
+	cursor: pointer;
+	font-size: 0.75rem;
+	user-select: none;
+	transition: background-color 0.2s ease;
+	border: 1px solid #bfddfb;
+}
+
+.toggle-btn:hover {
+	background-color: var(--dms-gray-300);
+}
+
+.toggle-btn.closed>span {
+	/*transform: rotate(0deg);*/
+	transition: transform 0.2s ease;
+}
+
+.toggle-btn.open>span {
+	/*transform: rotate(90deg);*/
+	box-sizing: content-box;
+}
+
+.empty-toggle {
+	width: 1.5rem;
+	margin-right: 0.5rem;
+}
+
+/*─── Layout Columns ────────────────────────────────────────────────────*/
+.tree-column {
+	border: 1px solid var(--dms-gray-300);
+	border-radius: 1.25rem;
+	padding: 0.125rem;
+	overflow-y: auto;
+	overflow-x: scroll;
+}
+
+.content-column {
+	border: 2px solid var(--dms-gray-300);
+	border-radius: 1.25rem;
+	padding: 1.25rem;
+}
+
+/*─── Collapsed Branches ─────────────────────────────────────────────────*/
+ul.collapsed {
+	display: none;
+}
+</style>
+
+
+<div class="container mt-1 mb-3">
+	<div class="d-flex justify-content-end align-items-center gap-3">
+		<input type="hidden" id="tempSelectedId" name="tempSelectedId"
+			th:value="${parentId}" />
+		<!-- show for anyone whose userType is not KALARI -->
+		<div class="form-check form-check-inline"
+			th:if="${nodeType} != 'KALARI'"
+			onclick="document.getElementById('option1').checked = true;loadContent('/nodes/html/nodelist', '#users_target'); clearTreeForm()">
+			<input class="form-check-input" type="radio" name="choice"
+				id="option1" value="nodes"> <label class="form-check-label"
+				for="option1">Branches</label>
+		</div>
+
+		<div class="form-check form-check-inline"
+			onclick="document.getElementById('option2').checked = true;loadContent('/users/html/bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			<input class="form-check-input" type="radio" name="choice"
+				id="option2" value="officials" checked> <label
+				class="form-check-label" for="option2">Officials</label>
+		</div>
+
+		<!-- show (and pre-check) only when userType equals KALARI -->
+		<div class="form-check form-check-inline"
+			/*th:if="${nodeType} == 'KALARI'"
+			*/
+			onclick="document.getElementById('option3').checked = true;loadContent('/users/html/bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			<input class="form-check-input" type="radio" name="choice"
+				id="option3" value="members"> <label
+				class="form-check-label" for="option3">Members</label>
+		</div>
+		<div class="form-check form-check-inline"
+			onclick="document.getElementById('option4').checked = true;loadContent('/events/html/byhost/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			<input class="form-check-input" type="radio" name="choice"
+				id="option4" value="events"> <label class="form-check-label"
+				for="option4">Events</label>
+		</div>
+
+
+	</div>
+</div>
+
+<div class="d-flex overflow-hidden mb-3 border-secondary">
+	<!-- Left column -->
+	<div th:if="${nodeType} != 'KALARI'" class="tree-column me-2 flex-shrink-0" style="width: 25%;">
+		<div>
+			<!-- templates/fragments/node_tree.html -->
+			<!-- Main content fragment -->
+			<div th:fragment="content">
+				<h5 th:text="${pageTitle}" class="tree-title ms-3 mt-3">Node
+					Tree</h5>
+				<div class="tree-container">
+					<ul class="tree">
+						<li th:each="node : ${treeData}"><th:block
+								th:if="${node != null}">
+								<div
+									th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${node}, parentId=${parentId})}"></div>
+							</th:block></li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- Recursive nodeItem fragment -->
+			<div th:fragment="nodeItem(node, parentId)">
+				<th:block th:if="${node != null}">
+					<div
+						th:class="'tree-node ' + ${node.nodeType}
+			             + (${node.nodeId==parentId} ? ' active' : '')
+			             + (${node.isActivePath} ? ' in-active-path' : '')"
+						th:data-node-id="${node.nodeId}"
+						th:onclick="|onTreeNodeClick(event, this);|">
+
+						<!-- Toggle button -->
+						<span th:if="${!node.children.isEmpty()}" class="toggle-btn"
+							th:classappend="${node.isActivePath} ? 'open' : 'closed'">
+							<span th:text="${node.isActivePath} ? '-' : '+'"></span>
+						</span> <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
+
+						<span class"aspan" th:if="${node.nodeId != null}"
+							th:text="${node.nodeName}"> Node Name </span>
+					</div>
+
+
+
+					<!-- Children list -->
+					<ul th:if="${!node.children.isEmpty()}"
+						th:classappend="${node.isActivePath} ? 'expanded' : 'collapsed'">
+						<li th:each="child : ${node.children}">
+							<div
+								th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
+						</li>
+					</ul>
+				</th:block>
+			</div>
+		</div>
+	</div>
+
+	<!-- Right column -->
+	<div class="content-column flex-grow-1">
+		<div id="users_target"></div>
+	</div>
+</div>
+
+<div id="tree_form_target"></div>
+
+<script>
+  function clearTreeForm() {
+    $('#tree_form_target').html('');
+  }
+  
+  // Function to toggle children visibility
+function onTreeNodeClick(event, nodeEl) {
+  // 1) toggle open/closed
+  toggleTreeNode(event, nodeEl);
+
+  // 2) activate the link highlight
+  activateLink(nodeEl);
+
+  // 3) load content into your target
+  const id = nodeEl.getAttribute('data-node-id');
+  //loadContent(`/users/html/bynode/${id}`, '#users_target');
+  //loadContent('/events/html/byhost', '#users_target');
+  
+  const selectedValue = document.querySelector('input[name="choice"]:checked')?.value;
+  
+  $('#tempSelectedId').val(id);
+
+  if (selectedValue === 'events') {
+    loadContent(`/events/html/byhost/${id}`, '#users_target');
+  } 
+  else if (selectedValue === 'officials') {
+	loadContent(`/users/html/bynodeoff/${id}`, '#users_target');
+  }
+  else if (selectedValue === 'nodes') {
+	loadContent(`/nodes/html/nodelist/${id}`, '#users_target');
+  } 
+  else {
+    loadContent(`/users/html/bynode/${id}`, '#users_target');
+  }
+  
+
+  
+
+  // 4) clear the form
+  clearTreeForm();
+}
+
+function toggleTreeNode(event, nodeElement) {
+	  // if they clicked the actual <a> text, bail out
+	  if (event.target.tagName === 'A') return;
+
+	  // find the toggle button (only present if there are children)
+	  const toggleBtn = nodeElement.querySelector('.toggle-btn');
+	  if (!toggleBtn) return;
+
+	  // find the <ul> of children to expand/collapse
+	  const parentLi    = nodeElement.closest('li');
+	  const childrenUl  = parentLi && parentLi.querySelector('ul');
+	  if (!childrenUl) return;
+
+	  // toggle classes
+	  childrenUl.classList.toggle('collapsed');
+	  childrenUl.classList.toggle('expanded');
+	  toggleBtn.classList.toggle('open');
+	  toggleBtn.classList.toggle('closed');
+
+	  // update the “+” / “–”
+	  toggleBtn.querySelector('span').textContent =
+	    childrenUl.classList.contains('collapsed') ? '+' : '-';
+
+	  // optional: also flip display for old-browser support
+	  childrenUl.style.display =
+	    childrenUl.classList.contains('collapsed') ? 'none' : 'block';
+
+	  // don’t let this click bubble up further
+	  event.stopPropagation();
+	}
+
+  
+  // Function to activate the clicked link
+  function activateLink(link) {
+    // Remove active class from all links
+    document.querySelectorAll('.tree-node').forEach(node => {
+      node.classList.remove('active');
+    });
+    
+    // Add active class to clicked link's parent
+    link.closest('.tree-node').classList.add('active');
+  }
+  
+  // Initialize the tree (collapse all except first level)
+  document.addEventListener('DOMContentLoaded', function() {
+    const allLists = document.querySelectorAll('.tree ul');
+    allLists.forEach(list => {
+      // Hide all nested lists initially
+      if (list.closest('li').querySelector('ul') !== list) {
+        list.style.display = 'none';
+      }
+      
+      // Change toggle button to '+' for hidden lists
+      const parentNode = list.closest('li');
+      if (parentNode) {
+        const toggleBtn = parentNode.querySelector('.toggle-btn');
+        if (toggleBtn && list.style.display === 'none') {
+          toggleBtn.textContent = '+';
+        }
+      }
+    });
+    
+    // Make nodes with no children have empty toggle space
+    document.querySelectorAll('.tree li').forEach(li => {
+      if (!li.querySelector('ul')) {
+        const emptyToggle = li.querySelector('.empty-toggle');
+        if (emptyToggle) {
+          emptyToggle.style.visibility = 'hidden';
+        }
+      }
+    });
+  });
+  
+  function getActiveTreeNodeId() {
+	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
+	}
+  
+  loadContent('/users/html/bynodeoff', '#users_target');
+  
+</script>
+
+
+

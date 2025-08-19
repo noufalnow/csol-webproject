@@ -1,0 +1,282 @@
+<div th:fragment="content">
+
+<style>
+
+.medal-gold {
+    color: #FFD700;
+    font-weight: bold;
+}
+.medal-silver {
+    color: #C0C0C0;
+    font-weight: bold;
+}
+.medal-bronze {
+    color: #CD7F32;
+    font-weight: bold;
+}
+.medal-participation {
+    color: #6c757d;
+    font-style: italic;
+}
+
+</style>
+
+
+
+<div class="">
+    <div class="container py-4">
+        <!-- Main Profile Card -->
+        <div class="dms-card">
+            <div class="dms-card-header">
+                <i class="fas fa-user-circle me-2"></i>CANDIDATE PROFILE RECORD
+            </div>
+            <div class="dms-card-body">
+                <div class="row align-items-center">
+                    <!-- Left Column - Name & Details -->
+                    <div class="col-md-8">
+                        <h2 class="mb-2" th:text="${session.USER_NAME}">RAJESH KUMAR </h2>
+                        <h5 class="mb-2 fw-bold" th:text="${session.NODE_NAME}">KALARI </h5>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-trophy me-1"></i> Senior Level Athlete
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <span class="badge-dms">
+                                <i class="fas fa-id-card me-1"></i> ID: SP2023-00456
+                            </span>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-user-tag me-1"></i> Senior Category
+                            </span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <div class="detail-label">Date of Birth:</div>
+                            <div class="detail-value">15-07-2001 (22 years)</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Gender:</div>
+                            <div class="detail-value">Male</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Aadhaar Number:</div>
+                            <div class="detail-value">XXXX-XXXX-7890</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Photo -->
+                    <div class="col-md-4 text-center">
+                        <div class="profile-photo-container mx-auto mb-3">
+                            <img src="https://img.freepik.com/free-photo/indian-man-smiling-mockup-psd-cheerful-expression-closeup-portra_53876-143269.jpg" alt="Candidate Photo" class="profile-photo">
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-camera me-1"></i> Update Photo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Personal Information Column -->
+            <div class="col-lg-6">
+                <div class="dms-card">
+                    <div class="dms-card-header">
+                        <i class="fas fa-info-circle me-2"></i>PERSONAL INFORMATION
+                    </div>
+                    <div class="dms-card-body">
+                        <div class="info-group">
+                            <div class="info-label">FATHER'S NAME</div>
+                            <div class="info-value">Vijay Kumar</div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">MOTHER'S NAME</div>
+                            <div class="info-value">Priya Kumari</div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">ADDRESS</div>
+                            <div class="info-value">
+                                123 Main Street, <br>
+                                Bangalore, Karnataka - 560001
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">STATE & NATIONALITY</div>
+                            <div class="info-value">Karnataka, Indian</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact & Status Column -->
+            <div class="col-lg-6">
+                <div class="dms-card">
+                    <div class="dms-card-header">
+                        <i class="fas fa-address-card me-2"></i>CONTACT & STATUS
+                    </div>
+                    <div class="dms-card-body">
+                        <div class="info-group">
+                            <div class="info-label">PARTICIPANT STATUS</div>
+                            <div class="info-value">
+                                <span class="status-badge status-student">
+                                    <i class="fas fa-graduation-cap me-1"></i> STUDENT
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">MOBILE NUMBER</div>
+                            <div class="info-value">
+                                <i class="fas fa-phone me-2"></i> 9876543210
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">EMAIL ADDRESS</div>
+                            <div class="info-value">
+                                <i class="fas fa-envelope me-2"></i> rajesh.kumar@example.com
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <div class="info-label">EMERGENCY CONTACT</div>
+                            <div class="info-value">
+                                <i class="fas fa-phone-alt me-2"></i> 9876543211 (Father)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Championship Participation Section -->
+        <h3 class="section-title">
+            <i class="fas fa-trophy me-2"></i> ACHIVEMENTS
+        </h3>
+        
+<div class="table-responsive">
+    <table class="table table-dms">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Event Name</th>
+                <th>Host</th>
+                <th>Item</th>
+                <th>Result</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="result, iterStat : ${resultList}">
+                <td th:text="${iterStat.count}">1</td>
+                <td th:text="${result.get('event_name')}">Event Name</td>
+                <td th:text="${result.get('event_node_name')}">Category</td>
+                <td th:text="${result.get('item_name')}">Item</td>
+				<td>
+				    <span th:class="${'medal-' + result.get('item_status_label').toLowerCase()}" 
+				          th:if="${result.get('item_status_label') != 'Pending'}">
+				        <i class="fas fa-medal me-1"></i>
+				        <span th:text="${result.get('item_status_label')}">Result</span>
+				    </span>
+				    <span th:unless="${result.get('item_status_label') != 'Pending'}">
+				        <span th:text="${result.get('item_status_label')}">Result</span>
+				    </span>
+				</td>
+                <td th:text="${result.get('memvnt_result_date')}" 
+                    th:if="${result.get('memvnt_result_date') != null}">Date</td>
+                <td th:unless="${result.get('memvnt_result_date') != null}">-</td>
+                <td>                   
+				<a th:if="${result.get('memvnt_result_date') != null and result.get('item_result') != '1'}"
+				   th:href="@{|/member-events/html/certificate/${result.get('memvnt_id')}?itemId=${result.get('item_id')}|}"
+				   class="btn btn-sm btn-outline-secondary">
+				   <i class="fa-solid fa-award"></i> Certificate
+				</a>
+
+                    
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+        
+        <h3 class="section-title">
+		    <i class="fas fa-bell me-2"></i> CHAMPIONSHIP NOTIFICATION
+		</h3>
+		
+		<div class="table-responsive">
+		    <table class="table table-dms">
+		        <thead>
+		            <tr>
+		                <th>#</th>
+		                <th>Event Name</th>
+		                <th>Year</th>
+		                <th>Date</th>
+		                <th>Venue</th>
+		                <th>Level</th>
+		                <th>Actions</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+					<tr th:each="event, iterStat : ${eventList}">
+					  <td th:text="${iterStat.count}">1</td>
+					  
+					  <!-- Access fields using get() with database column names -->
+					  <td th:text="${event.get('event_name')}">Event Name</td>
+					  <td th:text="${event.get('event_year')}">2025</td>
+					  <td th:text="${event.get('dd_event_period_start')} + ' - ' + 
+					               ${event.get('dd_event_period_end')}">
+					    01 Jan 2025 - 05 Jan 2025
+					  </td>
+					  <td th:text="${event.get('event_venue')}">Venue Name</td>
+					  <td th:text="${event.get('event_host')}">STATE</td>
+					  
+					  <td>
+					  
+						<!-- Render 'Apply' link if memvnt_id is null -->
+						<a class="me-2" href="javascript:void(0);"
+						   th:if="${event.get('memvnt_id')} == null"
+						   th:onclick="'loadContent(\'/member-events/html/add?eventId=' + ${event.get('event_id')} + '\', \'modal\')'">
+						  <span class="btn btn-sm btn-outline-warning">
+						    <i class="fas fa-file me-1"></i> Apply
+						  </span>
+						</a>
+						
+						<!-- Render 'Modify' link if memvnt_id is not null -->
+						<a class="me-2" href="javascript:void(0);"
+						   th:if="${event.get('memvnt_id')} != null"
+						   th:onclick="'loadContent(\'/member-events/html/update?memvnt_id=' + ${event.get('memvnt_id')} + '\', \'modal\')'">
+						  <span class="btn btn-sm btn-outline-primary">
+						    <i class="fas fa-file me-1"></i> Modify
+						  </span>
+						</a>
+
+					    
+					    <button class="btn btn-sm btn-outline-primary" th:if="${event.get('memvnt_id')} != null">
+					      <i class="fas fa-file-alt"></i> View
+					    </button>
+					  </td>
+					</tr>
+
+		        </tbody>
+		    </table>
+		</div>
+        
+        
+        <!-- Document Actions -->
+        <div class="d-flex justify-content-end mt-3 gap-2">
+            <button class="btn btn-outline-secondary">
+                <i class="fas fa-edit me-1"></i> Edit Profile
+            </button>
+            <button class="btn btn-primary">
+                <i class="fas fa-print me-1"></i> Print Profile
+            </button>
+            <button class="btn btn-success">
+                <i class="fas fa-download me-1"></i> Export PDF
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+    

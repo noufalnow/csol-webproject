@@ -1,0 +1,176 @@
+<div th:fragment="content">
+    <h1>Add New Collection</h1>
+
+    <!-- Form to select tenant and related documents and schedules -->
+    <form id="collection-form" method="POST" action="/collections/html/add">
+        <!-- Tenant Selection Table -->
+        <table>
+            <tr>
+                <td><label for="tenant">Select Tenant (Customer):</label></td>
+                <td><select id="tenant" name="tenantId" onchange="loadDocuments(this.value)">
+                        <option value="">-- Select Tenant --</option>
+                        <option th:each="tenant : ${tenants}" th:value="${tenant.tntId}"
+                            th:text="${tenant.tntFullName}"></option>
+                </select></td>
+            </tr>
+        </table>
+
+        <!-- Section to display tenant details, documents, and schedules for the selected tenant -->
+        <div id="tenant-details" style="margin-top: 20px;"></div>
+        <div id="documents-container"></div>
+
+        <!-- Total, collDiscount, and Net Amount Section in a Table -->
+        <div class="floating-section">
+            <table>
+                <tr>
+                    <td><label>Total Amount: </label></td>
+                    <td><span id="totalAmount">0.00</span></td>
+                </tr>
+                <tr>
+                    <td><label for="collDiscount">collDiscount: </label></td>
+                    <td><input type="number" id="collDiscount" name="collDiscount" value="0" oninput="updateNetAmount()"></td>
+                </tr>
+                <tr>
+                    <td><label>Net Amount: </label></td>
+                    <td><span id="netAmount">0.00</span></td>
+                </tr>
+            </table>
+            <button type="button" onclick="submitHtmlFormX('collection-form')">Save Collection</button>
+        </div>
+    </form>
+</div>
+
+<script>
+let totalAmount = 0;
+
+function loadDocuments(tenantId) {
+    if (tenantId) {
+        fetch(`/collections/documents/${tenantId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let tenant = {
+                        tntFullName: data[0].tenantFullName,
+                        tntCompName: data[0].tenantCompanyName,
+                        tntPhone: data[0].tenantPhone,
+                        tntTele: data[0].tenantTele,
+                        tntIdNo: data[0].tenantIdNo,
+                    };
+
+                    let tenantDetails = `
+                        <table border="1">
+                            <tr><th colspan="2">Tenant Information</th></tr>
+                            <tr><td>Full Name:</td><td>${tenant.tntFullName}</td></tr>
+                            <tr><td>Company Name:</td><td>${tenant.tntCompName}</td></tr>
+                            <tr><td>Phone:</td><td>${tenant.tntPhone}</td></tr>
+                            <tr><td>Telephone:</td><td>${tenant.tntTele}</td></tr>
+                            <tr><td>ID Number:</td><td>${tenant.tntIdNo}</td></tr>
+                        </table>
+                    `;
+                    document.getElementById('tenant-details').innerHTML = tenantDetails;
+                }
+
+                let documentsContainer = document.getElementById('documents-container');
+                documentsContainer.innerHTML = '';
+
+                data.forEach(doc => {
+                    let documentElement = `
+                        <div class="document-section">
+                            <table border="1" style="margin-top: 20px;">
+                                <tr><th colspan="2">Document Details</th></tr>
+                                <tr><td>Document No:</td><td>${doc.docNo}</td></tr>
+                                <tr><td>Description:</td><td>${doc.docDesc}</td></tr>
+                                <tr><td>Remarks:</td><td>${doc.docRemarks}</td></tr>
+                                <tr><td>Property No:</td><td>${doc.propNo}</td></tr>
+                                <tr><td colspan="2">
+                                    <div id="schedules-${doc.docId}">
+                                        <button type="button" onclick="loadSchedules(${doc.docId})">Load Schedules</button>
+                                    </div>
+                                </td></tr>
+                            </table>
+                        </div>
+                    `;
+                    documentsContainer.insertAdjacentHTML('beforeend', documentElement);
+                });
+            });
+    }
+}
+
+function loadSchedules(documentId) {
+    fetch(`/collections/schedules/${documentId}`)
+        .then(response => response.json())
+        .then(data => {
+            let schedulesContainer = document.getElementById(`schedules-${documentId}`);
+            schedulesContainer.innerHTML = '';
+
+            let scheduleTable = `<table border="1"><tr><th>Select</th><th>Amount</th><th>Due Date</th></tr>`;
+            data.forEach(schedule => {
+                scheduleTable += `
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selectedSchedules" 
+                                   value="${schedule.poptId}" 
+                                   data-amount="${schedule.poptAmount}" 
+                                   onchange="updateTotal(this)">
+                        </td>
+                        <td>${schedule.poptAmount}</td>
+                        <td>${new Date(schedule.poptDate).toLocaleDateString()}</td>
+                    </tr>
+                `;
+            });
+            scheduleTable += `</table>`;
+            schedulesContainer.insertAdjacentHTML('beforeend', scheduleTable);
+        });
+}
+
+function updateTotal(checkbox) {
+    const checkboxes = document.querySelectorAll('input[name="selectedSchedules"]');
+    let total = 0;
+
+    checkboxes.forEach((cb) => {
+        if (cb.checked) {
+            total += parseFloat(cb.getAttribute('data-amount')); // Get the amount from data-amount
+        }
+    });
+
+    document.getElementById('totalAmount').innerText = total.toFixed(2);
+    updateNetAmount();
+}
+
+function updateNetAmount() {
+    const collDiscount = parseFloat(document.getElementById('collDiscount').value) || 0;
+    const totalAmount = parseFloat(document.getElementById('totalAmount').innerText) || 0;
+    const netAmount = totalAmount - collDiscount;
+    document.getElementById('netAmount').innerText = netAmount.toFixed(2);
+}
+
+function submitHtmlFormX(formId) {
+    const form = document.getElementById(formId);
+    
+    // Add hidden fields for totalAmount, netAmount, collDiscount, and selected poptIds
+    addHiddenInput(form, 'totalAmount', document.getElementById('totalAmount').innerText);
+    addHiddenInput(form, 'netAmount', document.getElementById('netAmount').innerText);
+    addHiddenInput(form, 'collDiscount', document.getElementById('collDiscount').value);
+
+    // Submit the form
+    submitHtmlForm(formId);
+}
+
+function addHiddenInput(form, name, value) {
+    // Check if an input with the same name already exists
+    let existingInput = form.querySelector(`input[name="${name}"]`);
+    if (existingInput) {
+        // If it exists, update its value
+        existingInput.value = value;
+    } else {
+        // Otherwise, create a new hidden input
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+}
+
+
+</script>

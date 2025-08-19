@@ -1,0 +1,455 @@
+/* ===== DMS Theme Variables ===== */
+  :root {
+    /* Primary & Accent */
+    --dms-primary:   #2c3e50;
+    --dms-secondary: #34495e;
+    --dms-accent:    #3498db;
+    /* Status */
+    --dms-success:   #4CAF50;
+    --dms-warning:   #f1c40f;
+    --dms-danger:    #e74c3c;
+    --dms-info:      #17a2b8;
+    /* Neutrals */
+    --dms-light:     #ecf0f1;
+    --dms-dark:      #333333;
+    --dms-gray-100:  #f8f9fa;
+    --dms-gray-200:  #e9ecef;
+    --dms-gray-300:  #dee2e6;
+    --dms-gray-400:  #ced4da;
+    --dms-gray-500:  #adb5bd;
+    --dms-gray-600:  #6c757d;
+    --dms-gray-700:  #495057;
+    --dms-gray-800:  #343a40;
+    --dms-gray-900:  #212529;
+  }
+
+
+/* ===== Base Styles ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== Header & Navigation ===== */
+header {
+    background-color: var(--dms-primary);
+    color: white;
+    padding: 1rem 0;
+}
+
+nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav li {
+    margin: 0 15px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #ff9900;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: var(--dms-success);
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+/* ===== Main Content Area ===== */
+#content {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    /*max-width: 1200px;*/
+    margin: 2rem auto;
+    width: 98%;
+}
+
+/* ===== Card Styles ===== */
+.dms-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.dms-card-header {
+    background-color: #fdfeff;
+    color: #0a0000;
+    padding: 16px 20px;
+    font-weight: 600;
+    border: 1px solid rgb(0 0 0 / 36%);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.dms-card-body {
+    padding: 25px;
+    background-color: white;
+    border: 1px solid rgb(0 0 0 / 36%);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+/* ===== Profile Styles ===== */
+.profile-photo-container {
+    border: 4px solid white;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    width: 180px;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ===== Information Display Styles ===== */
+.info-group {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.info-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--dms-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    width: 150px;
+    font-weight: 600;
+    color: var(--dms-secondary);
+}
+
+.detail-value {
+    flex: 1;
+}
+
+/* ===== Badges & Status Indicators ===== */
+.badge-dms {
+    background-color: var(--dms-accent);
+    color: white;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-student {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-employed {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+/* ===== Table Styles ===== */
+.table-dms {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.table-dms thead th {
+    background-color: var(--dms-secondary);
+    color: white;
+    border: none;
+    font-weight: 500;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.table-dms tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.table-dms tbody td {
+    padding: 0.75rem;
+}
+
+.table-dms tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table-dms tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* Medal Colors */
+.medal-gold {
+    color: var(--dms-warning);
+}
+
+.medal-silver {
+    color: #bdc3c7;
+}
+
+.medal-bronze {
+    color: #e67e22;
+}
+
+/* ===== Form Styles ===== */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form select,
+form textarea {
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 0px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form input[type="radio"] {
+    margin-right: 8px;
+}
+
+/* ===== Button Styles ===== */
+button, a.button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 16px;
+    color: white;
+    background-color: var(--dms-primary);
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+button:hover, a.button:hover {
+    background-color: var(--dms-secondary);
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    border: 1px solid var(--dms-accent);
+    color: var(--dms-accent);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--dms-accent);
+    color: white;
+}
+
+/* ===== Section Titles ===== */
+.section-title {
+    color: var(--dms-primary);
+    font-weight: 600;
+    margin: 30px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--dms-light);
+}
+
+/* ===== Footer ===== */
+footer {
+    background-color: var(--dms-primary);
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+    width: 100%;
+    position: relative;
+}
+
+/* ===== Error Messages ===== */
+.error-message {
+    color: var(--dms-danger);
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 0px !important;
+}
+
+
+  .modal-dialog {
+    /*max-height: 80vh;  /* max height relative to viewport */
+    max-height: calc(100vh - 50px);
+    margin: 1.75rem auto; /* default Bootstrap margin */
+  }
+
+  /* make modal-content scrollable */
+  .modal-content {
+    overflow-y: auto;
+    max-height: 80vh;
+  }
+
+  /* reset modal-body, header, footer scroll behavior */
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    /* no fixed height or overflow */
+  }
+  
+.form-label {
+    margin-bottom: .1rem;
+}
+
+a {
+    text-decoration: auto;
+}
+
+
+/* Custom navbar styling */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-family: 'Courgette', cursive;
+    font-size: 1.5rem;
+}
+
+/* Dropdown menu enhancements */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dropdown-item:focus, .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+/* Active menu item styling */
+.nav-link.active {
+    font-weight: 600;
+    border-bottom: 2px solid white;
+}
+
+/* Mobile menu adjustments */
+@media (max-width: 992px) {
+    .navbar-collapse {
+        padding: 1rem;
+        background-color: #0d6efd;
+    }
+    
+    .dropdown-menu {
+        background-color: rgba(255,255,255,0.1);
+        border: none;
+    }
+    
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .dropdown-item:hover {
+        color: white;
+        background-color: transparent;
+    }
+}

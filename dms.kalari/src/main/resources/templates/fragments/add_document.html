@@ -1,0 +1,83 @@
+<div class="container">
+    <h1 th:text="${pageTitle}">Add Document</h1>
+    <form id="addDocumentForm" action="data/documents/html/add" method="post" th:object="${document}">
+        
+	    <input type="hidden" name="docType" value="1" />
+	    <input type="hidden" name="docRefType" value="1000" />
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="doc_no">Document Number:</label>
+                <input type="text" id="doc_no" name="docNo" th:field="*{docNo}" required>
+            </div>
+            <div class="form-group">
+                <label for="doc_desc">Description:</label>
+                <input type="text" id="doc_desc" name="docDesc" th:field="*{docDesc}" required>
+            </div>
+            <div class="form-group">
+                <label for="doc_remarks">Remarks:</label>
+                <input type="text" id="doc_remarks" name="docRemarks" th:field="*{docRemarks}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="doc_issue_auth">Issuing Authority:</label>
+                <input type="text" id="doc_issue_auth" name="docIssueAuth" th:field="*{docIssueAuth}">
+            </div>
+            <div class="form-group">
+                <label for="doc_apply_date">Application Date:</label>
+                <input type="date" id="doc_apply_date" name="docApplyDate" th:field="*{docApplyDate}" required>
+            </div>
+            <div class="form-group">
+                <label for="doc_issue_date">Issue Date:</label>
+                <input type="date" id="doc_issue_date" name="docIssueDate" th:field="*{docIssueDate}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="doc_expiry_date">Expiry Date:</label>
+                <input type="date" id="doc_expiry_date" name="docExpiryDate">
+            </div>
+            <div class="form-group">
+                <label for="doc_amount">Amount:</label>
+                <input type="number" step="0.01" id="doc_amount" name="docAmount" th:field="*{docAmount}" required>
+            </div>
+            <div class="form-group">
+                <label for="doc_tax">Tax:</label>
+                <input type="number" step="0.01" id="doc_tax" name="docTax" th:field="*{docTax}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="doc_paydet">Payment Details:</label>
+                <input type="text" id="doc_paydet" name="docPaydet" th:field="*{docPaydet}">
+            </div>
+            <div class="form-group">
+                <label for="tenant_id">Tenant:</label>
+                <select id="tenant_id" name="docTntId" th:field="*{docTntId}" required>
+                    <option value="">Select Tenant</option>
+                    <option th:each="tenant : ${tenants}" 
+                            th:value="${tenant.tntId}" 
+                            th:text="${tenant.tntFullName}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="docRefId">Property:</label>
+                <select id="docRefId" name="docRefId" th:field="*{docRefId}" required>
+                    <option value="">Select Property</option>
+                    <option th:each="property : ${properties}" 
+                            th:value="${property.propId}" 
+                            th:text="${property.propName}"></option>
+                </select>
+            </div>
+        </div>
+
+        <button type="button" onclick="submitHtmlForm('addDocumentForm')">Add Document</button>
+
+        <div id="error-messages" class="error-message"></div>
+    </form>
+    <a class="ajax-link" href="view/documents/html">Back to List</a>
+</div>

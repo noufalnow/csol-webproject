@@ -1,0 +1,40 @@
+<div th:fragment="content">
+    <h1>Collection Report</h1>
+
+    <!-- Filter Form -->
+    <form id="search-form" method="GET" action="/report/collection">
+        <input type="text" name="customer" placeholder="Customer" th:value="${customer}">
+        <input type="text" name="property" placeholder="Property" th:value="${property}">
+        <input type="date" name="fromDate" th:value="${fromDate}">
+        <input type="date" name="toDate" th:value="${toDate}">
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Collection Report Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Property</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="collection : ${collections}">
+                <td th:text="${collection.collId}"></td>
+                <td th:text="${collection.misTenants.tntFullName}">
+                <td th:text="${collection.collCust}"></td>
+                <td th:text="${#numbers.formatDecimal(collection.collAmount, 1, 2)}"></td>
+                <td th:text="${collection.collPayDate}"></td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total Amount</strong></td>
+                <td colspan="2" th:text="${#numbers.formatDecimal(totalAmount, 1, 2)}"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

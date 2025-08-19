@@ -1,0 +1,415 @@
+<div th:fragment="content">
+
+<style>
+
+/* Dashboard-specific styles that complement your existing CSS */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+            background-color: var(--dms-gray-100);
+        }
+        
+        .dashboard-sidebar {
+            background-color: var(--dms-primary);
+            color: white;
+            padding: 20px;
+        }
+        
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-nav {
+            margin-top: 30px;
+        }
+        
+        .sidebar-nav a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-nav a:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-nav a.active {
+            background-color: var(--dms-accent);
+        }
+        
+        .dashboard-main {
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            color: var(--dms-primary);
+            font-size: 1rem;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dms-accent);
+            margin: 10px 0;
+        }
+        
+        .status-pending {
+            color: var(--dms-warning);
+            font-weight: bold;
+        }
+        
+        .status-approved {
+            color: var(--dms-success);
+            font-weight: bold;
+        }
+        
+        .status-rejected {
+            color: var(--dms-danger);
+            font-weight: bold;
+        }
+        
+        button, a.button {
+    background-color: #d95826;
+    }
+        
+        
+</style>
+
+
+<div class="">
+    <div class="dashboard-main">
+            <div class="dashboard-header">
+                <h1 class="section-title" >Dashboard</h1>
+                <div class="user-info">
+                    <img src="https://www.shutterstock.com/shutterstock/photos/2007531539/display_1500/stock-vector-default-avatar-photo-placeholder-grey-profile-picture-icon-business-man-illustration-2007531539.jpg" alt="User">
+                    <span th:text="${session.USER_NAME + ' (' + session.NODE_NAME + ')'}">Admin User (Head Office)</span>
+                </div>
+            </div>
+            
+            <!-- Statistics Section -->
+            <div class="stats-grid">
+                <div class="stat-card dms-card">
+                    <h3>Total Branches</h3>
+                    <div class="value">24</div>
+                    <p>Across all regions</p>
+                </div>
+                <div class="stat-card dms-card">
+                    <h3>Total Members</h3>
+                    <div class="value">1,842</div>
+                    <p>Registered users</p>
+                </div>
+                <div class="stat-card dms-card">
+                    <h3>Active Kalaries</h3>
+                    <div class="value">18</div>
+                    <p>Currently active</p>
+                </div>
+                <div class="stat-card dms-card">
+                    <h3>Pending Approvals</h3>
+                    <div class="value">7</div>
+                    <p>Require attention</p>
+                </div>
+            </div>
+            
+            <!-- Members and Branches Section -->
+            <div class="dms-card">
+                <div class="dms-card-header">
+                    <div class="section-header">
+                        <h2>Members and Branches Overview</h2>
+                    </div>
+                </div>
+                <div class="dms-card-body">
+                    <table class="table-dms">
+                        <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Members</th>
+                                <th>Kalaries</th>
+                                <th>Last Activity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Main Headquarters</td>
+                                <td>156</td>
+                                <td>3</td>
+                                <td>Today, 10:45 AM</td>
+                                <td class="status-approved">Active</td>
+                            </tr>
+                            <tr>
+                                <td>North Regional</td>
+                                <td>98</td>
+                                <td>2</td>
+                                <td>Yesterday, 4:30 PM</td>
+                                <td class="status-approved">Active</td>
+                            </tr>
+                            <tr>
+                                <td>South Regional</td>
+                                <td>87</td>
+                                <td>2</td>
+                                <td>2 days ago</td>
+                                <td class="status-approved">Active</td>
+                            </tr>
+                            <tr>
+                                <td>East Coastal</td>
+                                <td>64</td>
+                                <td>1</td>
+                                <td>1 week ago</td>
+                                <td class="status-pending">Needs Review</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Branch Events Section -->
+            <div class="dms-card">
+                <div class="dms-card-header">
+                    <div class="section-header">
+                        <h2>Events in Your Branch</h2>
+                        
+                    </div>
+                </div>
+                <div class="dms-card-body">
+                    <table class="table-dms">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Annual General Meeting</td>
+                                <td>2023-12-15</td>
+                                <td>Main Hall</td>
+                                <td>120</td>
+                                <td class="status-approved">Approved</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Training Workshop</td>
+                                <td>2023-11-28</td>
+                                <td>Conference Room 2</td>
+                                <td>45</td>
+                                <td class="status-approved">Approved</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>New Member Orientation</td>
+                                <td>2023-11-15</td>
+                                <td>Training Center</td>
+                                <td>32</td>
+                                <td class="status-approved">Approved</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Higher Level Events Section -->
+            <div class="dms-card">
+                <div class="dms-card-header">
+                    <div class="section-header">
+                        <h2>Organization-wide Events</h2>
+                    </div>
+                </div>
+                <div class="dms-card-body">
+                    <table class="table-dms">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Branches Involved</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>National Conference</td>
+                                <td>2024-02-20</td>
+                                <td>Convention Center</td>
+                                <td>All</td>
+                                <td class="status-approved">Approved</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Regional Leaders Summit</td>
+                                <td>2023-12-05</td>
+                                <td>Headquarters</td>
+                                <td>8</td>
+                                <td class="status-approved">Approved</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Annual Charity Drive</td>
+                                <td>2023-12-01</td>
+                                <td>Nationwide</td>
+                                <td>24</td>
+                                <td class="status-pending">Planning</td>
+                                <td>
+                                    <button class="button">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pending Approvals Section -->
+            <div class="dms-card">
+                <div class="dms-card-header">
+                    <div class="section-header">
+                        <h2>Pending Approvals</h2>
+                    </div>
+                </div>
+                <div class="dms-card-body">
+                    <table class="table-dms">
+                        <thead>
+                            <tr>
+                                <th>Request Type</th>
+                                <th>Submitted By</th>
+                                <th>Branch</th>
+                                <th>Date Submitted</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Event Approval</td>
+                                <td>John Smith</td>
+                                <td>North Regional</td>
+                                <td>2023-11-10</td>
+                                <td class="status-pending">Pending</td>
+                                <td>
+                                    <button class="button">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>New Kalari Request</td>
+                                <td>Sarah Johnson</td>
+                                <td>East Coastal</td>
+                                <td>2023-11-08</td>
+                                <td class="status-pending">Pending</td>
+                                <td>
+                                    <button class="button">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Budget Approval</td>
+                                <td>Michael Brown</td>
+                                <td>South Regional</td>
+                                <td>2023-11-05</td>
+                                <td class="status-pending">Pending</td>
+                                <td>
+                                    <button class="button">Review</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Recent Activity Section -->
+            <div class="dms-card">
+                <div class="dms-card-header">
+                    <h2>Recent Activity</h2>
+                </div>
+                <div class="dms-card-body">
+                    <table class="table-dms">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Activity</th>
+                                <th>User</th>
+                                <th>Branch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2023-11-12 09:30</td>
+                                <td>Created new event "Winter Workshop"</td>
+                                <td>Lisa Wong</td>
+                                <td>West Division</td>
+                            </tr>
+                            <tr>
+                                <td>2023-11-12 08:45</td>
+                                <td>Approved membership for 5 new users</td>
+                                <td>Admin System</td>
+                                <td>Headquarters</td>
+                            </tr>
+                            <tr>
+                                <td>2023-11-11 16:20</td>
+                                <td>Uploaded documents for AGM</td>
+                                <td>Robert Chen</td>
+                                <td>Main Headquarters</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+        

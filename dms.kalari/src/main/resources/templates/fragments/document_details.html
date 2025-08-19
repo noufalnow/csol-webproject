@@ -1,0 +1,137 @@
+    <h1>Document Detail</h1>
+    
+    <!-- Document Information Section -->
+    <div class="section">
+        <h2>Document Information</h2>
+        <p>ID: <span th:text="${document.docId}"></span></p>
+        <p>Document No: <span th:text="${document.docNo}"></span></p>
+        <p>Description: <span th:text="${document.docDesc}"></span></p>
+        <p>Remarks: <span th:text="${document.docRemarks}"></span></p>
+        <p>Issued By: <span th:text="${document.docIssueAuth}"></span></p>
+        <p>Application Date: <span th:text="${#dates.format(document.docApplyDate, 'yyyy-MM-dd')}"></span></p>
+        <p>Issue Date: <span th:text="${#dates.format(document.docIssueDate, 'yyyy-MM-dd')}"></span></p>
+        <p>Expiry Date: <span th:text="${#dates.format(document.docExpiryDate, 'yyyy-MM-dd')}"></span></p>
+        <p>Alert Days: <span th:text="${document.docAlertDays}"></span></p>
+        <p>Amount: <span th:text="${document.docAmount}"></span></p>
+        <p>Tax: <span th:text="${document.docTax}"></span></p>
+        <p>Payment Details: <span th:text="${document.docPaydet}"></span></p>
+    </div>
+
+    <!-- Tenant Information Section -->
+    <div class="section">
+        <h2>Tenant Information</h2>
+        <p>Full Name: <span th:text="${document.tenantFullName}"></span></p>
+        <p>Company Name: <span th:text="${document.tenantCompanyName}"></span></p>
+        <p>Phone: <span th:text="${document.tenantPhone}"></span></p>
+        <p>Tele: <span th:text="${document.tenantTele}"></span></p>
+        <p>ID No: <span th:text="${document.tenantIdNo}"></span></p>
+        <p>CR No: <span th:text="${document.tenantCrno}"></span></p>
+        <p>Expat: <span th:text="${document.tenantExpat}"></span></p>
+        <p>Agriculture Type: <span th:text="${document.tenantAgrType}"></span></p>
+        <p>Document ID: <span th:text="${document.tenantDocId}"></span></p>
+    </div>
+
+    <!-- Property Information Section -->
+    <div class="section">
+        <h2>Property Information</h2>
+        <p>Property No: <span th:text="${document.propNo}"></span></p>
+        <p>Property Name: <span th:text="${document.propName}"></span></p>
+        <p>File No: <span th:text="${document.propFileno}"></span></p>
+        <p>Building: <span th:text="${document.propBuilding}"></span></p>
+        <p>Responsible: <span th:text="${document.propResponsible}"></span></p>
+        <p>Remarks: <span th:text="${document.propRemarks}"></span></p>
+        <p>Category: <span th:text="${document.propCat}"></span></p>
+        <p>Type: <span th:text="${document.propType}"></span></p>
+        <p>Level: <span th:text="${document.propLevel}"></span></p>
+        <p>Electric Meter: <span th:text="${document.propElecMeter}"></span></p>
+        <p>Water Supply: <span th:text="${document.propWater}"></span></p>
+        <p>Building Type: <span th:text="${document.propBuildingType}"></span></p>
+        <p>Status: <span th:text="${document.propStatus}"></span></p>
+        <p>Electric Account: <span th:text="${document.propElecAccount}"></span></p>
+        <p>Electric Recharge: <span th:text="${document.propElecRecharge}"></span></p>
+        <p>Account: <span th:text="${document.propAccount}"></span></p>
+    </div>
+    
+    <table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Document No</th>
+            <th>Description</th>
+            <th>Application Date</th>
+            <th>Expiry Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="document : ${versions}">
+	    <td th:text="${document.docId}"></td> <!-- ID -->
+	    <td th:text="${document.docNo}"></td> <!-- Document No -->
+	    <td th:text="${document.docDesc}"></td> <!-- Description -->
+	    
+    <td th:text="${document.docApplyDate != null ? #temporals.format(document.docApplyDate, 'dd/MM/yyyy') : 'N/A'}"></td>
+    <td th:text="${document.docExpiryDate != null ? #temporals.format(document.docExpiryDate, 'dd/MM/yyyy') : 'N/A'}"></td>
+	    
+	</tr>
+        
+        
+    </tbody>
+</table>
+    
+    
+
+    <a class="ajax-link" th:href="@{view/documents/html}">Back to List</a>
+    
+    
+    
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 15px 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #007BFF;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .ajax-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .ajax-link:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    
+    
