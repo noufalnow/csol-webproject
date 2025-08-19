@@ -203,13 +203,46 @@ public class NodeService implements BaseService<NodeDTO> {
 
 	public List<Map<String, Object>> getFullTreeWithActivePath(Long parentId) {
 
-		List<Node> roots = nodeRepository.findRootNodes();
-		Set<Long> activePath = parentId != null ? findActivePath(roots, parentId) : Collections.emptySet();
+	    List<Node> roots = nodeRepository.findRootNodes();
 
-		return roots.stream().map(node -> buildNodeMapWithActivePath(node, activePath)).collect(Collectors.toList());
+	    // 1️⃣  If caller did not specify an ID, fall back to original behaviour.
+	    if (parentId == null) {
+	        Set<Long> empty = Collections.emptySet();
+	        return roots.stream()
+	                    .map(n -> buildNodeMapWithActivePath(n, empty))
+	                    .collect(Collectors.toList());
+	    }
+
+	    // 2️⃣  Locate the node that will become the new "virtual root".
+	    Node subtreeRoot = findNodeById(roots, parentId);
+	    if (subtreeRoot == null) {                       // nonexistent → empty JSON
+	        return Collections.emptyList();
+	    }
+
+	    // 3️⃣  We still want the selected node flagged as "active".
+	    Set<Long> activePath = Collections.singleton(parentId);
+
+	    // 4️⃣  Wrap in a singleton list so the public signature remains unchanged.
+	    return List.of(buildNodeMapWithActivePath(subtreeRoot, activePath));
+	}
+	
+	
+	private Node findNodeById(List<Node> nodes, Long soughtId) {
+	    for (Node n : nodes) {
+	        if (n.getNodeId().equals(soughtId)) {
+	            return n;
+	        }
+	        if (!n.getChildren().isEmpty()) {
+	            Node hit = findNodeById(n.getChildren(), soughtId);
+	            if (hit != null) {
+	                return hit;
+	            }
+	        }
+	    }
+	    return null;
 	}
 
-	private Set<Long> findActivePath(List<Node> nodes, Long targetId) {
+	/*private Set<Long> findActivePath(List<Node> nodes, Long targetId) {
 		Set<Long> path = new HashSet<>();
 		findPath(nodes, targetId, path);
 		return path;
@@ -227,21 +260,19 @@ public class NodeService implements BaseService<NodeDTO> {
 			}
 		}
 		return false;
-	}
+	}*/
 
 	private Map<String, Object> buildNodeMapWithActivePath(Node node, Set<Long> activePath) {
 	    Map<String, Object> m = new HashMap<>();
-	    m.put("nodeId", node.getNodeId());
-	    m.put("nodeName", node.getNodeName());
-	    m.put("nodeType", node.getNodeType());
+	    m.put("nodeId",     node.getNodeId());
+	    m.put("nodeName",   node.getNodeName());
+	    m.put("nodeType",   node.getNodeType());
 	    m.put("isActivePath", activePath.contains(node.getNodeId()));
-	    
-	    // Always include children, even if empty
+
 	    List<Map<String, Object>> kids = node.getChildren().stream()
 	        .map(child -> buildNodeMapWithActivePath(child, activePath))
 	        .collect(Collectors.toList());
 	    m.put("children", kids);
-	    
 	    return m;
 	}
 

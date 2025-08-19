@@ -64,7 +64,10 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}", page, size,
 				sortField, sortDir, search);
 
-		Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
+		//Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
+		Page<CoreUserDTO> userPage = service.searchUsersInElasticsearch(
+		        search, page, size, sortField, sortDir);
+
 
 		logInfo("User Page - Total Elements: {}, Total Pages: {}", userPage.getTotalElements(),
 				userPage.getTotalPages());

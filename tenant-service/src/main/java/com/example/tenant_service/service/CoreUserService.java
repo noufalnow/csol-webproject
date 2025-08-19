@@ -2,6 +2,7 @@ package com.example.tenant_service.service;
 
 import com.example.tenant_service.exception.ResourceNotFoundException;
 import com.example.tenant_service.common.BaseService;
+import com.example.tenant_service.document.UserMemberDocument;
 import com.example.tenant_service.dto.users.CoreUserDTO;
 import com.example.tenant_service.dto.users.CoreUserPasswordDTO;
 import com.example.tenant_service.dto.users.CoreUserUpdateDTO;
@@ -12,9 +13,12 @@ import com.example.tenant_service.entity.CoreUser.UserType;
 import com.example.tenant_service.entity.MisDesignation;
 import com.example.tenant_service.entity.Node;
 import com.example.tenant_service.mapper.CoreUserMapper;
+import com.example.tenant_service.mapper.UserMemberMapper;
 import com.example.tenant_service.repository.CoreUserRepository;
 import com.example.tenant_service.repository.MisDesignationRepository;
 import com.example.tenant_service.repository.NodeRepository;
+import com.example.tenant_service.repository.UserMemberElasticsearchRepository;
+import org.springframework.data.domain.PageRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,25 +34,111 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.query.Query;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.*;
+import org.springframework.data.elasticsearch.core.query.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.SearchHits;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+
+
+
+
 @Service
 public class CoreUserService implements BaseService<CoreUserDTO> {
 
     private final CoreUserRepository coreUserRepository;
+    private final UserMemberElasticsearchRepository userMemberElasticsearchRepository;
+    
     private final CoreUserMapper coreUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final MisDesignationRepository misDesignationRepository;
 	private final NodeRepository nodeRepository;
+	private final ElasticsearchOperations elasticsearchOperations;
+	private static final Logger log = LoggerFactory.getLogger(CoreUserService.class);
+
 
     @Autowired
-    public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder, MisDesignationRepository misDesignationRepository, 
-    		NodeRepository nodeRepository	) {
+    public CoreUserService(CoreUserRepository coreUserRepository,
+                           CoreUserMapper coreUserMapper,
+                           PasswordEncoder passwordEncoder,
+                           MisDesignationRepository misDesignationRepository,
+                           NodeRepository nodeRepository,
+                           UserMemberElasticsearchRepository userMemberElasticsearchRepository, ElasticsearchOperations  elasticsearchOperations) {
         this.coreUserRepository = coreUserRepository;
         this.coreUserMapper = coreUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.misDesignationRepository = misDesignationRepository;
         this.nodeRepository = nodeRepository;
+        this.userMemberElasticsearchRepository = userMemberElasticsearchRepository;
+        this.elasticsearchOperations = elasticsearchOperations;
     }
 
+    
+    public Page<CoreUserDTO> searchUsersInElasticsearch(
+            String query, 
+            int page, 
+            int size, 
+            String sortField, 
+            String sortDir) {
+        
+        // Create Pageable with sorting
+        Sort.Direction direction = Sort.Direction.fromString(sortDir);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+        // Build the search query
+        NativeQuery searchQuery;
+        if (query == null || query.trim().isEmpty()) {
+            // Return all documents when no search query is provided
+            searchQuery = NativeQuery.builder()
+                    .withQuery(q -> q.matchAll(m -> m))
+                    .withPageable(pageable)
+                    .build();
+        } else {
+            // Use multi-match when there's a search term
+            searchQuery = NativeQuery.builder()
+                    .withQuery(q -> q
+                            .multiMatch(m -> m
+                                    .query(query)
+                                    .fields("userFname", "userLname", "userEmail")
+                            )
+                    )
+                    .withPageable(pageable)
+                    .build();
+        }
+
+        // Execute search
+        SearchHits<UserMemberDocument> hits = elasticsearchOperations.search(
+                searchQuery, 
+                UserMemberDocument.class
+        );
+
+        // Convert results
+        List<CoreUserDTO> results = hits.stream()
+                .map(SearchHit::getContent)
+                .map(UserMemberMapper::toDTO)
+                .toList();
+
+        return new PageImpl<>(results, pageable, hits.getTotalHits());
+    }    
+    
+    
     // Update CoreUser using CoreUserDTO
     @Override
     public CoreUserDTO update(Long userId, CoreUserDTO coreUserDTO) {
@@ -184,6 +274,17 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         // Convert DTO to entity and save
         CoreUser coreUser = coreUserMapper.toEntity(userMemberDTO);
         CoreUser savedCoreUser = coreUserRepository.save(coreUser);
+        
+        try {
+            UserMemberDocument document = UserMemberMapper.toDocument(savedCoreUser);
+            userMemberElasticsearchRepository.save(document);
+        } catch (Exception e) {
+            // Optional: log or handle ES sync failure
+            log.error("Failed to sync user to Elasticsearch. userId={}", savedCoreUser.getUserId(), e);
+            
+        }
+        
+        
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }
 
