@@ -1,19 +1,18 @@
 package com.dms.kalari.admin.mapper;
 
 import com.dms.kalari.admin.dto.CoreUserDTO;
+import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
 import com.dms.kalari.admin.dto.DesignationDTO;
-import com.dms.kalari.admin.dto.UserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.MisDesignation;
-
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-08-19T13:35:09+0530",
+    date = "2025-08-20T20:39:30+0530",
     comments = "version: 1.5.3.Final, compiler: Eclipse JDT (IDE) 3.42.0.v20250523-0729, environment: Java 21.0.7 (Eclipse Adoptium)"
 )
 @Component
@@ -177,31 +176,31 @@ public class CoreUserMapperImpl implements CoreUserMapper {
     }
 
     @Override
-    public CoreUser toEntity(UserMemberDTO userMemberDTO) {
-        if ( userMemberDTO == null ) {
+    public CoreUser toEntity(CoreUserMemberDTO CoreUserMemberDTO) {
+        if ( CoreUserMemberDTO == null ) {
             return null;
         }
 
         CoreUser coreUser = new CoreUser();
 
-        coreUser.setDesignation( userMemberDTOToMisDesignation( userMemberDTO ) );
-        coreUser.setUserFname( userMemberDTO.getUserFname() );
-        coreUser.setUserLname( userMemberDTO.getUserLname() );
-        coreUser.setUserEmail( userMemberDTO.getUserEmail() );
-        coreUser.setUserStatus( userMemberDTO.getUserStatus() );
-        coreUser.setUserNode( map( userMemberDTO.getUserNode() ) );
-        coreUser.setActive( userMemberDTO.getActive() );
-        coreUser.setDeleted( map( userMemberDTO.getDeleted() ) );
-        coreUser.setTCreated( userMemberDTO.getTCreated() );
-        coreUser.setTDeleted( userMemberDTO.getTDeleted() );
-        coreUser.setTModified( userMemberDTO.getTModified() );
-        coreUser.setUCreated( userMemberDTO.getUCreated() );
-        coreUser.setUDeleted( userMemberDTO.getUDeleted() );
-        coreUser.setUModified( userMemberDTO.getUModified() );
-        coreUser.setUserId( userMemberDTO.getUserId() );
-        coreUser.setUserPassword( userMemberDTO.getUserPassword() );
-        coreUser.setUserType( userMemberDTO.getUserType() );
-        coreUser.setUserUname( userMemberDTO.getUserUname() );
+        coreUser.setDesignation( coreUserMemberDTOToMisDesignation( CoreUserMemberDTO ) );
+        coreUser.setUserFname( CoreUserMemberDTO.getUserFname() );
+        coreUser.setUserLname( CoreUserMemberDTO.getUserLname() );
+        coreUser.setUserEmail( CoreUserMemberDTO.getUserEmail() );
+        coreUser.setUserStatus( CoreUserMemberDTO.getUserStatus() );
+        coreUser.setUserNode( map( CoreUserMemberDTO.getUserNode() ) );
+        coreUser.setActive( CoreUserMemberDTO.getActive() );
+        coreUser.setDeleted( map( CoreUserMemberDTO.getDeleted() ) );
+        coreUser.setTCreated( CoreUserMemberDTO.getTCreated() );
+        coreUser.setTDeleted( CoreUserMemberDTO.getTDeleted() );
+        coreUser.setTModified( CoreUserMemberDTO.getTModified() );
+        coreUser.setUCreated( CoreUserMemberDTO.getUCreated() );
+        coreUser.setUDeleted( CoreUserMemberDTO.getUDeleted() );
+        coreUser.setUModified( CoreUserMemberDTO.getUModified() );
+        coreUser.setUserId( CoreUserMemberDTO.getUserId() );
+        coreUser.setUserPassword( CoreUserMemberDTO.getUserPassword() );
+        coreUser.setUserType( CoreUserMemberDTO.getUserType() );
+        coreUser.setUserUname( CoreUserMemberDTO.getUserUname() );
 
         return coreUser;
     }
@@ -333,14 +332,14 @@ public class CoreUserMapperImpl implements CoreUserMapper {
         }
     }
 
-    protected MisDesignation userMemberDTOToMisDesignation(UserMemberDTO userMemberDTO) {
-        if ( userMemberDTO == null ) {
+    protected MisDesignation coreUserMemberDTOToMisDesignation(CoreUserMemberDTO coreUserMemberDTO) {
+        if ( coreUserMemberDTO == null ) {
             return null;
         }
 
         MisDesignation misDesignation = new MisDesignation();
 
-        misDesignation.setDesigId( userMemberDTO.getUserDesig() );
+        misDesignation.setDesigId( coreUserMemberDTO.getUserDesig() );
 
         return misDesignation;
     }

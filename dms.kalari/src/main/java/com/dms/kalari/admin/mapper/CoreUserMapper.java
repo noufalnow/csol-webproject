@@ -8,7 +8,7 @@ import org.mapstruct.factory.Mappers;
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
-import com.dms.kalari.admin.dto.UserMemberDTO;
+import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseMapper;
 import com.dms.kalari.entity.Node;
@@ -48,7 +48,7 @@ public interface CoreUserMapper extends BaseMapper<CoreUser, CoreUserDTO> {
     @Mapping(source = "userEmail", target = "userEmail")
     @Mapping(source = "userStatus", target = "userStatus")
     @Mapping(source = "userNode", target = "userNode")
-    CoreUser toEntity(UserMemberDTO userMemberDTO);
+    CoreUser toEntity(CoreUserMemberDTO CoreUserMemberDTO);
     
     
     @Mapping(source = "userDesig", target = "designation.desigId")

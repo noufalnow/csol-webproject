@@ -39,7 +39,7 @@ public class VerificationController {
             model.addAttribute("success", true);
             
             //logger.info("Successfully verified certificate for ID: {}", id);
-            return "fragments/profile/verification-result";
+            return "fragments/admin/users/profile/verification-result";
             
         } catch (NumberFormatException e) {
             return handleError(model, "Invalid ID format: must be in 'memvntId-itemId' format with numbers", e);

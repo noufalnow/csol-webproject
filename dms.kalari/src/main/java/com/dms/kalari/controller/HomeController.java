@@ -67,9 +67,9 @@ public class HomeController {
 
 		if (session.getAttribute("USER_TYPE") != null
 				&& "MEMBER".equals(session.getAttribute("USER_TYPE").toString().trim())) {
-			model.addAttribute("content", "fragments/profile/profile");
+			model.addAttribute("content", "fragments/admin/users/profile/profile");
 		} else {
-			model.addAttribute("content", "fragments/profile/official");
+			model.addAttribute("content", "fragments/admin/users//profile/official");
 		}
 
 		return "layout";

@@ -1,0 +1,63 @@
+<div class="container">
+
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel" th:text="${pageTitle}">Add New Member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form id="addUserForm" action="/users_addmember" method="post" th:object="${user}">
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <label for="user_fname" class="form-label">First Name</label>
+              <input type="text" id="user_fname" name="userFname" th:field="*{userFname}" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="user_lname" class="form-label">Last Name</label>
+              <input type="text" id="user_lname" name="userLname" th:field="*{userLname}" class="form-control" required>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <label for="user_email" class="form-label">Email</label>
+              <input type="email" id="user_email" name="userEmail" th:field="*{userEmail}" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="user_desig" class="form-label">Role</label>
+              <select id="user_desig" name="userDesig" th:field="*{userDesig}" class="form-select">
+                <option value="">Select Role</option>
+                <option th:each="designation : ${designations}" th:value="${designation.desigId}" th:text="${designation.desigName}"></option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <label class="form-label d-block">Status</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="active" name="userStatus" value="1" th:checked="*{userStatus == 1}">
+                <label class="form-check-label" for="active">Active</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="inactive" name="userStatus" value="2" th:checked="*{userStatus == 2}">
+                <label class="form-check-label" for="inactive">Inactive</label>
+              </div>
+            </div>
+          </div>
+          <div id="error-messages" class="text-danger"></div>
+        </form>
+      </div>
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitHtmlForm('addUserForm')">Add User</button>
+      </div>
+
+
+</div>
+<style>
+form {
+	max-width: 100%;
+}
+</style>

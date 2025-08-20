@@ -25,7 +25,7 @@ $(document).ready(function() {
 
 	// Handle search input change with AJAX
 	/*$(document).on('input', 'input[name="search"]', function () {
-		searchEntities('/users/html', '#content', 'userId');
+		searchEntities('/users', '#content', 'userId');
 	});*/
 
 	// Handle AJAX link clicks

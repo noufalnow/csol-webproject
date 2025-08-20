@@ -8,7 +8,7 @@ import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.CoreUserPasswordDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
-import com.dms.kalari.admin.dto.UserMemberDTO;
+import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
@@ -181,9 +181,9 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }
     
-    public CoreUserDTO saveMamber(UserMemberDTO userMemberDTO) {
+    public CoreUserDTO saveMamber(CoreUserMemberDTO CoreUserMemberDTO) {
         // Convert DTO to entity and save
-        CoreUser coreUser = coreUserMapper.toEntity(userMemberDTO);
+        CoreUser coreUser = coreUserMapper.toEntity(CoreUserMemberDTO);
         CoreUser savedCoreUser = coreUserRepository.save(coreUser);
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }

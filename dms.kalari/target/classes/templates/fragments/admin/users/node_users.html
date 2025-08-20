@@ -1,0 +1,61 @@
+<!-- fragments/node_users.html -->
+<div th:fragment="content"   th:if="${showMemberPanel}" >
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" th:text="${pageTitle}">Members</h4>
+        
+		<a th:if="${allowAddMember}" 
+		   class="btn btn-primary ajax-link" 
+		   href="javascript:void(0);" 
+		   onclick="loadContent('/users_addmember', 'modal')">
+		    <i class="fas fa-plus me-1"></i> <span th:text="${pageTitle}"></span>
+		</a>
+        
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user, iterStat : ${users}">
+                    <th scope="row" th:text="${iterStat.count}">1</th>
+                    <td th:text="${user.userFname} + ' ' + ${user.userLname}">John Doe</td>
+                    <td th:text="${user.designation.desigName}">johndoe</td>
+                    <td>
+                        <span th:classappend="${user.userStatus == 1} ? 'badge bg-success' : 'badge bg-secondary'"
+                              th:text="${user.userStatus == 1} ? 'Active' : 'Inactive'">Status</span>
+                    </td>
+                    <td>   
+                    
+						<th:block th:if="${isOfficialView}">
+						    <a class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
+						       th:onclick="'loadContent(\'/users_details' + ${user.userId} + '\', \'modal\')'">
+						        <i class="fas fa-eye"></i> View
+						    </a>
+						</th:block>
+						<th:block th:unless="${isOfficialView}">
+							<a class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
+						       th:onclick="'loadContent(\'/users_view/' + ${user.userId} + '\', \'modal2\')'">
+						        <i class="fas fa-eye"></i> View
+						    </a>
+					
+						</th:block>
+                        
+                         <a th:if="${allowAddMember}" class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
+                           th:onclick="'loadContent(\'/users_editmember/' + ${user.userId} + '\', \'modal\')'">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

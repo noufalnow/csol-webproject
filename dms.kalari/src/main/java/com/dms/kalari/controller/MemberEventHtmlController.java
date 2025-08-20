@@ -130,7 +130,7 @@ public class MemberEventHtmlController extends BaseController<MemberEventDTO, Me
 		model.addAttribute("pageTitle", "Add Member to Event");
 		model.addAttribute("memberEvent", new MemberEventDTO());
 		model.addAttribute("eventId", eventId);
-		return "fragments/profile/add_member_event";
+		return "fragments/admin/users/profile/add_member_event";
 	}
 
 	@PostMapping("/html/add/{eventId}")

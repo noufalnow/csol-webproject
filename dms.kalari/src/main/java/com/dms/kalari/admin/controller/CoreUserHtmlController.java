@@ -19,7 +19,7 @@ import com.dms.kalari.admin.dto.CoreUserToggleDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
 import com.dms.kalari.admin.dto.DesignationDTO;
-import com.dms.kalari.admin.dto.UserMemberDTO;
+import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.service.CoreUserService;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/admin")
 public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUserService> {
 
 	private final MisDesignationService designationService;
@@ -53,7 +53,7 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		this.nodeService = nodeService;
 	}
 
-	@GetMapping("/html")
+	@GetMapping("/users")
 	public String listUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
 			@RequestParam(defaultValue = "userId") String sortField, @RequestParam(defaultValue = "asc") String sortDir,
 			@RequestParam(required = false) String search, Model model) {
@@ -75,12 +75,12 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
 		model.addAttribute("search", search);
 		model.addAttribute("pageTitle", "User List ");
-		model.addAttribute("pageUrl", "/users/html");
+		model.addAttribute("pageUrl", "/users");
 
-		return "fragments/core_user_list";
+		return "fragments/admin/users/core_user_list";
 	}
 
-	@GetMapping({"/html/bynode", "/html/bynode/{id}", "/html/bynodeoff", "/html/bynodeoff/{id}"})
+	@GetMapping({"/users/bynode", "/users/bynode/{id}", "/users/bynodeoff", "/users/bynodeoff/{id}"})
 	public String listUsersByNode(
 	    @PathVariable(value = "id", required = false) Long nodeId,
 	    HttpServletRequest request,
@@ -132,10 +132,10 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 	    model.addAttribute("target", "users_target");
 	    model.addAttribute("isOfficialView", isOfficialRequest);
 	    
-	    return "fragments/node_users";
+	    return "fragments/admin/users/node_users";
 	}
 
-	@GetMapping("/html/bynodeglobal")
+	@GetMapping("/users/bynodeglobal")
 	public String listUsersByNodeBlobal(Model model, HttpServletRequest request) {
 
 		HttpSession session = request.getSession(false);
@@ -144,46 +144,46 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 		List<CoreUser> users = service.listUsersByNode(nodeId);
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
-		return "fragments/node_users";
+		return "fragments/admin/users/node_users";
 	}
 
-	@GetMapping("/html/{id}")
+	@GetMapping("/users/details/{id}")
 	public String viewUserById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(id));
 		model.addAttribute("pageTitle", "User Detail ");
-		return "fragments/core_user_detail";
+		return "fragments/admin/users/core_user_detail";
 	}
 
-	@GetMapping("/html/view/{id}")
+	@GetMapping("/users/view/{id}")
 	public String viewUserBiewById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(id));
 		model.addAttribute("pageTitle", "User Detail ");
-		return "fragments/profile/view";
+		return "fragments/admin/users/profile/view";
 	}
 
-	@GetMapping("/html/add")
+	@GetMapping("/users/add")
 	public String showAddUserForm(Model model) {
 		model.addAttribute("pageTitle", "Add User ");
 		model.addAttribute("user", new CoreUserDTO());
 		// Fetch designations from the service and pass them to the model
 		List<DesignationDTO> designations = designationService.findAll();
 		model.addAttribute("designations", designations);
-		return "fragments/add_user";
+		return "fragments/admin/users/add_user";
 	}
 
-	@PostMapping("/html/add")
+	@PostMapping("/users/add")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addUser(@Valid @ModelAttribute CoreUserDTO userDTO,
 			BindingResult result) {
 
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "/users/html");
+		additionalData.put("loadnext", "/users");
 		return handleRequest(result, () -> service.save(userDTO), "User added successfully", additionalData);
 	}
 
-	@GetMapping("/html/addmember")
+	@GetMapping("/users/addmember")
 	public String showAddMemberUserForm(Model model, HttpServletRequest request, HttpSession session) {
-		model.addAttribute("user", new UserMemberDTO());
+		model.addAttribute("user", new CoreUserMemberDTO());
 		
 		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
 
@@ -204,16 +204,16 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
 		model.addAttribute("designations", designations);
 
-		return "fragments/add_memberuser";
+		return "fragments/admin/users/add_memberuser";
 	}
 	
 	
-	@PostMapping("/html/addmember")
+	@PostMapping("/users/addmember")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addMember(@Valid @ModelAttribute UserMemberDTO userMemberDTO,
+	public ResponseEntity<Map<String, Object>> addMember(@Valid @ModelAttribute CoreUserMemberDTO CoreUserMemberDTO,
 			BindingResult result, HttpServletRequest request) {
 
-		logInfo("Request Parameters – userMemberDTO: {}", userMemberDTO);
+		logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
 
 		HttpSession session = request.getSession(false);
 		Long parentId = null;
@@ -232,18 +232,18 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 
 		logInfo("Request Parameters – setUserNodeId-parentId: {}", parentId);
 
-		userMemberDTO.setUserNode(parentId);
+		CoreUserMemberDTO.setUserNode(parentId);
 
 		if (!Node.Type.KALARI.equals(session.getAttribute("NODE_TYPE"))) {
-			userMemberDTO.setUserType(CoreUser.UserType.OFFICIAL);
+			CoreUserMemberDTO.setUserType(CoreUser.UserType.OFFICIAL);
 		}
 
 		/*System.out.println("=== Session Attributes ===");
 		Collections.list(session.getAttributeNames())
 				.forEach(name -> System.out.println(name + " = " + session.getAttribute(name)));*/
 
-		userMemberDTO.setUserPassword("123456");
-		userMemberDTO.setUserUname("uname");
+		CoreUserMemberDTO.setUserPassword("123456");
+		CoreUserMemberDTO.setUserUname("uname");
 
 		Map<String, Object> additionalData = new HashMap<>();
 		if (Node.Type.KALARI.equals(session.getAttribute("NODE_TYPE"))) 
@@ -252,12 +252,12 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 			additionalData.put("loadnext", "users/html/bynodeoff/" + parentId);
 			
 		additionalData.put("target", "users_target");
-		return handleRequest(result, () -> service.saveMamber(userMemberDTO), "User added successfully",
+		return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "User added successfully",
 				additionalData);
 	}
 	
 	
-	@GetMapping("/html/editmember/{id}")
+	@GetMapping("/users/editmember/{id}")
 	public String editMember(@PathVariable Long id, Model model, HttpSession session) {
 		model.addAttribute("user", service.findById(id));
 		List<DesignationDTO> designations  = null;
@@ -274,10 +274,10 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 			designations = designationService.findAllByType((short) 1);
 		}
 		model.addAttribute("designations", designations);
-		return "fragments/edit_member_user";
+		return "fragments/admin/users/edit_member_user";
 	}
 
-	@PostMapping("/html/updatemember/{refId}")
+	@PostMapping("/users/editmember/{refId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateMember(@PathVariable("refId") Long userId,
 			@Valid @ModelAttribute CoreUserUpdateMemberDTO coreUserUpdateDTO, BindingResult result,HttpSession session) {
@@ -299,37 +299,37 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 				additionalData);
 	}
 
-	@GetMapping("/html/edit/{id}")
+	@GetMapping("/users/edit/{id}")
 	public String editUser(@PathVariable Long id, Model model) {
 		model.addAttribute("userDTO", service.findById(id));
 		List<DesignationDTO> designations = designationService.findAll();
 		model.addAttribute("designations", designations);
-		return "fragments/edit_user";
+		return "fragments/admin/users/edit_user";
 	}
 
-	@PostMapping("/html/update/{refId}")
+	@PostMapping("/users/edit/{refId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateUser(@PathVariable("refId") Long userId,
 			@Valid @ModelAttribute CoreUserUpdateDTO coreUserUpdateDTO, BindingResult result) {
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "/users/html");
+		additionalData.put("loadnext", "/users");
 
 		return handleRequest(result, () -> service.updateUser(userId, coreUserUpdateDTO), "User updated successfully",
 				additionalData);
 	}
 
-	@PostMapping("/html/resetPassword/{refId}")
+	@PostMapping("/users/resetpassword/{refId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> resetPassword(@PathVariable("refId") Long refId,
 			@Valid @ModelAttribute CoreUserPasswordDTO passwordDTO, BindingResult result) {
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "/users/html");
+		additionalData.put("loadnext", "/users");
 
 		return handleRequest(result, () -> service.resetPassword(refId, passwordDTO), "Password reset successfully",
 				additionalData);
 	}
 
-	@PostMapping("/html/toggleStatus")
+	@PostMapping("/users/togglestatus")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> toggleUserStatus(@RequestBody CoreUserToggleDTO toggleStatusDTO) {
 		boolean isActive = service.toggleUserStatus(toggleStatusDTO.getUserId(), toggleStatusDTO.getUserStatus());
@@ -337,10 +337,10 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 				Map.of("active", isActive ? "Y" : "N"));
 	}
 
-	@GetMapping("/html/resetPassword/{id}")
+	@GetMapping("/users/resetpassword/{id}")
 	public String resetPassword(@PathVariable("id") Long id, Model model) {
 		CoreUserDTO user = service.findById(id); // Use the service instance
 		model.addAttribute("userDTO", user);
-		return "fragments/reset_password"; // View for updating user details
+		return "fragments/admin/users/reset_password"; // View for updating user details
 	}
 }

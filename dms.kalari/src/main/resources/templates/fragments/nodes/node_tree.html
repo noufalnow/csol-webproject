@@ -177,7 +177,7 @@ ul.collapsed {
 		</div>
 
 		<div class="form-check form-check-inline"
-			onclick="document.getElementById('option2').checked = true;loadContent('/users/html/bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			onclick="document.getElementById('option2').checked = true;loadContent('/users_bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
 				id="option2" value="officials" checked> <label
 				class="form-check-label" for="option2">Officials</label>
@@ -187,7 +187,7 @@ ul.collapsed {
 		<div class="form-check form-check-inline"
 			/*th:if="${nodeType} == 'KALARI'"
 			*/
-			onclick="document.getElementById('option3').checked = true;loadContent('/users/html/bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
+			onclick="document.getElementById('option3').checked = true;loadContent('/users_bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
 			<input class="form-check-input" type="radio" name="choice"
 				id="option3" value="members"> <label
 				class="form-check-label" for="option3">Members</label>
@@ -281,7 +281,7 @@ function onTreeNodeClick(event, nodeEl) {
 
   // 3) load content into your target
   const id = nodeEl.getAttribute('data-node-id');
-  //loadContent(`/users/html/bynode/${id}`, '#users_target');
+  //loadContent(`/users_bynode/${id}`, '#users_target');
   //loadContent('/events/html/byhost', '#users_target');
   
   const selectedValue = document.querySelector('input[name="choice"]:checked')?.value;
@@ -292,13 +292,13 @@ function onTreeNodeClick(event, nodeEl) {
     loadContent(`/events/html/byhost/${id}`, '#users_target');
   } 
   else if (selectedValue === 'officials') {
-	loadContent(`/users/html/bynodeoff/${id}`, '#users_target');
+	loadContent(`/users_bynodeoff/${id}`, '#users_target');
   }
   else if (selectedValue === 'nodes') {
 	loadContent(`/nodes/html/nodelist/${id}`, '#users_target');
   } 
   else {
-    loadContent(`/users/html/bynode/${id}`, '#users_target');
+    loadContent(`/users_bynode/${id}`, '#users_target');
   }
   
 
@@ -385,7 +385,7 @@ function toggleTreeNode(event, nodeElement) {
 	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
 	}
   
-  loadContent('/users/html/bynodeoff', '#users_target');
+  loadContent('/users_bynodeoff', '#users_target');
   
 </script>
 
