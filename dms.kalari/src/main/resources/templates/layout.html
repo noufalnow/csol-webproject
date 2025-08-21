@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <title th:text="${pageTitle}">My Application</title>
     <!-- Bootstrap CSS -->
@@ -52,7 +54,11 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item ajax-link" th:href="@{/users}">OFFICIALS</a></li>
-                                <li><a class="dropdown-item ajax-link" th:href="@{/users}">MEMBERS</a></li>
+<li sec:authorize="hasAuthority('PRIV_users')">
+    <a class="dropdown-item ajax-link" th:href="@{/users}">MEMBERS</a>
+</li>
+
+                                
                             </ul>
                         </li>
                         
@@ -61,7 +67,7 @@
                                 MASTERS
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item ajax-link" th:href="@{/event-items/html}">ITEMS</a></li>
+                                <li sec:authorize="hasAuthority('PRIV_masters')"><a class="dropdown-item ajax-link" th:href="@{/event-items/html}">ITEMS</a></li>
                             </ul>
                         </li>
 

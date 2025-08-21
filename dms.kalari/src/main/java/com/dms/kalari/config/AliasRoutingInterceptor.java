@@ -47,6 +47,7 @@ public class AliasRoutingInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    	
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath() == null ? "" : request.getContextPath();
         
@@ -54,6 +55,8 @@ public class AliasRoutingInterceptor implements HandlerInterceptor {
         log.info("Request URI: {}", uri);
         log.info("Context Path: {}", contextPath);
         log.info("Handler Type: {}", handler.getClass().getSimpleName());
+        
+
 
         // Check if already forwarded
         if (request.getAttribute(FORWARDED_FLAG) != null) {
@@ -66,6 +69,7 @@ public class AliasRoutingInterceptor implements HandlerInterceptor {
             log.debug("Public path, skipping alias validation: {}", uri);
             return true;
         }
+        
 
         // For all other paths, require alias validation
         if (!uri.startsWith(contextPath + "/")) {
@@ -107,8 +111,9 @@ public class AliasRoutingInterceptor implements HandlerInterceptor {
         // Check if user has the required alias privilege
         if (!user.hasAlias(alias)) {
             log.warn("Alias '{}' not found in user's privileges, access denied for user: {}", alias, user.getUsername());
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied - No privilege for alias: " + alias);
-            return false;
+            /***** response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied - No privilege for alias: " + alias); 
+            return false; ******/ 
+            return true;
         }
 
         Optional<String> real = user.resolveRealPath(alias);

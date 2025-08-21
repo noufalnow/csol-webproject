@@ -2,3 +2,5 @@
 .idea/
 
 tenant-service/target/
+
+dms.kalari/target/
