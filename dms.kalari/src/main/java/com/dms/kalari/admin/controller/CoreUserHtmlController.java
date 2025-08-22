@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -54,6 +55,8 @@ public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUser
 	}
 
 	@GetMapping("/users")
+	//@PreAuthorize("@privilegeChecker.hasAccess('/admin/users', 'GET')")
+	
 	public String listUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
 			@RequestParam(defaultValue = "userId") String sortField, @RequestParam(defaultValue = "asc") String sortDir,
 			@RequestParam(required = false) String search, Model model) {

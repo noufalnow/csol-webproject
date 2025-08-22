@@ -2,9 +2,8 @@ package com.dms.kalari.security;
 
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.UserPrivilegeProjection;
-import com.dms.kalari.admin.entity.CoreUser;
-import com.dms.kalari.admin.repository.AuthUserPrivilegeRepository;
 import com.dms.kalari.admin.service.CoreUserService;
+import com.dms.kalari.admin.repository.AuthUserPrivilegeRepository;
 import com.dms.kalari.dto.NodeDTO;
 import com.dms.kalari.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-import com.dms.kalari.entity.Node;
-import com.dms.kalari.entity.Node.Type;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,53 +25,40 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired private NodeService nodeService;
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 1. Load user
         CoreUserDTO user = coreUserService.getUserByEmailAddress(username);
         if (user == null) throw new UsernameNotFoundException("User not found: " + username);
 
-        // 2. Check status (like old service)
+        // 2. Check status
         if (user.getUserStatus() != 1) {
             throw new DisabledException("User account is inactive");
         }
 
-        Long roleId = user.getUserDesig();
-        Long instId = user.getUserNode();
+        // 3. Load node information
+        NodeDTO node = nodeService.findById(user.getUserNode());
 
-        NodeDTO node = nodeService.findById(instId);
+        // 4. Load privileges with real path mapping
+        Map<String, String> aliasToRealPath = loadPrivilegesWithRealPath(user.getUserDesig());
+        List<GrantedAuthority> authorities = buildAuthorities(aliasToRealPath.keySet());
 
-     // 3. Preload privileges
-        List<UserPrivilegeProjection> rows = privilegeRepo.findPrivilegesByRole(roleId);
+        // 5. Build principal
+        return new CustomUserPrincipal(user, node, authorities, aliasToRealPath);
+    }
 
-        Map<String, String> aliasToPath = new HashMap<>();
-        Map<String, Long> aliasToOpId = new HashMap<>();
-        for (UserPrivilegeProjection p : rows) {
-            aliasToPath.put(p.getAlias(), p.getRealPath());
-            aliasToOpId.put(p.getAlias(), p.getOperationId());
-        }
+    private Map<String, String> loadPrivilegesWithRealPath(Long roleId) {
+        return privilegeRepo.findPrivilegesByRole(roleId).stream()
+                .collect(Collectors.toMap(
+                    UserPrivilegeProjection::getAlias,
+                    UserPrivilegeProjection::getRealPath,
+                    (existing, replacement) -> existing // Handle duplicates if any
+                ));
+    }
 
-        List<GrantedAuthority> authorities = rows.stream()
-                .map(r -> new SimpleGrantedAuthority("PRIV_" + r.getAlias()))
+    private List<GrantedAuthority> buildAuthorities(Set<String> privilegeAliases) {
+        return privilegeAliases.stream()
+                .map(alias -> new SimpleGrantedAuthority("PRIV_" + alias))
                 .collect(Collectors.toList());
-
-
-        // 4. Build full principal (rich version)
-        return new CustomUserPrincipal(
-                user.getUserId(),                   // Long userId
-                user.getUserEmail(),                // String username (email)
-                user.getUserPassword(),             // String password (hashed)
-                roleId,                             // Long roleId
-                instId,                             // Long instId
-                node.getNodeType(),                 // ✅ Already Node.Type enum
-                user.getUserType(),                 // ✅ Already CoreUser.UserType enum
-                user.getUserFname() + " " + user.getUserLname(), // String userFullName
-                node.getNodeName(),                 // String nodeName
-                authorities,                        // Collection<? extends GrantedAuthority>
-                aliasToPath,                        // Map<String, String>
-                aliasToOpId,                        // Map<String, Long>
-                Collections.emptyMap()              // Map<String, Long> aliasToAppPageId (not built yet)
-        );
-
-
     }
 }
