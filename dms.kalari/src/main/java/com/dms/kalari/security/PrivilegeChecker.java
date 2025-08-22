@@ -3,11 +3,14 @@ package com.dms.kalari.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher; // Add this import
 
 import java.util.Optional;
 
 @Component("privilegeChecker")
 public class PrivilegeChecker {
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher(); // Add this line
 
     public boolean hasAccess(String requestUri, String method) {
         // First, check if this is a public resource that should always be permitted
@@ -51,15 +54,25 @@ public class PrivilegeChecker {
             return Optional.empty();
         }
         
+        // Skip known public paths that shouldn't be treated as aliases
+        if (path.startsWith("/access-denied") || 
+            path.startsWith("/error") || 
+            path.startsWith("/login")) {
+            return Optional.empty();
+        }
+        
         // Remove leading slash and get first path segment
         String cleanPath = path.startsWith("/") ? path.substring(1) : path;
         int nextSlash = cleanPath.indexOf('/');
         
-        if (nextSlash == -1) {
-            return Optional.of(cleanPath);
-        } else {
-            return Optional.of(cleanPath.substring(0, nextSlash));
+        String potentialAlias = (nextSlash == -1) ? cleanPath : cleanPath.substring(0, nextSlash);
+        
+        // Only return if it looks like a valid alias (not numeric, not too short)
+        if (potentialAlias.length() >= 3 && !potentialAlias.matches("\\d+")) {
+            return Optional.of(potentialAlias);
         }
+        
+        return Optional.empty();
     }
 
     // Check access by ALIAS (for dynamic controllers)
@@ -79,21 +92,30 @@ public class PrivilegeChecker {
     }
 
     // Check access by REAL PATH (for static controllers)
-    public boolean hasAccessByPath(String path, String method) {
+    public boolean hasAccessByPath(String fullPath, String method) {
+        String path = stripQueryParams(fullPath);
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return false;
         }
-        
-        // Only CustomUserPrincipal has the real path mapping
+
         if (auth.getPrincipal() instanceof CustomUserPrincipal user) {
             return user.getPrivileges().stream()
                     .map(alias -> user.getRealPath(alias).orElse(""))
-                    .anyMatch(realPath -> realPath.equals(path));
+                    .anyMatch(realPath -> {
+                        // For security checking, add /** to all paths for pattern matching
+                        String securityPattern = realPath.endsWith("/") ? realPath + "**" : realPath + "/**";
+                        return pathMatcher.match(securityPattern, path) || 
+                               pathMatcher.match(realPath, path);
+                    });
         }
-        
-        // Deny for standard Spring Security users
         return false;
+    }
+
+    private String stripQueryParams(String fullPath) {
+        int queryIndex = fullPath.indexOf('?');
+        return queryIndex == -1 ? fullPath : fullPath.substring(0, queryIndex);
     }
 
     public boolean hasPrivilege(String alias) {
@@ -112,7 +134,11 @@ public class PrivilegeChecker {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomUserPrincipal user) {
             return user.getPrivileges().stream()
-                    .filter(alias -> user.getRealPath(alias).orElse("").equals(realPath))
+                    .filter(alias -> {
+                        String storedPath = user.getRealPath(alias).orElse("");
+                        // Use AntPathMatcher for reverse lookup too
+                        return pathMatcher.match(storedPath, realPath);
+                    })
                     .findFirst();
         }
         return Optional.empty();

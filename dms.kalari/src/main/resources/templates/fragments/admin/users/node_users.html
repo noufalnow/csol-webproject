@@ -36,7 +36,7 @@
                     
 						<th:block th:if="${isOfficialView}">
 						    <a class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
-						       th:onclick="'loadContent(\'/users_details' + ${user.userId} + '\', \'modal\')'">
+						       th:onclick="'loadContent(\'/users_details/' + ${user.userId} + '\', \'modal\')'">
 						        <i class="fas fa-eye"></i> View
 						    </a>
 						</th:block>
