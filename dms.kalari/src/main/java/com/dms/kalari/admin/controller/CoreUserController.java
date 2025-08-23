@@ -138,17 +138,6 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 	    return "fragments/admin/users/node_users";
 	}
 
-	@GetMapping("/users/bynodeglobal")
-	public String listUsersByNodeBlobal(Model model, HttpServletRequest request) {
-
-		HttpSession session = request.getSession(false);
-		Long nodeId = (Long) session.getAttribute("NODE_ID");
-
-		List<CoreUser> users = service.listUsersByNode(nodeId);
-		model.addAttribute("users", users);
-		model.addAttribute("target", "users_target");
-		return "fragments/admin/users/node_users";
-	}
 
 	@GetMapping("/users/details/{id}")
 	public String viewUserById(@PathVariable Long id, Model model) {
@@ -164,25 +153,6 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 		return "fragments/admin/users/profile/view";
 	}
 
-	@GetMapping("/users/add")
-	public String showAddUserForm(Model model) {
-		model.addAttribute("pageTitle", "Add User ");
-		model.addAttribute("user", new CoreUserDTO());
-		// Fetch designations from the service and pass them to the model
-		List<DesignationDTO> designations = designationService.findAll();
-		model.addAttribute("designations", designations);
-		return "fragments/admin/users/add_user";
-	}
-
-	@PostMapping("/users/add")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addUser(@Valid @ModelAttribute CoreUserDTO userDTO,
-			BindingResult result) {
-
-		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "/users");
-		return handleRequest(result, () -> service.save(userDTO), "User added successfully", additionalData);
-	}
 
 	@GetMapping("/users/addmember")
 	public String showAddMemberUserForm(Model model, HttpServletRequest request, HttpSession session) {
@@ -207,7 +177,7 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 
 		model.addAttribute("designations", designations);
 
-		return "fragments/admin/users/add_memberuser";
+		return "fragments/admin/users/add_member";
 	}
 	
 	
@@ -301,6 +271,46 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 		return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO), "User updated successfully",
 				additionalData);
 	}
+	
+	
+	/*************************************** */
+	
+	
+	@GetMapping("/users/bynodeglobal")
+	public String listUsersByNodeBlobal(Model model, HttpServletRequest request) {
+
+		HttpSession session = request.getSession(false);
+		Long nodeId = (Long) session.getAttribute("NODE_ID");
+
+		List<CoreUser> users = service.listUsersByNode(nodeId);
+		model.addAttribute("users", users);
+		model.addAttribute("target", "users_target");
+		return "fragments/admin/users/node_users";
+	}
+	
+	
+	@GetMapping("/users/add")
+	public String showAddUserForm(Model model) {
+		model.addAttribute("pageTitle", "Add User ");
+		model.addAttribute("user", new CoreUserDTO());
+		// Fetch designations from the service and pass them to the model
+		List<DesignationDTO> designations = designationService.findAll();
+		model.addAttribute("designations", designations);
+		return "fragments/admin/users/add_user";
+	}
+
+	@PostMapping("/users/add")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> addUser(@Valid @ModelAttribute CoreUserDTO userDTO,
+			BindingResult result) {
+
+		Map<String, Object> additionalData = new HashMap<>();
+		additionalData.put("loadnext", "/users");
+		return handleRequest(result, () -> service.save(userDTO), "User added successfully", additionalData);
+	}
+	
+	
+
 
 	@GetMapping("/users/edit/{id}")
 	public String editUser(@PathVariable Long id, Model model) {

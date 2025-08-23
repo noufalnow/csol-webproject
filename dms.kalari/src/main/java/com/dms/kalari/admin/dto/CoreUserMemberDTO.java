@@ -3,8 +3,11 @@ package com.dms.kalari.admin.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 import com.dms.kalari.admin.entity.CoreUser.UserType;
+import com.dms.kalari.admin.entity.CoreUser.MemberCategory;
+import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.common.BaseDTO;
 import com.dms.kalari.dto.validation.PasswordMatches;
 
@@ -15,6 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -53,6 +57,34 @@ public class CoreUserMemberDTO extends BaseDTO {
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
+    
     private UserType userType = UserType.MEMBER;
     private String userPassword;
+    
+    // New fields
+    private LocalDate userDob;
+    
+    private MemberCategory userMemberCategory = MemberCategory.JUNIOR;
+    
+    private Gender gender;
+    
+    @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
+    private String aadhaarNumber;
+    
+    private String bloodGroup;
+    
+    @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
+    private String mobileNumber;
+    
+    private String addressLine1;
+    private String addressLine2;
+    private String addressLine3;
+    private String addressState;
+    
+    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    private String addressPin;
+    
+    private String fatherName;
+    private String motherName;
+    private String emergencyContact;
 }

@@ -16,6 +16,7 @@ public class CustomUserPrincipal implements UserDetails {
     private final NodeDTO node;
     private final Collection<? extends GrantedAuthority> authorities;
     private final Map<String, String> aliasToRealPath; // Store alias → real path mapping
+    private final Map<String, String> aliasMappings; // Precomputed alias mappings for faster access
 
     public CustomUserPrincipal(
             CoreUserDTO user,
@@ -26,21 +27,27 @@ public class CustomUserPrincipal implements UserDetails {
         this.node = node;
         this.authorities = authorities;
         this.aliasToRealPath = aliasToRealPath;
+        this.aliasMappings = Collections.unmodifiableMap(new HashMap<>(aliasToRealPath)); // Precompute for fast access
     }
 
     // Check if user has a specific privilege alias
     public boolean hasPrivilege(String alias) {
-        return aliasToRealPath.containsKey(alias);
+        return aliasMappings.containsKey(alias);
     }
 
     // Get real path for alias
     public Optional<String> getRealPath(String alias) {
-        return Optional.ofNullable(aliasToRealPath.get(alias));
+        return Optional.ofNullable(aliasMappings.get(alias));
     }
 
     // Get all privileges
     public Set<String> getPrivileges() {
-        return aliasToRealPath.keySet();
+        return aliasMappings.keySet();
+    }
+
+    // Get the precomputed alias mappings (for optimized access)
+    public Map<String, String> getAliasMappings() {
+        return aliasMappings;
     }
 
     // Getters
