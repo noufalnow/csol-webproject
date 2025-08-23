@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.dms.kalari.common.BaseEntity;
 
 @Entity
@@ -14,6 +16,8 @@ import com.dms.kalari.common.BaseEntity;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Node extends BaseEntity {
 
 	public enum Type {

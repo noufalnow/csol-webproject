@@ -2,6 +2,8 @@ package com.dms.kalari.admin.entity;
 
 import java.time.LocalDate;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.dms.kalari.common.BaseEntity;
 import com.dms.kalari.entity.Node;
 
@@ -15,6 +17,8 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class CoreUser extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

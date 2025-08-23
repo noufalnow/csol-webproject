@@ -1,6 +1,8 @@
 package com.dms.kalari.config;
 
+import com.dms.kalari.security.PrivilegeChecker;
 import com.dms.kalari.security.CustomUserDetailsService;
+import com.dms.kalari.security.RequestAuthorizationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,56 +10,58 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
-import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.authorization.AuthorizationManager;
-import org.springframework.security.authorization.AuthorizationManager;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
-import com.dms.kalari.security.RequestAuthorizationManager;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(
-	    HttpSecurity http,
-	    RequestAuthorizationManager requestAuthorizationManager
-	) throws Exception {
-	    http
-	        .csrf(csrf -> csrf.disable())
-	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers("/public/**", "/login", "/login-error", "/verify/**", 
-	                           "/error", "/access-denied").permitAll()
-	            .anyRequest().access(requestAuthorizationManager)
-	        )
-	        .formLogin(form -> form
-	            .loginPage("/login")
-	            .loginProcessingUrl("/login")
-	            .defaultSuccessUrl("/home", true)
-	            .failureUrl("/login?error=true")
-	            .usernameParameter("email")
-	            .passwordParameter("password")
-	            .permitAll()
-	        )
-	        .logout(logout -> logout
-	            .logoutUrl("/logout")
-	            .logoutSuccessUrl("/login?logout=true")
-	            .permitAll()
-	        )
-	        .exceptionHandling(exception -> exception
-	            .accessDeniedHandler(accessDeniedHandler())
-	        );
+    private final PrivilegeChecker privilegeChecker;
+    private final RequestAuthorizationManager requestAuthorizationManager;
 
-	    return http.build();
-	}
+    public SecurityConfig(PrivilegeChecker privilegeChecker, 
+                         RequestAuthorizationManager requestAuthorizationManager) {
+        this.privilegeChecker = privilegeChecker;
+        this.requestAuthorizationManager = requestAuthorizationManager;
+    }
 
-    // Add this bean to ignore static resources from security
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            //.csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            .authorizeHttpRequests(auth -> auth
+            	.requestMatchers("/logout").permitAll() 	
+                .requestMatchers("/public/**", "/login", "/login-error", "/verify/**", 
+                               "/error", "/access-denied", "/health", "/actuator/health").permitAll()
+                .anyRequest().access(requestAuthorizationManager) // Use your custom authorization manager
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/home", true)
+                .failureUrl("/login?error=true")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
+            )
+            .exceptionHandling(exception -> exception
+                .accessDeniedHandler(accessDeniedHandler())
+            );
+
+        return http.build();
+    }
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(

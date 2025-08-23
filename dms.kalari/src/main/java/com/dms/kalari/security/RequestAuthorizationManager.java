@@ -27,15 +27,20 @@ public class RequestAuthorizationManager implements AuthorizationManager<Request
             return new AuthorizationDecision(true); // Allow all internal forwards
         }
         
-        String requestUri = request.getRequestURI();
+        String requestUri = getOriginalRequestUri(request);
         boolean hasAccess = privilegeChecker.hasAccess(requestUri);
         
         return new AuthorizationDecision(hasAccess);
     }
 
     private boolean isInternalForward(HttpServletRequest request) {
-        // Check if this is an internal forward (not an original HTTP request)
-        return request.getAttribute("javax.servlet.forward.request_uri") != null ||
-               request.getAttribute("jakarta.servlet.forward.request_uri") != null;
+        // Check if this is an internal forward
+        return request.getAttribute("jakarta.servlet.forward.request_uri") != null;
+    }
+
+    private String getOriginalRequestUri(HttpServletRequest request) {
+        // Get the original request URI for forwarded requests
+        String forwardUri = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+        return forwardUri != null ? forwardUri : request.getRequestURI();
     }
 }

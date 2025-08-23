@@ -41,13 +41,13 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
-public class CoreUserHtmlController extends BaseController<CoreUserDTO, CoreUserService> {
+public class CoreUserController extends BaseController<CoreUserDTO, CoreUserService> {
 
 	private final MisDesignationService designationService;
 	private final NodeService nodeService;
 
 	// Inject both services via constructor
-	public CoreUserHtmlController(CoreUserService coreUserService, MisDesignationService designationService,
+	public CoreUserController(CoreUserService coreUserService, MisDesignationService designationService,
 			NodeService nodeService) {
 		super(coreUserService);
 		this.designationService = designationService; // Properly assign the designationService

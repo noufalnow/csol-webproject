@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;  // Import statement for List
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.dms.kalari.common.BaseEntity;
 
 @Entity
@@ -13,7 +15,8 @@ import com.dms.kalari.common.BaseEntity;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
 public class MisDesignation extends BaseEntity {
     
     @Id

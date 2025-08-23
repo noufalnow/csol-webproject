@@ -13,11 +13,12 @@ public class PrivilegeChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(PrivilegeChecker.class);
 
+    // Record for optimized alias mapping results
+    public record AliasMapping(String alias, String realPath) {}
+
     public boolean hasAccess(String requestUri) {
-        if (isPublicResource(requestUri)) {
-            logger.debug("Granted access for public resource: {}", requestUri);
-            return true;
-        }
+        // REMOVED the isPublicResource() check here!
+        // SecurityConfig already handles public resources
         
         Optional<String> potentialAlias = extractAliasFromPath(requestUri);
         if (potentialAlias.isPresent()) {
@@ -32,14 +33,17 @@ public class PrivilegeChecker {
         return false;
     }
 
+    // KEEP this method for other uses (like in checkAccessAndGetMapping)
+    // but REMOVE the call from hasAccess() above
     private boolean isPublicResource(String path) {
         String cleanPath = stripQueryParams(path);
         
         return cleanPath.startsWith("/public/") || 
                cleanPath.equals("/login") || 
+               cleanPath.equals("/logout") || 
                cleanPath.startsWith("/login/") ||
                cleanPath.equals("/error") ||
-               cleanPath.equals("/access-denied") || // ← MAKE SURE THIS IS INCLUDED
+               cleanPath.equals("/access-denied") ||
                cleanPath.startsWith("/access-denied/") ||
                cleanPath.startsWith("/verify/") ||
                cleanPath.startsWith("/css/") ||
@@ -109,6 +113,34 @@ public class PrivilegeChecker {
             return realPath;
         }
         return Optional.empty();
+    }
+
+    /**
+     * OPTIMIZED: Single method to check access AND get real path mapping
+     */
+    public Optional<AliasMapping> checkAccessAndGetMapping(String requestUri) {
+        if (isPublicResource(requestUri)) {
+            return Optional.of(new AliasMapping("", requestUri));
+        }
+        
+        Optional<String> aliasOpt = extractAliasFromPath(requestUri);
+        if (aliasOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        String alias = aliasOpt.get();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof CustomUserPrincipal user)) {
+            return Optional.empty();
+        }
+        
+        // Single lookup to check both access and get mapping
+        String realPath = user.getAliasMappings().get(alias);
+        if (realPath == null) {
+            return Optional.empty();
+        }
+        
+        return Optional.of(new AliasMapping(alias, realPath));
     }
 
     /**

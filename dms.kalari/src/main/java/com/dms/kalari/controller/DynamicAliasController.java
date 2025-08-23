@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/{alias:^(?!css|js|images|webjars|static|assets|favicon\\.ico|public|error).+}")
+@RequestMapping("/{alias:^(?!css|js|images|webjars|static|assets|favicon\\.ico|public|error|logout|login).+}")
 public class DynamicAliasController {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicAliasController.class);
@@ -43,12 +43,21 @@ public class DynamicAliasController {
 
     private String handleRequest(String alias, HttpServletRequest request, HttpServletResponse response) {
         try {
-            // Use the unchecked transformation - security was already verified by filter
-            Optional<String> transformedPath = privilegeChecker.transformAliasToRealPathUnchecked(
-                request.getRequestURI(), alias);
+            // OPTIMIZED: Use single method call to check access and get mapping
+            Optional<PrivilegeChecker.AliasMapping> mapping = 
+                privilegeChecker.checkAccessAndGetMapping(request.getRequestURI());
             
-            if (transformedPath.isPresent()) {
-                String finalPath = transformedPath.get();
+            if (mapping.isPresent()) {
+                String finalPath = transformWithAlias(
+                    request.getRequestURI(), 
+                    mapping.get().alias(), 
+                    mapping.get().realPath()
+                ).orElse(null);
+                
+                if (finalPath == null) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return null;
+                }
                 
                 // Prevent recursive forwarding
                 if (isRecursiveForward(finalPath) || finalPath.equals(request.getRequestURI())) {
@@ -73,6 +82,42 @@ public class DynamicAliasController {
             }
             return null;
         }
+    }
+
+    /**
+     * Core transformation logic (moved from PrivilegeChecker for optimization)
+     */
+    private Optional<String> transformWithAlias(String requestUri, String alias, String realPath) {
+        // Extract query string
+        int queryIndex = requestUri.indexOf('?');
+        String pathOnly = queryIndex == -1 ? requestUri : requestUri.substring(0, queryIndex);
+        String queryString = queryIndex == -1 ? "" : requestUri.substring(queryIndex);
+        
+        // Calculate remaining path after alias
+        String aliasWithSlash = "/" + alias;
+        String remainingPath;
+        
+        if (pathOnly.equals(aliasWithSlash)) {
+            remainingPath = "";
+        } else if (pathOnly.startsWith(aliasWithSlash + "/")) {
+            remainingPath = pathOnly.substring(aliasWithSlash.length());
+        } else {
+            logger.debug("Path '{}' doesn't match expected alias pattern for '{}'", pathOnly, alias);
+            return Optional.empty();
+        }
+        
+        // Build final path - DB realPath has no prefix slash, so we add it
+        String transformedPath;
+        if (remainingPath.isEmpty()) {
+            transformedPath = "/" + realPath;
+        } else {
+            transformedPath = "/" + realPath + remainingPath;
+        }
+        
+        // Clean up any double slashes
+        transformedPath = transformedPath.replaceAll("//+", "/");
+        
+        return Optional.of(transformedPath + queryString);
     }
 
     private boolean isRecursiveForward(String path) {
