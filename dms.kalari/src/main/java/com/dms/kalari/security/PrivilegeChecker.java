@@ -1,52 +1,57 @@
 package com.dms.kalari.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher; // Add this import
 
 import java.util.Optional;
 
 @Component("privilegeChecker")
 public class PrivilegeChecker {
 
-    private final AntPathMatcher pathMatcher = new AntPathMatcher(); // Add this line
+    private static final Logger logger = LoggerFactory.getLogger(PrivilegeChecker.class);
 
-    public boolean hasAccess(String requestUri, String method) {
-        // First, check if this is a public resource that should always be permitted
+    public boolean hasAccess(String requestUri) {
         if (isPublicResource(requestUri)) {
+            logger.debug("Granted access for public resource: {}", requestUri);
             return true;
         }
         
-        // Check direct path access (for endpoints like /admin/users)
-        if (hasAccessByPath(requestUri, method)) {
-            return true;
-        }
-        
-        // Check alias access (extract potential alias from the path)
         Optional<String> potentialAlias = extractAliasFromPath(requestUri);
-        if (potentialAlias.isPresent() && hasAccessByAlias(potentialAlias.get(), method)) {
-            return true;
+        if (potentialAlias.isPresent()) {
+            boolean hasAccess = hasAccessByAlias(potentialAlias.get());
+            if (!hasAccess) {
+                logger.debug("Denied access for resource: {} (alias: {})", requestUri, potentialAlias.get());
+            }
+            return hasAccess;
         }
         
-        // Default: DENY access
+        logger.debug("Denied access for resource: {} - no valid alias found", requestUri);
         return false;
     }
 
     private boolean isPublicResource(String path) {
-        return path.startsWith("/public/") || 
-               path.equals("/login") || 
-               path.startsWith("/login") ||
-               path.equals("/error") ||
-               path.equals("/access-denied") ||
-               path.startsWith("/verify/") ||
-               path.startsWith("/css/") ||
-               path.startsWith("/js/") ||
-               path.startsWith("/images/") ||
-               path.startsWith("/webjars/") ||
-               path.startsWith("/static/") ||
-               path.startsWith("/assets/") ||
-               path.equals("/favicon.ico");
+        String cleanPath = stripQueryParams(path);
+        
+        return cleanPath.startsWith("/public/") || 
+               cleanPath.equals("/login") || 
+               cleanPath.startsWith("/login/") ||
+               cleanPath.equals("/error") ||
+               cleanPath.equals("/access-denied") || // ← MAKE SURE THIS IS INCLUDED
+               cleanPath.startsWith("/access-denied/") ||
+               cleanPath.startsWith("/verify/") ||
+               cleanPath.startsWith("/css/") ||
+               cleanPath.startsWith("/js/") ||
+               cleanPath.startsWith("/images/") ||
+               cleanPath.startsWith("/webjars/") ||
+               cleanPath.startsWith("/static/") ||
+               cleanPath.startsWith("/assets/") ||
+               cleanPath.equals("/favicon.ico") ||
+               cleanPath.equals("/health") ||
+               cleanPath.equals("/actuator/health") ||
+               cleanPath.startsWith("/actuator/info");
     }
 
     private Optional<String> extractAliasFromPath(String path) {
@@ -54,62 +59,38 @@ public class PrivilegeChecker {
             return Optional.empty();
         }
         
-        // Skip known public paths that shouldn't be treated as aliases
-        if (path.startsWith("/access-denied") || 
-            path.startsWith("/error") || 
-            path.startsWith("/login")) {
-            return Optional.empty();
-        }
+        String cleanPath = stripQueryParams(path);
         
-        // Remove leading slash and get first path segment
-        String cleanPath = path.startsWith("/") ? path.substring(1) : path;
-        int nextSlash = cleanPath.indexOf('/');
+        String pathWithoutSlash = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
+        int nextSlash = pathWithoutSlash.indexOf('/');
         
-        String potentialAlias = (nextSlash == -1) ? cleanPath : cleanPath.substring(0, nextSlash);
+        String potentialAlias = (nextSlash == -1) ? pathWithoutSlash : pathWithoutSlash.substring(0, nextSlash);
         
-        // Only return if it looks like a valid alias (not numeric, not too short)
-        if (potentialAlias.length() >= 3 && !potentialAlias.matches("\\d+")) {
+        if (potentialAlias.length() >= 2 && potentialAlias.matches("[a-zA-Z0-9_]+")) {
             return Optional.of(potentialAlias);
         }
         
         return Optional.empty();
     }
 
-    // Check access by ALIAS (for dynamic controllers)
-    public boolean hasAccessByAlias(String alias, String method) {
+    public boolean hasAccessByAlias(String alias) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
+            logger.debug("Denying access for alias '{}' due to unauthenticated user", alias);
             return false;
         }
 
-        // Allow only DB-configured users (CustomUserPrincipal)
         if (auth.getPrincipal() instanceof CustomUserPrincipal user) {
-            return user.hasPrivilege(alias);
+            boolean hasAccess = user.hasPrivilege(alias);
+            if (!hasAccess) {
+                logger.debug("User authenticated but denied access for alias '{}'", alias);
+            } else {
+                logger.debug("Granted access for alias '{}'", alias);
+            }
+            return hasAccess;
         }
-
-        // Deny for any other type of principal
-        return false;
-    }
-
-    // Check access by REAL PATH (for static controllers)
-    public boolean hasAccessByPath(String fullPath, String method) {
-        String path = stripQueryParams(fullPath);
         
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return false;
-        }
-
-        if (auth.getPrincipal() instanceof CustomUserPrincipal user) {
-            return user.getPrivileges().stream()
-                    .map(alias -> user.getRealPath(alias).orElse(""))
-                    .anyMatch(realPath -> {
-                        // For security checking, add /** to all paths for pattern matching
-                        String securityPattern = realPath.endsWith("/") ? realPath + "**" : realPath + "/**";
-                        return pathMatcher.match(securityPattern, path) || 
-                               pathMatcher.match(realPath, path);
-                    });
-        }
+        logger.debug("Denying access for alias '{}' - principal is not CustomUserPrincipal", alias);
         return false;
     }
 
@@ -118,26 +99,95 @@ public class PrivilegeChecker {
         return queryIndex == -1 ? fullPath : fullPath.substring(0, queryIndex);
     }
 
-    public boolean hasPrivilege(String alias) {
-        return hasAccessByAlias(alias, "GET");
-    }
-
     public Optional<String> getRealPathForAlias(String alias) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomUserPrincipal user) {
-            return user.getRealPath(alias);
+            Optional<String> realPath = user.getRealPath(alias);
+            if (realPath.isEmpty()) {
+                logger.debug("No real path found for alias: {}", alias);
+            }
+            return realPath;
         }
         return Optional.empty();
     }
 
+    /**
+     * Transform alias URL to real path with access checking
+     */
+    public Optional<String> transformAliasToRealPath(String requestUri) {
+        if (isPublicResource(requestUri)) {
+            return Optional.of(requestUri);
+        }
+        
+        Optional<String> alias = extractAliasFromPath(requestUri);
+        if (alias.isPresent() && hasAccessByAlias(alias.get())) {
+            return transformAliasToRealPathUnchecked(requestUri, alias.get());
+        }
+        
+        return Optional.empty();
+    }
+
+    /**
+     * Transform alias to real path WITHOUT access checking
+     * Use this when access has already been verified by security filter
+     */
+    public Optional<String> transformAliasToRealPathUnchecked(String requestUri, String knownAlias) {
+        Optional<String> realPath = getRealPathForAlias(knownAlias);
+        if (realPath.isPresent()) {
+            return transformWithAlias(requestUri, knownAlias, realPath.get());
+        }
+        logger.debug("No real path found for alias: {}", knownAlias);
+        return Optional.empty();
+    }
+
+    /**
+     * Core transformation logic for DB paths without prefix slashes
+     */
+    private Optional<String> transformWithAlias(String requestUri, String alias, String realPath) {
+        // Extract query string
+        int queryIndex = requestUri.indexOf('?');
+        String pathOnly = queryIndex == -1 ? requestUri : requestUri.substring(0, queryIndex);
+        String queryString = queryIndex == -1 ? "" : requestUri.substring(queryIndex);
+        
+        // Calculate remaining path after alias
+        String aliasWithSlash = "/" + alias;
+        String remainingPath;
+        
+        if (pathOnly.equals(aliasWithSlash)) {
+            remainingPath = "";
+        } else if (pathOnly.startsWith(aliasWithSlash + "/")) {
+            remainingPath = pathOnly.substring(aliasWithSlash.length());
+        } else {
+            logger.debug("Path '{}' doesn't match expected alias pattern for '{}'", pathOnly, alias);
+            return Optional.empty();
+        }
+        
+        // Build final path - DB realPath has no prefix slash, so we add it
+        String transformedPath;
+        if (remainingPath.isEmpty()) {
+            transformedPath = "/" + realPath;
+        } else {
+            transformedPath = "/" + realPath + remainingPath;
+        }
+        
+        // Clean up any double slashes
+        transformedPath = transformedPath.replaceAll("//+", "/");
+        
+        return Optional.of(transformedPath + queryString);
+    }
+
+    /**
+     * Utility method to get alias for a given real path (reverse lookup)
+     */
     public Optional<String> getAliasForRealPath(String realPath) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomUserPrincipal user) {
+            String cleanRealPath = realPath.startsWith("/") ? realPath.substring(1) : realPath;
+            
             return user.getPrivileges().stream()
                     .filter(alias -> {
-                        String storedPath = user.getRealPath(alias).orElse("");
-                        // Use AntPathMatcher for reverse lookup too
-                        return pathMatcher.match(storedPath, realPath);
+                        Optional<String> storedPath = user.getRealPath(alias);
+                        return storedPath.isPresent() && storedPath.get().equals(cleanRealPath);
                     })
                     .findFirst();
         }

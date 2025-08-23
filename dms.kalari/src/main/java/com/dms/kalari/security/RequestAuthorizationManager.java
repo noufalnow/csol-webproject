@@ -1,5 +1,6 @@
 package com.dms.kalari.security;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
@@ -19,10 +20,22 @@ public class RequestAuthorizationManager implements AuthorizationManager<Request
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        String requestUri = context.getRequest().getRequestURI();
-        String method = context.getRequest().getMethod();
+        HttpServletRequest request = context.getRequest();
         
-        boolean hasAccess = privilegeChecker.hasAccess(requestUri, method);
+        // Skip security checks for internal forwards
+        if (isInternalForward(request)) {
+            return new AuthorizationDecision(true); // Allow all internal forwards
+        }
+        
+        String requestUri = request.getRequestURI();
+        boolean hasAccess = privilegeChecker.hasAccess(requestUri);
+        
         return new AuthorizationDecision(hasAccess);
+    }
+
+    private boolean isInternalForward(HttpServletRequest request) {
+        // Check if this is an internal forward (not an original HTTP request)
+        return request.getAttribute("javax.servlet.forward.request_uri") != null ||
+               request.getAttribute("jakarta.servlet.forward.request_uri") != null;
     }
 }
