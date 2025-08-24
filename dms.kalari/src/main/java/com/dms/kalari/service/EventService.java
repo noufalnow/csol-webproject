@@ -10,13 +10,13 @@ import com.dms.kalari.dto.EventItemDTO;
 import com.dms.kalari.entity.Event;
 import com.dms.kalari.entity.EventItem;
 import com.dms.kalari.entity.EventItemMap;
-import com.dms.kalari.entity.Node;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.mapper.EventItemMapper;
 import com.dms.kalari.mapper.EventMapper;
+import com.dms.kalari.nodes.entity.Node;
+import com.dms.kalari.nodes.repository.NodeRepository;
 import com.dms.kalari.repository.EventItemMapRepository;
 import com.dms.kalari.repository.EventRepository;
-import com.dms.kalari.repository.NodeRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

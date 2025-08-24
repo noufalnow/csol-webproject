@@ -39,6 +39,8 @@ public class SecurityConfig {
             	.requestMatchers("/logout").permitAll() 	
                 .requestMatchers("/public/**", "/login", "/login-error", "/verify/**", 
                                "/error", "/access-denied", "/health", "/actuator/health").permitAll()
+                .requestMatchers("/files/download/*").authenticated()
+                .requestMatchers("/files/view/*").authenticated()
                 .anyRequest().access(requestAuthorizationManager) // Use your custom authorization manager
             )
             .formLogin(form -> form

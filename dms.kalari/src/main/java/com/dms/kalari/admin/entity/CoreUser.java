@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.dms.kalari.common.BaseEntity;
-import com.dms.kalari.entity.Node;
+import com.dms.kalari.nodes.entity.Node;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -46,7 +46,8 @@ public class CoreUser extends BaseEntity {
 
     @Column(name = "user_dept")
     private Long userDept;
-
+    
+    
     @Column(name = "user_emp_id")
     private Long userEmpId;
     
@@ -98,6 +99,9 @@ public class CoreUser extends BaseEntity {
 
     @Column(name = "user_state")
     private String state;
+    
+    @Column(name = "user_blood_group")
+    private String bloodGroup;
 
     @Column(name = "user_nationality")
     private String nationality;
@@ -107,6 +111,10 @@ public class CoreUser extends BaseEntity {
 
     @Column(name = "user_emergency_contact", length = 15)
     private String emergencyContact;
+    
+    
+    @Column(name = "photo_file")
+    private Long photoFile;
     
     public enum UserType {
         MEMBER,

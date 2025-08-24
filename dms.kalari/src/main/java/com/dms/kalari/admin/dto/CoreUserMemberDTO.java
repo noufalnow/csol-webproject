@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Pattern;
 
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.entity.CoreUser.MemberCategory;
+import com.dms.kalari.admin.dto.validation.PasswordMatches;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.common.BaseDTO;
-import com.dms.kalari.dto.validation.PasswordMatches;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
+import com.dms.kalari.util.ValidFile;
+
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -64,8 +67,6 @@ public class CoreUserMemberDTO extends BaseDTO {
     // New fields
     private LocalDate userDob;
     
-    private MemberCategory userMemberCategory = MemberCategory.JUNIOR;
-    
     private Gender gender;
     
     @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
@@ -84,7 +85,13 @@ public class CoreUserMemberDTO extends BaseDTO {
     @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
     private String addressPin;
     
-    private String fatherName;
-    private String motherName;
     private String emergencyContact;
+    
+    @ValidFile(maxSize = 524288, allowedExtensions = {"jpg", "jpeg", "png"})
+    private MultipartFile photoFileId;
+    
+    private String filePath;  
+    
+    private Long photoFile;
+    
 }

@@ -2,6 +2,7 @@ package com.dms.kalari.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -13,11 +14,14 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import com.dms.kalari.admin.dto.validation.PasswordMatches;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.admin.entity.CoreUser.MemberCategory;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.common.BaseDTO;
-import com.dms.kalari.dto.validation.PasswordMatches;
+import com.dms.kalari.util.ValidFile;
 
 @Data
 @NoArgsConstructor
@@ -74,17 +78,32 @@ public class CoreUserDTO extends BaseDTO {
     
     private UserType userType = UserType.MEMBER;
     private LocalDate userDob;
-    private MemberCategory userMemberCategory;
+    
     private Gender gender;
-    private String aadhaarNumber;   // format: XXXX-XXXX-XXXX
+    
+    @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
+    private String aadhaarNumber;
+    
+    private String bloodGroup;
+    
+    @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
+    private String mobileNumber;
+    
+    private MemberCategory userMemberCategory;
     private String fatherName;
     private String motherName;
+    private String state;
+    private String nationality;
+    
     private String addressLine1;
     private String addressLine2;
     private String addressLine3;
     private String addressState;
+    
+    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
     private String addressPin;
-    private String state;
-    private String nationality;
-    private String mobileNumber;
+    
+    private String emergencyContact;
+        
+    private Long photoFile;
 }

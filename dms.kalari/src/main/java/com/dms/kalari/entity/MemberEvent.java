@@ -12,6 +12,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseEntity;
+import com.dms.kalari.nodes.entity.Node;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

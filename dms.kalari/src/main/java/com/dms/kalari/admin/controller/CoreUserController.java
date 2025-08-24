@@ -23,12 +23,14 @@ import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
+import com.dms.kalari.admin.mapper.CoreUserMapper;
 import com.dms.kalari.admin.service.CoreUserService;
 import com.dms.kalari.admin.service.MisDesignationService;
 import com.dms.kalari.common.BaseController;
-import com.dms.kalari.dto.NodeDTO;
-import com.dms.kalari.entity.Node;
-import com.dms.kalari.service.NodeService;
+import com.dms.kalari.exception.ResourceNotFoundException;
+import com.dms.kalari.nodes.dto.NodeDTO;
+import com.dms.kalari.nodes.entity.Node;
+import com.dms.kalari.nodes.service.NodeService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +40,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+import com.dms.kalari.admin.repository.CoreUserRepository;
 
 @Controller
 @RequestMapping("/admin")
@@ -45,13 +49,19 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 
 	private final MisDesignationService designationService;
 	private final NodeService nodeService;
+    private final CoreUserRepository coreUserRepository; // Add this
+    private final CoreUserMapper coreUserMapper; // Add this
 
 	// Inject both services via constructor
 	public CoreUserController(CoreUserService coreUserService, MisDesignationService designationService,
+            CoreUserRepository coreUserRepository,
+            CoreUserMapper coreUserMapper,
 			NodeService nodeService) {
 		super(coreUserService);
 		this.designationService = designationService; // Properly assign the designationService
 		this.nodeService = nodeService;
+		  this.coreUserRepository = coreUserRepository;
+	        this.coreUserMapper = coreUserMapper;
 	}
 
 	@GetMapping("/users")
@@ -143,7 +153,7 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 	public String viewUserById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(id));
 		model.addAttribute("pageTitle", "User Detail ");
-		return "fragments/admin/users/core_user_detail";
+		return "fragments/admin/users/view_member";
 	}
 
 	@GetMapping("/users/view/{id}")
@@ -220,9 +230,9 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 
 		Map<String, Object> additionalData = new HashMap<>();
 		if (Node.Type.KALARI.equals(session.getAttribute("NODE_TYPE"))) 
-			additionalData.put("loadnext", "users/html/bynode/" + parentId);
+			additionalData.put("loadnext", "users_bynode/" + parentId);
 		else
-			additionalData.put("loadnext", "users/html/bynodeoff/" + parentId);
+			additionalData.put("loadnext", "users_bynodeoff/" + parentId);
 			
 		additionalData.put("target", "users_target");
 		return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "User added successfully",
@@ -232,22 +242,27 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 	
 	@GetMapping("/users/editmember/{id}")
 	public String editMember(@PathVariable Long id, Model model, HttpSession session) {
-		model.addAttribute("user", service.findById(id));
-		List<DesignationDTO> designations  = null;
-		
-		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
-		
-		if (userNodeType == Node.Type.KALARI) {
-			model.addAttribute("pageTitle", "Edit Members");
-			designations = designationService.findAllByType((short) 2);
-		}
-		else
-		{
-			model.addAttribute("pageTitle", "Edit Officials");
-			designations = designationService.findAllByType((short) 1);
-		}
-		model.addAttribute("designations", designations);
-		return "fragments/admin/users/edit_member_user";
+	    // Get the user entity
+	    CoreUser user = coreUserRepository.findByIdAndNotDeleted(id)
+	            .orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
+	    
+	    // Convert to CoreUserUpdateMemberDTO
+	    CoreUserUpdateMemberDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
+	    
+	    model.addAttribute("user", userDTO);
+	    
+	    List<DesignationDTO> designations = null;
+	    Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
+	    
+	    if (userNodeType == Node.Type.KALARI) {
+	        model.addAttribute("pageTitle", "Edit Members");
+	        designations = designationService.findAllByType((short) 2);
+	    } else {
+	        model.addAttribute("pageTitle", "Edit Officials");
+	        designations = designationService.findAllByType((short) 1);
+	    }
+	    model.addAttribute("designations", designations);
+	    return "fragments/admin/users/edit_member_user";
 	}
 
 	@PostMapping("/users/editmember/{refId}")

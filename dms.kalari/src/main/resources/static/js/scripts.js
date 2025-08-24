@@ -46,94 +46,93 @@ $(document).ready(function() {
 	});
 	// Form submission with AJAX
 	window.submitHtmlForm = function(formId) {
-		console.log('Button clicked');
+	    console.log('Button clicked');
 
-		$('#error-messages').empty(); // Clear error messages
-		$('.error-message').html('');
-		$('input').removeClass('has-error');
+	    $('#error-messages').empty();
+	    $('.error-message').html('');
+	    $('input').removeClass('has-error');
 
-		var form = $('#' + formId);
-		if (form.length === 0) {
-			console.error('Form not found');
-			return;
-		}
+	    var form = $('#' + formId);
+	    if (form.length === 0) {
+	        console.error('Form not found');
+	        return;
+	    }
 
-		var formData = form.serialize();
-		var actionUrl = form.attr('action');
+	    var hasFile = $('input[name="photoFileId"]', form).length > 0;
+	    var dataToSend, contentType, processData;
 
-		if ($('#ref_id', form).length > 0) {
-			var refId = $('#ref_id', form).val();
-			if (!refId) {
-				console.error('Reference ID not found');
-				return;
-			}
-			actionUrl += '/' + refId;
-		}
+	    if (hasFile && $('input[name="photoFileId"]', form)[0].files.length > 0) {
+	        // --- If photo file present, use FormData ---
+	        dataToSend = new FormData(form[0]);
+	        processData = false;
+	        contentType = false;
+	    } else {
+	        // --- Otherwise, serialize normal form data ---
+	        dataToSend = form.serialize();
+	        processData = true;
+	        contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
+	    }
 
-		console.log('Form data:', formData);
+	    var actionUrl = form.attr('action');
+	    if ($('#ref_id', form).length > 0) {
+	        var refId = $('#ref_id', form).val();
+	        if (!refId) {
+	            console.error('Reference ID not found');
+	            return;
+	        }
+	        actionUrl += '/' + refId;
+	    }
 
-		$.ajax({
-			type: 'POST',
-			url: actionUrl,
-			data: formData,
-			dataType: 'json',
-			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-			success: function(response) {
-				if (response.status === 'error') {
-					handleFormErrors(response);
-				}
+	    console.log('Submitting to:', actionUrl);
 
-				/*else if (!empty(response.proceed)) { // not used > to implement
-
-					loadContent(response.loadnext, '#' + (response.target || 'content'));
-
-				}*/
-
-
-
-				else if (response.status === 'success') {
-					$('#dynamicModal').modal('hide');
-					$('#nestedModal').modal('hide');
-					Swal.fire({
-						title: 'Success',
-						html: response.message,
-						icon: 'success',
-						confirmButtonText: 'Ok',
-						allowOutsideClick: false
-					}).then((result) => {
-						if (result.isConfirmed) {
-							if (response.loadnext) {
-
-								if (response.loadnext === 'reload') {
-									window.location.reload();
-									return;
-								}
-
-								if (response.target === 'modal' || response.target === 'modal2') {
-									loadContent(response.loadnext, response.target);
-								} else {
-									loadContent(response.loadnext, '#' + (response.target || 'content'));
-									form.parent().html('');
-								}
-							}
-						}
-					});
-
-				}
-			},
-			error: function(xhr, status, error) {
-				//console.error('Error Status:', status);
-				//console.error('Error Message:', error);
-
-				try {
-					var response = JSON.parse(xhr.responseText);
-					handleFormErrors(response);
-				} catch (e) {
-					$('#error-messages').html('<p class="error-message">Failed to process form. Please try again.</p>');
-				}
-			}
-		});
+	    $.ajax({
+	        type: 'POST',
+	        url: actionUrl,
+	        data: dataToSend,
+	        processData: processData,
+	        contentType: contentType,
+	        dataType: 'json',
+	        success: function(response) {
+	            if (response.status === 'error') {
+	                handleFormErrors(response);
+	            } else if (response.status === 'success') {
+	                $('#dynamicModal').modal('hide');
+	                $('#nestedModal').modal('hide');
+	                Swal.fire({
+	                    title: 'Success',
+	                    html: response.message,
+	                    icon: 'success',
+	                    confirmButtonText: 'Ok',
+	                    allowOutsideClick: false
+	                }).then((result) => {
+	                    if (result.isConfirmed) {
+	                        if (response.loadnext) {
+	                            if (response.loadnext === 'reload') {
+	                                window.location.reload();
+	                                return;
+	                            }
+	                            if (response.target === 'modal' || response.target === 'modal2') {
+	                                loadContent(response.loadnext, response.target);
+	                            } else {
+	                                loadContent(response.loadnext, '#' + (response.target || 'content'));
+	                                form.parent().html('');
+	                            }
+	                        }
+	                    }
+	                });
+	            }
+	        },
+	        error: function(xhr) {
+	            try {
+	                var response = JSON.parse(xhr.responseText);
+	                handleFormErrors(response);
+	            } catch (e) {
+	                $('#error-messages').html('<p class="error-message">Failed to process form. Please try again.</p>');
+	            }
+	        }
+	    });
 	};
+
 
 	function handleFormErrors(response) {
 		// Clear previous error messages

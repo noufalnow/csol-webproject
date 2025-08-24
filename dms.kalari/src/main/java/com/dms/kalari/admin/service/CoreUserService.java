@@ -3,6 +3,7 @@ package com.dms.kalari.admin.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.CoreUserPasswordDTO;
@@ -15,20 +16,26 @@ import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
 import com.dms.kalari.admin.repository.CoreUserRepository;
 import com.dms.kalari.common.BaseService;
-import com.dms.kalari.entity.Node;
+import com.dms.kalari.core.entity.CoreFile;
+import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
+import com.dms.kalari.nodes.entity.Node;
+import com.dms.kalari.nodes.repository.NodeRepository;
 import com.dms.kalari.repository.MisDesignationRepository;
-import com.dms.kalari.repository.NodeRepository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.domain.Page;
 
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,15 +46,17 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     private final PasswordEncoder passwordEncoder;
     private final MisDesignationRepository misDesignationRepository;
 	private final NodeRepository nodeRepository;
+	private final CoreFileRepository coreFileRepository;
 
     @Autowired
     public CoreUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, PasswordEncoder passwordEncoder, MisDesignationRepository misDesignationRepository, 
-    		NodeRepository nodeRepository	) {
+    		NodeRepository nodeRepository, CoreFileRepository coreFileRepository	) {
         this.coreUserRepository = coreUserRepository;
         this.coreUserMapper = coreUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.misDesignationRepository = misDesignationRepository;
         this.nodeRepository = nodeRepository;
+        this.coreFileRepository = coreFileRepository;
     }
 
     // Update CoreUser using CoreUserDTO
@@ -90,31 +99,90 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(updatedUser);
     }
     
-    
+    public CoreUserDTO saveMamber(CoreUserMemberDTO dto) {
+        CoreUser coreUser = coreUserMapper.toEntity(dto);
+
+        // 1. Save user first (to generate userId)
+        CoreUser savedCoreUser = coreUserRepository.save(coreUser);
+
+        // 2. Handle photo upload if provided
+        savedCoreUser = handleFileUpload(dto.getPhotoFileId(), savedCoreUser);
+
+        return coreUserMapper.toDTO(savedCoreUser);
+    }
+
+
     public CoreUserDTO updateMember(Long userId, CoreUserUpdateMemberDTO updateMemberDTO) {
-        // Fetch the existing user from the repository
+        // Fetch the existing user
         CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
 
-        // If the designation ID is provided, fetch the designation and set it
+        // If the designation ID is provided, fetch and set
         if (updateMemberDTO.getUserDesig() != null) {
             MisDesignation designation = misDesignationRepository.findById(updateMemberDTO.getUserDesig())
                     .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", updateMemberDTO.getUserDesig()));
             existingUser.setDesignation(designation);
         }
 
-        // Map other fields from CoreUserUpdateMemberDTO to CoreUser
+        // Map other fields
         coreUserMapper.updateCoreUserFromMemberDto(updateMemberDTO, existingUser);
 
-        // Update the modified timestamp
+        // Update timestamp
         existingUser.setTModified(LocalDateTime.now());
 
-        // Save the updated user entity
+        // Save user
         CoreUser updatedUser = coreUserRepository.save(existingUser);
 
-        // Return the updated user as a DTO
+        // 2. Handle photo upload if provided
+        updatedUser = handleFileUpload(updateMemberDTO.getPhotoFileId(), updatedUser);
+
         return coreUserMapper.toDTO(updatedUser);
     }
+
+
+    /**
+     * Common method to handle file upload and metadata persistence.
+     */
+    private CoreUser handleFileUpload(MultipartFile photoFile, CoreUser user) {
+        if (photoFile == null || photoFile.isEmpty()) {
+            return user;
+        }
+
+        try {
+            // Create file metadata
+            CoreFile file = new CoreFile();
+            file.setFileSrc("users");
+            file.setFileRefId(user.getUserId());
+            file.setFileActualName(photoFile.getOriginalFilename());
+            file.setFileExten(getExtension(photoFile.getOriginalFilename()));
+            file.setFileSize(photoFile.getSize());
+
+            // Save binary file to disk
+            Path uploadPath = Paths.get("uploads/users/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID() + "_" + photoFile.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(photoFile.getInputStream(), filePath);
+
+            // Store file path if needed
+            file.setFilePath(filePath.toString());
+
+            // Save file metadata
+            CoreFile savedFile = coreFileRepository.save(file);
+
+            // Link fileId to user
+            user.setPhotoFile(savedFile.getFileId());
+            user = coreUserRepository.save(user);
+
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed", e);
+        }
+
+        return user;
+    }
+
 
 
 
@@ -181,12 +249,13 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }
     
-    public CoreUserDTO saveMamber(CoreUserMemberDTO CoreUserMemberDTO) {
-        // Convert DTO to entity and save
-        CoreUser coreUser = coreUserMapper.toEntity(CoreUserMemberDTO);
-        CoreUser savedCoreUser = coreUserRepository.save(coreUser);
-        return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
+
+    private String getExtension(String fileName) {
+        return fileName != null && fileName.contains(".") 
+               ? fileName.substring(fileName.lastIndexOf(".") + 1) 
+               : null;
     }
+
 
     @Override
     public void softDeleteById(Long userId) {

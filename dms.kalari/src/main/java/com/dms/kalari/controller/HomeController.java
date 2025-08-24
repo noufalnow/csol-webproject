@@ -13,13 +13,11 @@ import com.dms.kalari.service.EventService;
 @Controller
 public class HomeController {
 
-    private final MisPropertyPayOptionHtmlController misPropertyPayOptionHtmlController;
+
     private final EventService eventService;
 
-    public HomeController(EventService eventService,
-                          MisPropertyPayOptionHtmlController misPropertyPayOptionHtmlController) {
+    public HomeController(EventService eventService) {
         this.eventService = eventService;
-        this.misPropertyPayOptionHtmlController = misPropertyPayOptionHtmlController;
     }
 
     @GetMapping("/home")

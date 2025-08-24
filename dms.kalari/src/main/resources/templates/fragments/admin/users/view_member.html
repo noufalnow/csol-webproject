@@ -1,0 +1,143 @@
+<!-- fragments/user_detail_modal.html -->
+<div th:fragment="content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title">User Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+<div class="modal-body">
+    <div class="container-fluid">
+        
+        <!-- --------------------------- First Row: Left details + Right photo ------------ -->      
+        <div class="row mb-3 align-items-center">
+            <!-- Left side details -->
+            <div class="col-md-8">
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <p class="fw-bold mb-1">Name:</p>
+                        <p th:text="${user.userFname + ' ' + user.userLname}"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="fw-bold mb-1">Email:</p>
+                        <p th:text="${user.userEmail}"></p>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <p class="fw-bold mb-1">Designation:</p>
+                        <p th:text="${user.designationName}"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="fw-bold mb-1">Date of Birth:</p>
+                        <p th:text="${user.userDob}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side profile photo -->
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Profile Photo:</p>
+                <div th:if="${user.photoFile != null}">
+                    <img th:src="@{/files/view/{id}(id=${user.photoFile})}"
+                         alt="Profile Photo"
+                         class="img-thumbnail shadow-sm"
+                         style="max-height:150px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- --------------------------- Second Row: Gender, Mobile, Blood Group ------------ -->     
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Gender:</p>
+                <p th:text="${user.gender}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Mobile Number:</p>
+                <p th:text="${user.mobileNumber}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Blood Group:</p>
+                <p th:text="${user.bloodGroup}"></p>
+            </div>
+        </div>
+
+        <!-- --------------------------- Third Row: Aadhaar, Emergency Contact, Status ------------ -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Aadhaar Number:</p>
+                <p th:text="${user.aadhaarNumber}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Emergency Contact:</p>
+                <p th:text="${user.emergencyContact}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Status:</p>
+                <p th:text="${user.userStatus == 1 ? 'Active' : 'Inactive'}"></p>
+            </div>
+        </div>
+
+        <!-- --------------------------- Fourth Row: Address Line 1, 2, Village ------------ -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Address Line 1:</p>
+                <p th:text="${user.addressLine1}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Address Line 2:</p>
+                <p th:text="${user.addressLine2}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">Village/Thaluk/District:</p>
+                <p th:text="${user.addressLine3}"></p>
+            </div>
+        </div>
+
+        <!-- --------------------------- Fifth Row: State, PIN, User Type ------------ -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">State:</p>
+                <p th:text="${user.addressState}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">PIN Code:</p>
+                <p th:text="${user.addressPin}"></p>
+            </div>
+            <div class="col-md-4">
+                <p class="fw-bold mb-1">User Type:</p>
+                <p th:text="${user.userType}"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+</div>
+
+
+<style>
+    .modal-body p {
+        margin-bottom: 0.5rem;
+    }
+    .fw-bold {
+        font-weight: 600;
+        color: #495057;
+    }
+    .img-thumbnail {
+        max-height: 150px;
+    }
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-dialog {
+  max-width: 90% !important; /* wider on desktops */
+}
+</style>

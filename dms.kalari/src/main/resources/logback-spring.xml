@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    
+    <!-- Console appender with limited stack traces (3 lines max) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%rEx{3}</pattern>
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <!-- Suppress verbose framework logging - NO stack traces -->
+    <logger name="org.springframework" level="ERROR" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="org.springframework.security" level="ERROR" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="org.apache.catalina" level="ERROR" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="org.thymeleaf" level="ERROR" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="org.hibernate" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Root logger for everything else -->
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
-
-    <!-- Adjust these levels as needed -->
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="com.example" level="INFO"/>
 </configuration>

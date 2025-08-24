@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Min;
 
-import com.dms.kalari.dto.validation.PasswordMatches;
+import com.dms.kalari.admin.dto.validation.PasswordMatches;
 
 import jakarta.validation.constraints.Max;
 import lombok.Data;

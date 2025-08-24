@@ -7,8 +7,6 @@ import org.mapstruct.factory.Mappers;
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.common.BaseMapper;
-import com.dms.kalari.dto.PropertyDTO;
-import com.dms.kalari.entity.MisProperty;
 
 
 @Mapper(componentModel = "spring")

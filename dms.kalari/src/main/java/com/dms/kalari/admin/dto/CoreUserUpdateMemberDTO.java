@@ -3,7 +3,9 @@ package com.dms.kalari.admin.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
+import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.common.BaseDTO;
 
 import jakarta.validation.constraints.Email;
@@ -14,13 +16,18 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
+
+import com.dms.kalari.util.ValidFile;
+import org.springframework.web.multipart.MultipartFile;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class CoreUserUpdateMemberDTO extends BaseDTO {
-
-    private Long userId;
+	
+	private Long userId; 
 
     @NotBlank(message = "First name is required")
     @Size(max = 50, message = "First name must be less than 50 characters")
@@ -41,9 +48,39 @@ public class CoreUserUpdateMemberDTO extends BaseDTO {
     private DesignationDTO designation; // Reference to the designation DTO
     
     private String designationName; 
-        
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
+
+    // Additional fields allowed for update
+    private LocalDate userDob;
+
+    private Gender gender;
+
+    @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
+    private String aadhaarNumber;
+
+    private String bloodGroup;
+
+    @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
+    private String mobileNumber;
+
+    private String addressLine1;
+    private String addressLine2;
+    private String addressLine3;
+    private String addressState;
+
+    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    private String addressPin;
+
+    private String emergencyContact;
+
+    @ValidFile(maxSize = 524288, allowedExtensions = {"jpg", "jpeg", "png"})
+    private MultipartFile photoFileId;
+    
+    private String filePath;  
+    
+    private Long photoFile;
 }

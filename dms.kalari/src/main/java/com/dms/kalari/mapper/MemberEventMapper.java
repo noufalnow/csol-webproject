@@ -8,7 +8,8 @@ import com.dms.kalari.common.BaseMapper;
 import com.dms.kalari.dto.MemberEventDTO;
 import com.dms.kalari.entity.Event;
 import com.dms.kalari.entity.MemberEvent;
-import com.dms.kalari.entity.Node;
+import com.dms.kalari.nodes.entity.Node;
+import com.dms.kalari.nodes.mapper.NodeMapper;
 
 @Mapper(
     componentModel = "spring",

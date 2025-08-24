@@ -11,7 +11,7 @@ import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
 import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseMapper;
-import com.dms.kalari.entity.Node;
+import com.dms.kalari.nodes.entity.Node;
 
 import org.mapstruct.Mapping;
 
@@ -48,6 +48,7 @@ public interface CoreUserMapper extends BaseMapper<CoreUser, CoreUserDTO> {
     @Mapping(source = "userEmail", target = "userEmail")
     @Mapping(source = "userStatus", target = "userStatus")
     @Mapping(source = "userNode", target = "userNode")
+    @Mapping(target = "photoFile", ignore = true)
     CoreUser toEntity(CoreUserMemberDTO CoreUserMemberDTO);
     
     
@@ -58,6 +59,14 @@ public interface CoreUserMapper extends BaseMapper<CoreUser, CoreUserDTO> {
     default Long map(Node value) {
         return value != null ? value.getNodeId() : null;
     }
+    
+    @Mapping(target = "userDesig", source = "designation.desigId")
+    @Mapping(target = "designationName", source = "designation.desigName")
+    CoreUserUpdateMemberDTO toUpdateMemberDTO(CoreUser coreUser);
+    
+    // Update method for member DTO
+    void updateCoreUserFromMemberDto(@MappingTarget CoreUser coreUser, CoreUserUpdateMemberDTO dto);
+
     
 }
 
