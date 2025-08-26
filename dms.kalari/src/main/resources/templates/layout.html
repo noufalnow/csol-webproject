@@ -39,8 +39,8 @@
                         <li class="nav-item">
                             <a class="nav-link" th:href="@{/home}">HOME</a>
                         </li>
-                        <li sec:authorize="hasAuthority('PRIV_organisation')" class="nav-item">
-                            <a class="nav-link ajax-link" th:href="@{/organisation}">ORGANIZATION</a>
+                        <li sec:authorize="hasAuthority('PRIV_branch_tree')" class="nav-item">
+                            <a class="nav-link ajax-link" th:href="@{/branch_tree}">ORGANIZATION</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link ajax-link" th:href="@{/nodes/html}">BRANCHES</a>

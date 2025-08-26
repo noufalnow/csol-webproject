@@ -163,45 +163,7 @@ ul.collapsed {
 </style>
 
 
-<div class="container mt-1 mb-3">
-	<div class="d-flex justify-content-end align-items-center gap-3">
-		<input type="hidden" id="tempSelectedId" name="tempSelectedId"
-			th:value="${parentId}" />
-		<!-- show for anyone whose userType is not KALARI -->
-		<div class="form-check form-check-inline"
-			th:if="${nodeType} != 'KALARI'"
-			onclick="document.getElementById('option1').checked = true;loadContent('/nodes/html/nodelist', '#users_target'); clearTreeForm()">
-			<input class="form-check-input" type="radio" name="choice"
-				id="option1" value="nodes"> <label class="form-check-label"
-				for="option1">Branches</label>
-		</div>
 
-		<div class="form-check form-check-inline"
-			onclick="document.getElementById('option2').checked = true;loadContent('/users_bynodeoff/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
-			<input class="form-check-input" type="radio" name="choice"
-				id="option2" value="officials" checked> <label
-				class="form-check-label" for="option2">Officials</label>
-		</div>
-
-		<!-- show (and pre-check) only when userType equals KALARI -->
-		<div class="form-check form-check-inline"
-			/*th:if="${nodeType} == 'KALARI'"
-			*/
-			onclick="document.getElementById('option3').checked = true;loadContent('/users_bynode/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
-			<input class="form-check-input" type="radio" name="choice"
-				id="option3" value="members"> <label
-				class="form-check-label" for="option3">Members</label>
-		</div>
-		<div class="form-check form-check-inline"
-			onclick="document.getElementById('option4').checked = true;loadContent('/events/html/byhost/' + $('#tempSelectedId').val(), '#users_target'); clearTreeForm()">
-			<input class="form-check-input" type="radio" name="choice"
-				id="option4" value="events"> <label class="form-check-label"
-				for="option4">Events</label>
-		</div>
-
-
-	</div>
-</div>
 
 <div class="d-flex overflow-hidden mb-3 border-secondary">
 	<!-- Left column -->
@@ -295,7 +257,7 @@ function onTreeNodeClick(event, nodeEl) {
 	loadContent(`/users_bynodeoff/${id}`, '#users_target');
   }
   else if (selectedValue === 'nodes') {
-	loadContent(`/nodes/html/nodelist/${id}`, '#users_target');
+	loadContent(`branch_nodelist/${id}`, '#users_target');
   } 
   else {
     loadContent(`/users_bynode/${id}`, '#users_target');
@@ -385,7 +347,7 @@ function toggleTreeNode(event, nodeElement) {
 	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
 	}
   
-  loadContent('/users_bynodeoff', '#users_target');
+  loadContent('branch_nodelist', '#users_target');
   
 </script>
 

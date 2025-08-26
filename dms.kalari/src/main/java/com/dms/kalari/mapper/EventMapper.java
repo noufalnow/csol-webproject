@@ -3,11 +3,11 @@ package com.dms.kalari.mapper;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseMapper;
 import com.dms.kalari.dto.EventDTO;
 import com.dms.kalari.entity.Event;
 import com.dms.kalari.entity.MemberEvent;
-import com.dms.kalari.nodes.entity.Node;
 
 @Mapper(componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

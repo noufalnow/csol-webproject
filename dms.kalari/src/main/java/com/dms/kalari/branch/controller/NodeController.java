@@ -1,4 +1,4 @@
-package com.dms.kalari.nodes.controller;
+package com.dms.kalari.branch.controller;
 
 import jakarta.validation.Valid;
 
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.service.NodeService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -28,14 +28,14 @@ import java.util.Map;
 import java.util.Objects;
 
 @Controller
-@RequestMapping("/nodes")
-public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
+@RequestMapping("/branch")
+public class NodeController extends BaseController<NodeDTO, NodeService> {
 
-	public NodeHtmlController(NodeService nodeService) {
+	public NodeController(NodeService nodeService) {
 		super(nodeService);
 	}
 
-	@GetMapping("/html")
+	@GetMapping("/nodes")
 	public String listNodes(HttpSession session, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortField,
 			@RequestParam(defaultValue = "asc") String sortDir, @RequestParam(required = false) String search,
@@ -69,7 +69,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return "fragments/nodes/node_list";
 	}
 
-	@GetMapping({ "/html/nodelist", "/html/nodelist/{id}" }) // Supports both patterns
+	@GetMapping({ "/nodelist", "/nodelist/{id}" }) // Supports both patterns
 	public String listNodesByParent(@PathVariable(value = "id", required = false) Long parentId, HttpSession session,
 			Model model) {
 
@@ -108,7 +108,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return "fragments/nodes/node_list";
 	}
 
-	@GetMapping("/html/{id}")
+	@GetMapping("/node/view/{id}")
 	public String viewNodeById(@PathVariable Long id, Model model) {
 		NodeDTO node = service.findById(id);
 		model.addAttribute("node", node);
@@ -118,7 +118,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return "fragments/nodes/node_detail";
 	}
 
-	@GetMapping("/html/add")
+	@GetMapping("/node/add")
 	public String showAddNodeForm(@RequestParam(required = false) Long parentId, Model model) {
 		model.addAttribute("pageTitle", "Add Branch");
 		model.addAttribute("node", new NodeDTO());
@@ -129,7 +129,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return "fragments/nodes/add_node";
 	}
 
-	@PostMapping("/html/add")
+	@PostMapping("/node/add")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addNode(@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result,
 			HttpSession session) {
@@ -141,7 +141,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return handleRequest(result, () -> service.save(nodeDTO), "Node added successfully", additionalData);
 	}
 
-	@GetMapping("/html/edit/{id}")
+	@GetMapping("/node/edit/{id}")
 	public String editNode(@PathVariable Long id, Model model, HttpServletRequest request) {
 		NodeDTO node = service.findById(id);
 		model.addAttribute("nodeDTO", node);
@@ -157,7 +157,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return "fragments/nodes/edit_node";
 	}
 
-	@PostMapping("/html/update/{id}")
+	@PostMapping("/node/update/{id}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,
 			BindingResult result) {
@@ -169,7 +169,7 @@ public class NodeHtmlController extends BaseController<NodeDTO, NodeService> {
 		return handleRequest(result, () -> service.update(id, nodeDTO), "Node updated successfully", additionalData);
 	}
 
-	@GetMapping("/html/tree")
+	@GetMapping("/node/tree")
 	public String showTreeView(Model model, HttpServletRequest request) {
 
 		HttpSession session = request.getSession(false);

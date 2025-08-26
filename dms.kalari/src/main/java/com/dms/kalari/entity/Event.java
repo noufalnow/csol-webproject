@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
-import com.dms.kalari.nodes.entity.Node;
 
 @Entity
 @Table(name = "events")

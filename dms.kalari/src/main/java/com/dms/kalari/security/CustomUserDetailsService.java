@@ -3,8 +3,8 @@ package com.dms.kalari.security;
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.UserPrivilegeProjection;
 import com.dms.kalari.admin.service.CoreUserService;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.service.NodeService;
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.admin.repository.AuthUserPrivilegeRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;

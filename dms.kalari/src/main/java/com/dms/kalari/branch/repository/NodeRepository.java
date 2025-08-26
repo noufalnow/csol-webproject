@@ -1,4 +1,4 @@
-package com.dms.kalari.nodes.repository;
+package com.dms.kalari.branch.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseRepository;
-import com.dms.kalari.nodes.entity.Node;
 
 import java.util.List;
 import java.util.Optional;

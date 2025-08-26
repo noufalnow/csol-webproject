@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.dto.EventDTO;
 import com.dms.kalari.dto.EventItemDTO;
@@ -13,8 +15,6 @@ import com.dms.kalari.entity.EventItemMap;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.mapper.EventItemMapper;
 import com.dms.kalari.mapper.EventMapper;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.repository.NodeRepository;
 import com.dms.kalari.repository.EventItemMapRepository;
 import com.dms.kalari.repository.EventRepository;
 

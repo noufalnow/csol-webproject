@@ -10,8 +10,8 @@ import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
 import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseMapper;
-import com.dms.kalari.nodes.entity.Node;
 
 import org.mapstruct.Mapping;
 

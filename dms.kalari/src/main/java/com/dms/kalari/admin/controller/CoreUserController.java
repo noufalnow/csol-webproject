@@ -26,11 +26,11 @@ import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
 import com.dms.kalari.admin.service.CoreUserService;
 import com.dms.kalari.admin.service.MisDesignationService;
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.exception.ResourceNotFoundException;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.service.NodeService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -93,7 +93,7 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 		return "fragments/admin/users/core_user_list";
 	}
 
-	@GetMapping({"/users/bynode", "/users/bynode/{id}", "/users/bynodeoff", "/users/bynodeoff/{id}"})
+	@GetMapping({"/users/bynode/", "/users/bynode/{id}", "/users/bynodeoff/", "/users/bynodeoff/{id}"})
 	public String listUsersByNode(
 	    @PathVariable(value = "id", required = false) Long nodeId,
 	    HttpServletRequest request,
@@ -141,6 +141,7 @@ public class CoreUserController extends BaseController<CoreUserDTO, CoreUserServ
 	    UserType userType = isOfficialRequest ? UserType.OFFICIAL : UserType.MEMBER;
 	    List<CoreUser> users = service.listUsersByNodeAndType(nodeId, userType);
 	    
+	    model.addAttribute("parentId", nodeId);
 	    model.addAttribute("users", users);
 	    model.addAttribute("target", "users_target");
 	    model.addAttribute("isOfficialView", isOfficialRequest);

@@ -2,10 +2,10 @@ package com.dms.kalari.dto;
 
 import java.util.List;  // Correct List import
 
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.entity.Node.Type;
 import com.dms.kalari.common.BaseDTO;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.entity.Node.Type;
 
 import java.util.ArrayList; // For initialization
 import jakarta.validation.constraints.*;

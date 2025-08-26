@@ -1,4 +1,4 @@
-package com.dms.kalari.nodes.mapper;
+package com.dms.kalari.branch.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -6,9 +6,9 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseMapper;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface NodeMapper extends BaseMapper<Node, NodeDTO> {

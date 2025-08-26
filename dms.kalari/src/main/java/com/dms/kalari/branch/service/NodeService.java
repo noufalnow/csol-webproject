@@ -1,4 +1,4 @@
-package com.dms.kalari.nodes.service;
+package com.dms.kalari.branch.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -7,12 +7,12 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.mapper.NodeMapper;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.exception.ResourceNotFoundException;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.mapper.NodeMapper;
-import com.dms.kalari.nodes.repository.NodeRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

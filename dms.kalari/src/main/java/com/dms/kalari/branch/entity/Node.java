@@ -1,4 +1,4 @@
-package com.dms.kalari.nodes.entity;
+package com.dms.kalari.branch.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

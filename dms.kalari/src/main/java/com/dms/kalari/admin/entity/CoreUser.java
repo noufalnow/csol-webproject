@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
-import com.dms.kalari.nodes.entity.Node;
 
 import jakarta.persistence.*;
 import lombok.Data;

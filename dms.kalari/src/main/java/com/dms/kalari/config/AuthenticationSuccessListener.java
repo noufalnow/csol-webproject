@@ -12,8 +12,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.service.CoreUserService;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.service.NodeService;
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.util.SessionDebugHelper;
 
 import jakarta.servlet.http.HttpServletRequest;

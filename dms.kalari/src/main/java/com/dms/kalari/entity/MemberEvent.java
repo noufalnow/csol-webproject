@@ -11,8 +11,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
-import com.dms.kalari.nodes.entity.Node;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

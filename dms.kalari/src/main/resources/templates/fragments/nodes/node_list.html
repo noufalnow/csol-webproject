@@ -1,7 +1,57 @@
+
 <!-- fragments/node_list.html -->
  <div th:fragment="content">
- <div class="d-flex justify-content-between align-items-center mb-3">
-       <h4 class="mb-0" th:text="${pageTitle}">Members</h4>
+
+
+	<div class="container mt-1 mb-3">
+		<div class="d-flex justify-content-end align-items-center gap-3">
+			<input type="hidden" id="tempSelectedId" name="tempSelectedId"
+				th:value="${parentId}" />
+			<!-- show for anyone whose userType is not KALARI -->
+
+
+			<div th:if="${nodeType} != 'KALARI'"
+				class="form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="choice"
+					id="option1" value="nodes" checked
+					th:onchange="|loadContent('branch_nodelist/' + '${parentId}', '#users_target'); clearTreeForm()|">
+				<label class="form-check-label" for="option1"
+					style="cursor: pointer;">Branches</label>
+			</div>
+
+			<div class="form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="choice"
+					id="option2" value="officials"
+					th:onchange="|loadContent('users_bynodeoff/' + '${parentId}', '#users_target'); clearTreeForm()|">
+				<label class="form-check-label" for="option2"
+					style="cursor: pointer;">Officials</label>
+			</div>
+
+
+			<div class="form-check form-check-inline"
+				th:if="${nodeType} == 'KALARI'">
+				<input class="form-check-input" type="radio" name="choice"
+					id="option3" value="members"
+					th:onchange="|loadContent('users_bynode/' + '${parentId}', '#users_target'); clearTreeForm()|">
+				<label class="form-check-label" for="option3"
+					style="cursor: pointer;">Members</label>
+			</div>
+
+			<div class="form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="choice"
+					id="option4" value="events"
+					th:onchange="|loadContent('/events/html/byhost/' + '${parentId}', '#users_target'); clearTreeForm()|">
+				<label class="form-check-label" for="option4"
+					style="cursor: pointer;">Events</label>
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<div class="d-flex justify-content-between align-items-center mb-3">
+       <h4 class="mb-0" th:text="${pageTitle}">Branches</h4>
 
     <!-- Search Form 
     <form id="search-form" method="GET" class="mb-3 d-flex">

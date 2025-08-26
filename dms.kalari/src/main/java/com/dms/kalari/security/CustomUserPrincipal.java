@@ -3,9 +3,9 @@ package com.dms.kalari.security;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.dms.kalari.admin.dto.CoreUserDTO;
-import com.dms.kalari.nodes.dto.NodeDTO;
-import com.dms.kalari.nodes.entity.Node.Type;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
+import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.entity.Node.Type;
 
 import java.util.*;
 import java.util.Optional;

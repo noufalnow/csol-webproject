@@ -15,12 +15,12 @@ import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
 import com.dms.kalari.admin.repository.CoreUserRepository;
+import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
-import com.dms.kalari.nodes.entity.Node;
-import com.dms.kalari.nodes.repository.NodeRepository;
 import com.dms.kalari.repository.MisDesignationRepository;
 
 import org.springframework.data.domain.Pageable;
