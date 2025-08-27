@@ -71,6 +71,8 @@ public class CoreUserUpdateMemberDTO extends BaseDTO {
     private String addressLine2;
     private String addressLine3;
     private String addressState;
+    
+    private Long userNode;
 
     @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
     private String addressPin;

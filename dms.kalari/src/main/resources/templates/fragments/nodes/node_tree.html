@@ -188,18 +188,24 @@ ul.collapsed {
 			<!-- Recursive nodeItem fragment -->
 			<div th:fragment="nodeItem(node, parentId)">
 				<th:block th:if="${node != null}">
-					<div
-						th:class="'tree-node ' + ${node.nodeType}
-			             + (${node.nodeId==parentId} ? ' active' : '')
-			             + (${node.isActivePath} ? ' in-active-path' : '')"
-						th:data-node-id="${node.nodeId}"
-						th:onclick="|onTreeNodeClick(event, this);|">
+				<div
+				    th:class="'tree-node ' + ${node.nodeType}
+				             + (${node.nodeId==parentId} ? ' active' : '')
+				             + (${node.isActivePath} ? ' in-active-path' : '')"
+				    th:data-node-id="${node.nodeId}"
+				    th:attr="onclick=|onTreeNodeClick(event, this, '${node.nodeType}')|">
+
+
+
+
 
 						<!-- Toggle button -->
-						<span th:if="${!node.children.isEmpty()}" class="toggle-btn"
-							th:classappend="${node.isActivePath} ? 'open' : 'closed'">
-							<span th:text="${node.isActivePath} ? '-' : '+'"></span>
-						</span> <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
+						<span th:if="${!node.children.isEmpty()}" 
+						      class="toggle-btn"
+						      th:classappend="${node.isActivePath} ? 'open' : 'closed'">
+						    <span th:utext="${node.isActivePath} ? '-' : '<i class=\'fa fa-folder-open\'></i>'"></span>
+						</span>
+						 <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
 
 						<span class"aspan" th:if="${node.nodeId != null}"
 							th:text="${node.nodeName}"> Node Name </span>
@@ -209,7 +215,7 @@ ul.collapsed {
 
 					<!-- Children list -->
 					<ul th:if="${!node.children.isEmpty()}"
-						th:classappend="${node.isActivePath} ? 'expanded' : 'collapsed'">
+						th:classappend="${node.isActivePath} ? 'expanded' : 'expanded'">
 						<li th:each="child : ${node.children}">
 							<div
 								th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
@@ -234,9 +240,9 @@ ul.collapsed {
   }
   
   // Function to toggle children visibility
-function onTreeNodeClick(event, nodeEl) {
+function onTreeNodeClick(event, nodeEl, ltype) {
   // 1) toggle open/closed
-  toggleTreeNode(event, nodeEl);
+  //toggleTreeNode(event, nodeEl);
 
   // 2) activate the link highlight
   activateLink(nodeEl);
@@ -254,13 +260,26 @@ function onTreeNodeClick(event, nodeEl) {
     loadContent(`/events/html/byhost/${id}`, '#users_target');
   } 
   else if (selectedValue === 'officials') {
-	loadContent(`/users_bynodeoff/${id}`, '#users_target');
+	loadContent(`/officials_bynode/${id}`, '#users_target');
   }
   else if (selectedValue === 'nodes') {
+	
+	  if(ltype=='KALARI')
+		  loadContent(`/officials_bynode/${id}`, '#users_target');
+	  
+	  else 
 	loadContent(`branch_nodelist/${id}`, '#users_target');
+	
   } 
   else {
-    loadContent(`/users_bynode/${id}`, '#users_target');
+
+	  if(ltype=='KALARI')
+	  
+    loadContent(`/members_bynode/${id}`, '#users_target');
+	  
+	  else
+		  
+		  loadContent(`/branch_nodelist/${id}`, '#users_target');
   }
   
 
@@ -347,9 +366,21 @@ function toggleTreeNode(event, nodeElement) {
 	    return document.querySelector('.tree-node.active a[data-node-id]')?.getAttribute('data-node-id') || null;
 	}
   
-  loadContent('branch_nodelist', '#users_target');
   
 </script>
+
+
+<script th:inline="javascript">
+    var nodeType = /*[[${nodeType}]]*/ "KALARI";  // fallback string for IDE
+
+    if (nodeType !== 'KALARI') {
+        loadContent('branch_nodelist', '#users_target');
+    } else {
+        loadContent('/members_bynode/', '#users_target');
+    }
+</script>
+
+
 
 
 
