@@ -14,9 +14,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.admin.dto.CoreUserDTO;
-import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
+import com.dms.kalari.admin.dto.OfficialUpdateDTO;
 import com.dms.kalari.admin.dto.DesignationDTO;
-import com.dms.kalari.admin.dto.CoreUserMemberDTO;
+import com.dms.kalari.admin.dto.OfficialAddDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
@@ -95,16 +95,21 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 		else 
 			model.addAttribute("isChild", false);
 		
-			
+        if(nodeId==null) {
+        	nodeId = principal.getInstId();
+        }	
 
 		NodeDTO node = nodeService.findById(nodeId);
 		Node.Type nodeType = node.getNodeType();
+		
+		
 
 		// Get users (officials)
 		List<CoreUser> users = service.listUsersByNodeAndType(nodeId, UserType.OFFICIAL);
 		
 		logInfo("nodeType: {}", nodeType);
 
+		model.addAttribute("nodeName", node.getNodeName());
 		model.addAttribute("nodeType", nodeType.name());
 		model.addAttribute("parentId", nodeId);
 		model.addAttribute("users", users);
@@ -123,7 +128,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	@GetMapping("/add/{id}")
 	public String showAddOfficialForm(@PathVariable(value = "id") Long nodeId, Model model) {
 
-		model.addAttribute("user", new CoreUserMemberDTO());
+		model.addAttribute("user", new OfficialAddDTO());
 
 		if (nodeId != null) {
 
@@ -143,7 +148,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	@PostMapping("/add/{id}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addOfficial(@PathVariable(value = "id") Long nodeId,
-			@Valid @ModelAttribute CoreUserMemberDTO CoreUserMemberDTO, BindingResult result,
+			@Valid @ModelAttribute OfficialAddDTO CoreUserMemberDTO, BindingResult result,
 			HttpServletRequest request) {
 
 		logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
@@ -176,7 +181,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 				.orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
 
 		// Convert to CoreUserUpdateMemberDTO
-		CoreUserUpdateMemberDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
+		OfficialUpdateDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
 
 		model.addAttribute("user", userDTO);
 		List<DesignationDTO> designations = null;
@@ -191,7 +196,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	@PostMapping("/edit/{refId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> editOfficial(@PathVariable("refId") Long userId,
-			@Valid @ModelAttribute CoreUserUpdateMemberDTO coreUserUpdateDTO, BindingResult result,
+			@Valid @ModelAttribute OfficialUpdateDTO coreUserUpdateDTO, BindingResult result,
 			HttpSession session) {
 		Map<String, Object> additionalData = new HashMap<>();
 		

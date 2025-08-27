@@ -2,6 +2,7 @@ package com.dms.kalari.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
@@ -25,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CoreUserUpdateMemberDTO extends BaseDTO {
+public class OfficialUpdateDTO extends BaseDTO {
 	
 	private Long userId; 
 
@@ -54,14 +55,18 @@ public class CoreUserUpdateMemberDTO extends BaseDTO {
     @Size(max = 100, message = "Email must be less than 100 characters")
     private String userEmail;
 
-    // Additional fields allowed for update
+    @NotNull(message = "Date of birth is required")
+    @Past(message = "Date of birth must be in the past")
     private LocalDate userDob;
 
-    private Gender gender;
 
+    @NotNull(message = "Gender is required")
+    private Gender gender;
+    
     @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
     private String aadhaarNumber;
-
+    
+    @NotBlank(message = "Blood Group is required")
     private String bloodGroup;
 
     @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
@@ -74,7 +79,7 @@ public class CoreUserUpdateMemberDTO extends BaseDTO {
     
     private Long userNode;
 
-    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    @Pattern(regexp = "^$|^[0-9]{6}$", message = "PIN code must be 6 digits")
     private String addressPin;
 
     private String emergencyContact;

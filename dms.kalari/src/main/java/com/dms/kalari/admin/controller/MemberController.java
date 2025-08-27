@@ -16,14 +16,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import com.dms.kalari.admin.dto.CoreUserDTO;
-import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
+import com.dms.kalari.admin.dto.MemberAddDTO;
+import com.dms.kalari.admin.dto.MemberUpdateDTO;
 import com.dms.kalari.admin.dto.DesignationDTO;
-import com.dms.kalari.admin.dto.CoreUserMemberDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
-import com.dms.kalari.admin.service.CoreUserService;
+import com.dms.kalari.admin.service.MemberUserService;
 import com.dms.kalari.admin.service.MisDesignationService;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
@@ -39,16 +38,16 @@ import com.dms.kalari.admin.repository.CoreUserRepository;
 
 @Controller
 @RequestMapping("/admin/members")
-public class MemberController extends BaseController<CoreUserDTO, CoreUserService> {
+public class MemberController extends BaseController<MemberAddDTO, MemberUserService> {
 
     private final MisDesignationService designationService;
     private final NodeService nodeService;
     private final CoreUserRepository coreUserRepository;
     private final CoreUserMapper coreUserMapper;
 
-    public MemberController(CoreUserService coreUserService, MisDesignationService designationService,
-            CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, NodeService nodeService) {
-        super(coreUserService);
+    public MemberController(MemberUserService memberUserService, MisDesignationService designationService,
+                            CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, NodeService nodeService) {
+        super(memberUserService);
         this.designationService = designationService;
         this.nodeService = nodeService;
         this.coreUserRepository = coreUserRepository;
@@ -56,16 +55,19 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
     }
 
     @GetMapping("/")
-    public String listMembers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "userId") String sortField, @RequestParam(defaultValue = "asc") String sortDir,
-            @RequestParam(required = false) String search, Model model) {
+    public String listMembers(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              @RequestParam(defaultValue = "userId") String sortField,
+                              @RequestParam(defaultValue = "asc") String sortDir,
+                              @RequestParam(required = false) String search,
+                              Model model) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
 
         logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}", page, size,
                 sortField, sortDir, search);
 
-        Page<CoreUserDTO> userPage = service.findAllPaginate(pageable, search);
+        Page<MemberAddDTO> userPage = service.findAllPaginate(pageable, search);
 
         logInfo("User Page - Total Elements: {}, Total Pages: {}", userPage.getTotalElements(),
                 userPage.getTotalPages());
@@ -81,15 +83,19 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
     }
 
     @GetMapping({"/bynode/", "/bynode/{id}"})
-    public String listMembersByNode(@PathVariable(value = "id", required = false) Long nodeId, 
-            HttpSession session, Model model, Authentication authentication) {
-        
+    public String listMembersByNode(@PathVariable(value = "id", required = false) Long nodeId,
+                                    HttpSession session, Model model, Authentication authentication) {
+
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-        
-        if(principal.getInstId() != nodeId) 
-            model.addAttribute("isChild", true); 
-        else 
+
+        if (principal.getInstId() != nodeId)
+            model.addAttribute("isChild", true);
+        else
             model.addAttribute("isChild", false);
+
+        if (nodeId == null) {
+            nodeId = principal.getInstId();
+        }
 
         NodeDTO node = nodeService.findById(nodeId);
         Node.Type nodeType = node.getNodeType();
@@ -116,19 +122,18 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
     @GetMapping("/profile/view/{id}")
     public String viewMemberProfileById(@PathVariable Long id, Model model) {
         model.addAttribute("user", service.findById(id));
-        model.addAttribute("pageTitle", "Member Profile ");
+        model.addAttribute("pageTitle", "Participant's Profile ");
         return "fragments/admin/users/profile/view";
     }
 
     @GetMapping("/add/{id}")
     public String showAddMemberForm(@PathVariable(value = "id") Long nodeId, Model model) {
-
-        model.addAttribute("user", new CoreUserMemberDTO());
+        model.addAttribute("user", new MemberAddDTO()); // ← use MemberAddDTO
 
         if (nodeId != null) {
-            List<DesignationDTO> designations = null;
+            List<DesignationDTO> designations;
 
-            model.addAttribute("pageTitle", "Add Members");
+            model.addAttribute("pageTitle", "Add Participants");
             designations = designationService.findAllByType((short) 2);
 
             model.addAttribute("nodeId", nodeId);
@@ -140,8 +145,9 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
     @PostMapping("/add/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addMember(@PathVariable(value = "id") Long nodeId,
-            @Valid @ModelAttribute CoreUserMemberDTO CoreUserMemberDTO, BindingResult result,
-            HttpServletRequest request) {
+                                                         @Valid @ModelAttribute MemberAddDTO CoreUserMemberDTO,
+                                                         BindingResult result,
+                                                         HttpServletRequest request) {
 
         logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
 
@@ -161,7 +167,7 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
         additionalData.put("loadnext", "members_bynode/" + nodeId);
         additionalData.put("target", "users_target");
 
-        return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "Member added successfully",
+        return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "Participant added successfully",
                 additionalData);
     }
 
@@ -170,14 +176,14 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
         CoreUser user = coreUserRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
 
-        CoreUserUpdateMemberDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
+        MemberUpdateDTO userDTO = coreUserMapper.toMemberUpdateDTO(user); // ← mapper to MemberUpdateDTO
 
         model.addAttribute("user", userDTO);
-        
-        List<DesignationDTO> designations = null;
-        model.addAttribute("pageTitle", "Edit Member");
+
+        List<DesignationDTO> designations;
+        model.addAttribute("pageTitle", "Edit Participant's details");
         designations = designationService.findAllByType((short) 2);
-        
+
         model.addAttribute("designations", designations);
         return "fragments/manage/members/edit";
     }
@@ -185,15 +191,16 @@ public class MemberController extends BaseController<CoreUserDTO, CoreUserServic
     @PostMapping("/edit/{refId}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> editMember(@PathVariable("refId") Long userId,
-            @Valid @ModelAttribute CoreUserUpdateMemberDTO coreUserUpdateDTO, BindingResult result,
-            HttpSession session) {
+                                                          @Valid @ModelAttribute MemberUpdateDTO coreUserUpdateDTO,
+                                                          BindingResult result,
+                                                          HttpSession session) {
         Map<String, Object> additionalData = new HashMap<>();
-        
-        CoreUserDTO user = service.findById(userId);
+
+        MemberAddDTO user = service.findById(userId); // ← service returns MemberAddDTO
         additionalData.put("loadnext", "members_bynode/" + user.getUserNode());
         additionalData.put("target", "users_target");
 
-        return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO), "Member updated successfully",
-                additionalData);
+        return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO),
+                "Participants details updated successfully", additionalData);
     }
 }

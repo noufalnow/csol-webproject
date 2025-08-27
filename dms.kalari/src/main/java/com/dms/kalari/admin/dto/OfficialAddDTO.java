@@ -2,6 +2,7 @@ package com.dms.kalari.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
@@ -28,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @PasswordMatches
-public class CoreUserMemberDTO extends BaseDTO {
+public class OfficialAddDTO extends BaseDTO {
 
     private Long userId;
 
@@ -65,13 +66,19 @@ public class CoreUserMemberDTO extends BaseDTO {
     private String userPassword;
     
     // New fields
-    private LocalDate userDob;
     
+    @NotNull(message = "Date of birth is required")
+    @Past(message = "Date of birth must be in the past")
+    private LocalDate userDob;
+
+
+    @NotNull(message = "Gender is required")
     private Gender gender;
     
     @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
     private String aadhaarNumber;
     
+    @NotBlank(message = "Blood Group is required")
     private String bloodGroup;
     
     @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
@@ -82,8 +89,9 @@ public class CoreUserMemberDTO extends BaseDTO {
     private String addressLine3;
     private String addressState;
     
-    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    @Pattern(regexp = "^$|^[0-9]{6}$", message = "PIN code must be 6 digits")
     private String addressPin;
+
     
     private String emergencyContact;
     

@@ -8,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.CoreUserPasswordDTO;
 import com.dms.kalari.admin.dto.CoreUserUpdateDTO;
-import com.dms.kalari.admin.dto.CoreUserUpdateMemberDTO;
-import com.dms.kalari.admin.dto.CoreUserMemberDTO;
+import com.dms.kalari.admin.dto.OfficialUpdateDTO;
+import com.dms.kalari.admin.dto.OfficialAddDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
@@ -99,7 +99,7 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(updatedUser);
     }
     
-    public CoreUserDTO saveMamber(CoreUserMemberDTO dto) {
+    public CoreUserDTO saveMamber(OfficialAddDTO dto) {
         CoreUser coreUser = coreUserMapper.toEntity(dto);
 
         // 1. Save user first (to generate userId)
@@ -112,7 +112,7 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     }
 
 
-    public CoreUserDTO updateMember(Long userId, CoreUserUpdateMemberDTO updateMemberDTO) {
+    public CoreUserDTO updateMember(Long userId, OfficialUpdateDTO updateMemberDTO) {
         // Fetch the existing user
         CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
