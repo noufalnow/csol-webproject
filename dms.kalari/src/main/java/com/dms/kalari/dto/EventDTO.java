@@ -2,6 +2,8 @@ package com.dms.kalari.dto;
 
 import java.util.List;  // Correct List import
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.entity.Node.Type;
@@ -46,9 +48,11 @@ public class EventDTO extends BaseDTO {
     private Integer eventYear;
 
     @NotNull(message = "Start date is required")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate eventPeriodStart;
 
     @NotNull(message = "End date is required")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate eventPeriodEnd;
 
     @NotBlank(message = "Venue is required")

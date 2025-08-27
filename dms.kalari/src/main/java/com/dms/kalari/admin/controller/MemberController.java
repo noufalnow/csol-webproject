@@ -104,6 +104,7 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
         logInfo("nodeType: {}", nodeType);
 
+        model.addAttribute("nodeName", node.getNodeName());
         model.addAttribute("nodeType", nodeType.name());
         model.addAttribute("parentId", nodeId);
         model.addAttribute("users", users);
@@ -145,11 +146,11 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
     @PostMapping("/add/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addMember(@PathVariable(value = "id") Long nodeId,
-                                                         @Valid @ModelAttribute MemberAddDTO CoreUserMemberDTO,
+                                                         @Valid @ModelAttribute MemberAddDTO memberAddDTO,
                                                          BindingResult result,
                                                          HttpServletRequest request) {
 
-        logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
+        logInfo("Request Parameters – memberAddDTO: {}", memberAddDTO);
 
         if (nodeId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -158,16 +159,16 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
         logInfo("Request Parameters – setUserNodeId-parentId: {}", nodeId);
 
-        CoreUserMemberDTO.setUserNode(nodeId);
-        CoreUserMemberDTO.setUserType(CoreUser.UserType.MEMBER);
-        CoreUserMemberDTO.setUserPassword("123456");
-        CoreUserMemberDTO.setUserUname("uname");
+        memberAddDTO.setUserNode(nodeId);
+        memberAddDTO.setUserType(CoreUser.UserType.MEMBER);
+        memberAddDTO.setUserPassword("123456");
+        memberAddDTO.setUserUname("uname");
 
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("loadnext", "members_bynode/" + nodeId);
         additionalData.put("target", "users_target");
 
-        return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "Participant added successfully",
+        return handleRequest(result, () -> service.saveMamber(memberAddDTO), "Participant added successfully",
                 additionalData);
     }
 
@@ -177,6 +178,8 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
                 .orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
 
         MemberUpdateDTO userDTO = coreUserMapper.toMemberUpdateDTO(user); // ← mapper to MemberUpdateDTO
+        
+        //logInfo("User DTO: {}", userDTO);
 
         model.addAttribute("user", userDTO);
 

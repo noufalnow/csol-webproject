@@ -2,7 +2,7 @@
 <div th:fragment="content" /*th:if="${showMemberPanel}"*/>
 
 
-<div class="container mt-1 mb-3" style="padding-left: 0px !important;">
+<div class="container mt-1 mb-3" style="padding-left: 0px !important;margin-left: 0px;">
     <div class="d-flex justify-content-between align-items-center">
         
         <!-- Left: Node Name -->
@@ -54,7 +54,7 @@
 
 
 	<div class="d-flex justify-content-between align-items-center mb-3">
-       <h4 class="mb-0">Officials </h4> <h1>  <!--  (<span //th:text="${isChild}"></span>)</h1>-->
+       <h4 class="mb-0">Officials (<span th:text="${#lists.size(users)}"></span>)</h4> <h1>  <!--  (<span //th:text="${isChild}"></span>)</h1>-->
     
 <a th:if="${isChild == false or (isChild and #authorization.expression('hasAuthority(''PRIV_officials_add_child'')'))}" 
    class="btn btn-primary ajax-link" 

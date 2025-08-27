@@ -9,7 +9,6 @@
     <div class="modal-body">
         <form id="editMemberUserForm" th:action="@{'/members_edit/' + ${user.userId}}" 
               method="post" th:object="${user}" enctype="multipart/form-data">
-            <input type="hidden" name="userId" th:value="${user.userId}" />
              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
              <!-- Personal Information -->

@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.admin.dto.validation.PasswordMatches;
@@ -77,6 +78,7 @@ public class CoreUserDTO extends BaseDTO {
     
     
     private UserType userType = UserType.MEMBER;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate userDob;
     
     private Gender gender;

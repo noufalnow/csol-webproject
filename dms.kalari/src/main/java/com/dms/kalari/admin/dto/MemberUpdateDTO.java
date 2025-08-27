@@ -20,6 +20,8 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
 
 import com.dms.kalari.util.ValidFile;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
@@ -63,6 +65,7 @@ public class MemberUpdateDTO extends BaseDTO {
 
     @NotNull(message = "Date of birth is required")
     @Past(message = "Date of birth must be in the past")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate userDob;
 
 

@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseDTO;
 
@@ -22,8 +24,10 @@ public class MemberEventItemDTO extends BaseDTO {
     private Integer itemKey;     // The Integer key from your original Map
     private String itemValue;    // The String value
     private Integer score;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime entryDateTime;
     private CoreUser scoreEntryBy; 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime approveDateTime;
     private CoreUser approvedBy; 
     private String uniqueId;

@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.dms.kalari.common.BaseDTO;
 
 @Data
@@ -21,12 +23,16 @@ public class MemberEventDTO extends BaseDTO {
     private Long memberNodeId;
     private Long eventId;
     private Long nodeId;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime applyDate;
     public Map<Integer,String> items = new HashMap<>();
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime approvedDate;
     private Long approvedBy;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime resultDate;
     private Long resultEntryBy;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime resultApprovalDate;
     private Long resultApprovedBy;
     
