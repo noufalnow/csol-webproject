@@ -84,18 +84,18 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
     @GetMapping({"/bynode/", "/bynode/{id}"})
     public String listMembersByNode(@PathVariable(value = "id", required = false) Long nodeId,
-                                    HttpSession session, Model model, Authentication authentication) {
+                                      Model model, Authentication authentication) {
 
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 
-        if (principal.getInstId() != nodeId)
-            model.addAttribute("isChild", true);
-        else
-            model.addAttribute("isChild", false);
+		if (nodeId == null) {
+			nodeId = principal.getInstId();
+		}
 
-        if (nodeId == null) {
-            nodeId = principal.getInstId();
-        }
+		if (principal.getInstId() != nodeId)
+			model.addAttribute("isChild", true);
+		else
+			model.addAttribute("isChild", false);
 
         NodeDTO node = nodeService.findById(nodeId);
         Node.Type nodeType = node.getNodeType();

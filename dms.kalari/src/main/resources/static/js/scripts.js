@@ -58,10 +58,19 @@ $(document).ready(function() {
 	        return;
 	    }
 
-	    var hasFile = $('input[name="photoFileId"]', form).length > 0;
+	    //var hasFile = $('input[name="photoFileId"]', form).length > 0;
 	    var dataToSend, contentType, processData;
+		
+		var formElement = document.getElementById(formId);
+		if (!formElement) {
+		    console.error('Form not found');
+		    return;
+		}
+		var fileInput = formElement.querySelector('input[name="photoFileId"]');
+		var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+		
 
-	    if (hasFile && $('input[name="photoFileId"]', form)[0].files.length > 0) {
+	    if (hasFile) {
 	        // --- If photo file present, use FormData ---
 	        dataToSend = new FormData(form[0]);
 	        processData = false;
@@ -74,14 +83,13 @@ $(document).ready(function() {
 	    }
 
 	    var actionUrl = form.attr('action');
-	    if ($('#ref_id', form).length > 0) {
-	        var refId = $('#ref_id', form).val();
-	        if (!refId) {
-	            console.error('Reference ID not found');
-	            return;
-	        }
-	        actionUrl += '/' + refId;
-	    }
+		var refIdElement = formElement.querySelector('#ref_id');
+		if (refIdElement && refIdElement.value) {
+		    actionUrl += '/' + refIdElement.value;
+		} else if (refIdElement && !refIdElement.value) {
+		    console.error('Reference ID not found');
+		    return;
+		}
 
 	    console.log('Submitting to:', actionUrl);
 
@@ -328,10 +336,10 @@ function loadContent(url, targetSelector) {
 				bsModal.show();
 
 				// focus first input
-				setTimeout(() => {
+				/*setTimeout(() => {
 					const $first = $modal.find('input,select,textarea').filter(':visible').first();
 					if ($first.length) $first.focus();
-				}, 300);
+				}, 300);*/
 			} else {
 				// regular pane
 

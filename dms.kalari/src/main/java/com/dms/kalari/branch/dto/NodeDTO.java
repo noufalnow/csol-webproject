@@ -30,7 +30,7 @@ public class NodeDTO extends BaseDTO {
     
     private Boolean isActivePath = false;
 
-    @NotNull(message = "Node type is required")
+    //@NotNull(message = "Node type is required")
     private Node.Type nodeType; // Reference the enum from Node entity
 
     @NotNull(message = "Status is required")

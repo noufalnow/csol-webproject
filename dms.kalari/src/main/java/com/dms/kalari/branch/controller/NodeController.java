@@ -1,31 +1,26 @@
 package com.dms.kalari.branch.controller;
 
 import jakarta.validation.Valid;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import com.dms.kalari.admin.entity.CoreUser;
-import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.dms.kalari.security.CustomUserPrincipal;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Controller
 @RequestMapping("/branch")
@@ -36,17 +31,15 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	}
 
 	@GetMapping("/nodes")
-	public String listNodes(HttpSession session, @RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortField,
-			@RequestParam(defaultValue = "asc") String sortDir, @RequestParam(required = false) String search,
-			@RequestParam(required = false) Long parentId, Model model) {
+	public String listNodes(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "id") String sortField, @RequestParam(defaultValue = "asc") String sortDir,
+			@RequestParam(required = false) String search, @RequestParam(required = false) Long parentId, Model model,
+			Authentication authentication) {
 
-		Object parentIdAttr = session.getAttribute("ParentId");
-		parentId = parentIdAttr != null ? Long.parseLong(parentIdAttr.toString()) : null;
-
-		logInfo("Parent ID: {}", parentId);
-
-		// Long effectiveParentId = (parentId != null) ? parentId : null;
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		if (parentId == null) {
+			parentId = principal.getInstId(); // fallback to logged-in user's node
+		}
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
 
@@ -66,46 +59,39 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("pageUrl", "/nodes/html");
 		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(parentId));
 
-		return "fragments/nodes/node_list";
+		return "fragments/nodes/list";
 	}
 
-	@GetMapping({ "/nodelist", "/nodelist/{id}" }) // Supports both patterns
-	public String listNodesByParent(@PathVariable(value = "id", required = false) Long parentId, HttpSession session,
-			Model model) {
+	@GetMapping({ "/nodelist", "/nodelist/{id}" })
+	public String listNodesByParent(@PathVariable(value = "id", required = false) Long nodeId, Model model,
+			Authentication authentication) {
 
-		// HttpSession session = request.getSession();
-		if (parentId != null) {
-			session.setAttribute("ParentId", parentId); // for data entry
-		} else {
-			parentId = (Long) session.getAttribute("ParentId");
-		}
-		if (parentId == null) {
-			parentId = (Long) session.getAttribute("NODE_ID");
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+		// Fallback to logged-in user's node if none provided
+		if (nodeId == null) {
+			nodeId = principal.getInstId();
 		}
 
-		List<NodeDTO> nodeList = service.findByParentId(parentId);
+		if (principal.getInstId() != nodeId)
+			model.addAttribute("isChild", true);
+		else
+			model.addAttribute("isChild", false);
 
-		NodeDTO node = service.findById(parentId);
+		// Always resolve node once
+		NodeDTO node = service.findById(nodeId);
 
-		Node.Type nodeType = (Node.Type) node.getNodeType();
-		Node.Type userNodeType = (Node.Type) session.getAttribute("NODE_TYPE");
+		model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
+		model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
 
-		//logInfo("My Node ID: {}", session.getAttribute("NODE_ID"));
-		//logInfo("Selected Node ID: {}", node.getNodeId());
-				
-
-		if ((nodeType.getLevel() >= userNodeType.getLevel()) &&  (userNodeType != Node.Type.KALARI) && (nodeType != Node.Type.KALARI)) {
-			model.addAttribute("allowAddNode", true);
-		}
+		List<NodeDTO> nodeList = service.findByParentId(nodeId);
 
 		model.addAttribute("nodeList", nodeList);
-		model.addAttribute("parentId", parentId);
-
-		model.addAttribute("pageTitle", "Branches");
+		model.addAttribute("parentId", nodeId);
+		model.addAttribute("pageTitle", "Affiliations");
 		model.addAttribute("target", "users_target");
 
-		model.addAttribute("target", "users_target");
-		return "fragments/nodes/node_list";
+		return "fragments/nodes/nodes";
 	}
 
 	@GetMapping("/node/view/{id}")
@@ -113,72 +99,71 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		NodeDTO node = service.findById(id);
 		model.addAttribute("node", node);
 		model.addAttribute("children", service.findChildren(id));
-		model.addAttribute("pageTitle", "Branch Detail - " + node.getName());
+		model.addAttribute("pageTitle", "Affiliation Detail - " + node.getName());
 		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(id));
 		return "fragments/nodes/node_detail";
 	}
 
-	@GetMapping("/node/add")
-	public String showAddNodeForm(@RequestParam(required = false) Long parentId, Model model) {
-		model.addAttribute("pageTitle", "Add Branch");
+	@GetMapping("/node/add/{id}")
+	public String showAddNodeForm(@PathVariable(value = "id") Long parentId, Model model,
+			Authentication authentication) {
+		
+		model.addAttribute("pageTitle", "Add Affiliation");
 		model.addAttribute("node", new NodeDTO());
 		model.addAttribute("parentId", parentId);
-		// model.addAttribute("availableTypes",
-		// service.getAvailableNodeTypes(parentId));
 		model.addAttribute("nodeType", service.getNextNodeType(parentId));
-		return "fragments/nodes/add_node";
+		return "fragments/nodes/add";
 	}
 
-	@PostMapping("/node/add")
+	@PostMapping("/node/add/{id}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addNode(@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result,
-			HttpSession session) {
+	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long parentId,@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result) {
 
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "nodes/html/nodelist");
+		additionalData.put("loadnext", "branch_nodelist"+parentId);
 		additionalData.put("target", "users_target");
+		
+		NodeDTO node = service.findById(parentId);
+		nodeDTO.setNodeType(service.getNextNodeType(node.getParentId()));
+		nodeDTO.setParentId(parentId);
 
-		return handleRequest(result, () -> service.save(nodeDTO), "Node added successfully", additionalData);
+		return handleRequest(result, () -> service.save(nodeDTO), "Affiliation added successfully", additionalData);
 	}
 
 	@GetMapping("/node/edit/{id}")
-	public String editNode(@PathVariable Long id, Model model, HttpServletRequest request) {
+	public String editNode(@PathVariable Long id, Model model) {
 		NodeDTO node = service.findById(id);
 		model.addAttribute("nodeDTO", node);
-
-		HttpSession session = request.getSession(false);
-		Long parentId = (Long) session.getAttribute("ParentId");
-		model.addAttribute("parentId", parentId);
-
-		model.addAttribute("nodeType", service.getNextNodeType(parentId));
-		// model.addAttribute("availableTypes",
-		// service.getAvailableNodeTypes(node.getParentId()));
-		model.addAttribute("pageTitle", "Edit Branch - " + node.getName());
-		return "fragments/nodes/edit_node";
+		model.addAttribute("parentId", node.getParentId());
+		model.addAttribute("nodeType", service.getNextNodeType(node.getParentId()));
+		model.addAttribute("pageTitle", "Edit Affiliation - " + node.getName());
+		return "fragments/nodes/edit";
 	}
 
-	@PostMapping("/node/update/{id}")
+	@PostMapping("/node/edit/{id}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,
 			BindingResult result) {
 
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "nodes/html/nodelist");
+		NodeDTO node = service.findById(id);
+		nodeDTO.setParentId(node.getParentId());
+		additionalData.put("loadnext", "branch_nodelist/"+node.getParentId());
 		additionalData.put("target", "users_target");
 
-		return handleRequest(result, () -> service.update(id, nodeDTO), "Node updated successfully", additionalData);
+		return handleRequest(result, () -> service.update(id, nodeDTO), "Affiliations updated successfully", additionalData);
 	}
 
 	@GetMapping("/node/tree")
-	public String showTreeView(Model model, HttpServletRequest request) {
+	public String showTreeView(Model model, Authentication authentication) {
 
-		HttpSession session = request.getSession(false);
-		model.addAttribute("parentId", (Long) session.getAttribute("NODE_ID"));
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		model.addAttribute("parentId", principal.getInstId());
 
-		model.addAttribute("userType", session.getAttribute("USER_TYPE").toString().trim());
-		model.addAttribute("nodeType", session.getAttribute("NODE_TYPE").toString().trim());
+		model.addAttribute("userType", principal.getUserType());
+		model.addAttribute("nodeType", principal.getNodeType());
 
-		model.addAttribute("treeData", service.getSubTreeFromParent((Long) session.getAttribute("NODE_ID")));
+		model.addAttribute("treeData", service.getSubTreeFromParent((Long) principal.getInstId()));
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/nodes/node_tree";
 	}

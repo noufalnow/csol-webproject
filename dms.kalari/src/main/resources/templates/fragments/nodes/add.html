@@ -1,18 +1,22 @@
 <!-- fragments/add_node.html -->
 <div th:fragment="content">
 <div class="modal-header">
-    <h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Edit Branch</h5>
+    <h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Add New Node</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <!-- Modal Body -->
-<div class="modal-body">
-    <form id="editNodeForm" th:action="@{'/nodes/html/update/' + ${nodeDTO.nodeId}}" method="post" th:object="${nodeDTO}">
-        <input type="hidden" name="parentId" th:value="${parentId}" />
-        <input type="hidden" name="nodeType" th:value="${nodeType}" />
-               
+<div class="modal-body">   
+    <form id="addNodeForm"
+      th:action="@{/branch_nodeadd/{id}(id=${parentId})}"
+      method="post"
+      th:object="${node}"
+      >
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    
+       
         <div class="row mb-2">
             <div class="col-12">
-                <label for="node_name" class="form-label">Branch Name</label>
+                <label for="node_name" class="form-label"> Name</label>
                 <input type="text" id="node_name" name="nodeName" th:field="*{nodeName}" class="form-control" required>
             </div>
         </div>
@@ -40,7 +44,7 @@
 <!-- Modal Footer -->
 <div class="modal-footer">
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-    <button type="button" class="btn btn-primary" onclick="submitHtmlForm('editNodeForm', '#nodes_target')">Update</button>
+    <button type="button" class="btn btn-primary" onclick="submitHtmlForm('addNodeForm')">Add Branch</button>
 </div>
 </div>
 
