@@ -35,7 +35,6 @@
 	margin: 0.125rem 0;
 	white-space: nowrap;
 	transition: all 0.2s ease;
-	cursor: pointer;
 	min-width: min-content;
 }
 
@@ -44,6 +43,10 @@
 	background-color: rgba(44, 62, 80, 0.15);
 	border-left: 3px solid var(--dms-primary);
 	font-weight: bold;
+}
+
+.toggle-btn, .aspan{
+	cursor: pointer;
 }
 
 .tree-node.COUNTRY {
@@ -167,7 +170,7 @@ ul.collapsed {
 
 <div class="d-flex overflow-hidden mb-3 border-secondary">
 	<!-- Left column -->
-	<div th:if="${nodeType} != 'KALARI'" class="tree-column me-2 flex-shrink-0" style="width: 25%;">
+	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}" class="tree-column me-2 flex-shrink-0" style="width: 25%;">
 		<div>
 			<!-- templates/fragments/node_tree.html -->
 			<!-- Main content fragment -->
@@ -188,39 +191,39 @@ ul.collapsed {
 			<!-- Recursive nodeItem fragment -->
 			<div th:fragment="nodeItem(node, parentId)">
 				<th:block th:if="${node != null}">
-				<div
-				    th:class="'tree-node ' + ${node.nodeType}
-				             + (${node.nodeId==parentId} ? ' active' : '')
-				             + (${node.isActivePath} ? ' in-active-path' : '')"
-				    th:data-node-id="${node.nodeId}"
-				    th:attr="onclick=|onTreeNodeClick(event, this, '${node.nodeType}')|">
-
-
-
-
-
-						<!-- Toggle button -->
-						<span th:if="${!node.children.isEmpty()}" 
-						      class="toggle-btn"
-						      th:classappend="${node.isActivePath} ? 'open' : 'closed'">
-						    <span th:utext="${node.isActivePath} ? '-' : '<i class=\'fa fa-folder-open\'></i>'"></span>
-						</span>
-						 <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
-
-						<span class"aspan" th:if="${node.nodeId != null}"
-							th:text="${node.nodeName}"> Node Name </span>
+					<div
+					    th:class="'tree-node ' + ${node.nodeType}
+					             + (${node.nodeId==parentId} ? ' active' : '')
+					             + (${node.isActivePath} ? ' in-active-path' : '')"
+					    th:data-node-id="${node.nodeId}">
+					
+					    <!-- Toggle button (only if children exist) -->
+					    <span th:if="${!node.children.isEmpty()}" 
+					          class="toggle-btn"
+					          th:classappend="${node.isActivePath} ? 'open' : 'closed'">
+					        <i class="fa fa-folder-open"
+					           onclick="toggleTreeNode(event, this.closest('.tree-node'))"></i>
+					    </span>
+					    <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
+					
+					    <!-- Node label -->
+					    <span class="aspan" th:if="${node.nodeId != null}"
+					          th:text="${node.nodeName}"
+					          th:data-node-type="${node.nodeType}"
+					          th:data-node-id="${node.nodeId}"
+     					      onclick="onTreeNodeClick(event, this, this.getAttribute('data-node-type'))">
+					        Node Name
+					    </span>
 					</div>
-
-
-
+					
 					<!-- Children list -->
 					<ul th:if="${!node.children.isEmpty()}"
-						th:classappend="${node.isActivePath} ? 'expanded' : 'expanded'">
-						<li th:each="child : ${node.children}">
-							<div
-								th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
-						</li>
+					    th:classappend="${node.isActivePath} ? 'expanded' : 'expanded'">
+					    <li th:each="child : ${node.children}">
+					        <div th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
+					    </li>
 					</ul>
+
 				</th:block>
 			</div>
 		</div>
@@ -241,10 +244,9 @@ ul.collapsed {
   
   // Function to toggle children visibility
 function onTreeNodeClick(event, nodeEl, ltype) {
-  // 1) toggle open/closed
-  //toggleTreeNode(event, nodeEl);
 
-  // 2) activate the link highlight
+ console.log(ltype);
+
   activateLink(nodeEl);
 
   // 3) load content into your target
@@ -289,36 +291,32 @@ function onTreeNodeClick(event, nodeEl, ltype) {
   clearTreeForm();
 }
 
+
 function toggleTreeNode(event, nodeElement) {
-	  // if they clicked the actual <a> text, bail out
-	  if (event.target.tagName === 'A') return;
+  // find the toggle button container
+  const toggleBtn = nodeElement.querySelector('.toggle-btn');
+  if (!toggleBtn) return;
 
-	  // find the toggle button (only present if there are children)
-	  const toggleBtn = nodeElement.querySelector('.toggle-btn');
-	  if (!toggleBtn) return;
+  const parentLi   = nodeElement.closest('li');
+  const childrenUl = parentLi && parentLi.querySelector('ul');
+  if (!childrenUl) return;
 
-	  // find the <ul> of children to expand/collapse
-	  const parentLi    = nodeElement.closest('li');
-	  const childrenUl  = parentLi && parentLi.querySelector('ul');
-	  if (!childrenUl) return;
+  // toggle classes
+  childrenUl.classList.toggle('collapsed');
+  childrenUl.classList.toggle('expanded');
+  toggleBtn.classList.toggle('open');
+  toggleBtn.classList.toggle('closed');
 
-	  // toggle classes
-	  childrenUl.classList.toggle('collapsed');
-	  childrenUl.classList.toggle('expanded');
-	  toggleBtn.classList.toggle('open');
-	  toggleBtn.classList.toggle('closed');
+  // update +/–
+  const icon = toggleBtn.querySelector('i');
+  if (icon) {
+    icon.classList.toggle('fa-folder-open');
+    icon.classList.toggle('fa-folder');
+  }
 
-	  // update the “+” / “–”
-	  toggleBtn.querySelector('span').textContent =
-	    childrenUl.classList.contains('collapsed') ? '+' : '-';
-
-	  // optional: also flip display for old-browser support
-	  childrenUl.style.display =
-	    childrenUl.classList.contains('collapsed') ? 'none' : 'block';
-
-	  // don’t let this click bubble up further
-	  event.stopPropagation();
-	}
+  // stop bubbling
+  event.stopPropagation();
+}
 
   
   // Function to activate the clicked link

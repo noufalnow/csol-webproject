@@ -195,11 +195,17 @@ $(document).ready(function() {
 
 
 
-	// Clear error messages when interacting with form fields
-	$(document).on('focus', 'input', function() {
-		$(this).removeClass('has-error');
-		$(this).next('.error-message').remove();
+	document.addEventListener('focusin', function (e) {
+	  if (e.target.tagName === 'INPUT') {
+	    e.target.classList.remove('has-error');
+
+	    const next = e.target.nextElementSibling;
+	    if (next && next.classList.contains('error-message')) {
+	      next.remove();
+	    }
+	  }
 	});
+
 
 	// Status toggle function
 	$(document).on('click', '.status-toggle', function() {
@@ -321,7 +327,15 @@ function loadContent(url, targetSelector) {
 			else if (isModal) {
 				// modal path
 
-				const $modal = (targetSelector === 'modal') ? ($target.is('.modal') ? $target : $('#dynamicModal')) : $('#nestedModal')
+				//const $modal = (targetSelector === 'modal') ? ($target.is('.modal') ? $target : $('#dynamicModal')) : $('#nestedModal')
+				
+				var targetEl = $target instanceof jQuery ? $target[0] : $target;
+
+				var modal =
+				  targetSelector === 'modal'
+				    ? (targetEl && targetEl.classList.contains('modal') ? targetEl : document.getElementById('dynamicModal'))
+				    : document.getElementById('nestedModal');
+				$modal = $(modal);					
 
 				//const $modal = $target.is('.modal') ? $target : $('#dynamicModal');
 				if (!$modal.length) {
@@ -340,6 +354,15 @@ function loadContent(url, targetSelector) {
 					const $first = $modal.find('input,select,textarea').filter(':visible').first();
 					if ($first.length) $first.focus();
 				}, 300);*/
+				
+				var fields = modal.querySelectorAll('input, select, textarea');
+				var firstVisible = Array.from(fields).find(el => el.offsetParent !== null);
+				if (firstVisible) {
+				  firstVisible.focus();
+				  }
+				
+				
+				
 			} else {
 				// regular pane
 
