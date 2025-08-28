@@ -82,17 +82,15 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    model.addAttribute("isChild", !principal.getInstId().equals(nodeId));
 
 	    // Always resolve node once
-	    NodeDTO node = service.findById(nodeId);
+	    NodeDTO node = service.findNodeById(nodeId);
 
 	    model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
 	    model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
 
-	    Map<String, Object> subtree = service.getSubTreeFromParent(nodeId);
+		List<NodeDTO> nodeList = service.findByParentId(nodeId);
 
-	    @SuppressWarnings("unchecked")
-	    Map<Long, List<NodeFlatDTO>> grouped = (Map<Long, List<NodeFlatDTO>>) subtree.getOrDefault("grouped", new HashMap<>());
-
-	    List<NodeFlatDTO> nodeList = grouped.getOrDefault(nodeId, Collections.emptyList());
+		model.addAttribute("nodeList", nodeList);
+		model.addAttribute("parentId", nodeId);
 
 	    model.addAttribute("nodeList", nodeList);
 

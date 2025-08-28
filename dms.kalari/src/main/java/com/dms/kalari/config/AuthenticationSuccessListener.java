@@ -1,4 +1,4 @@
-package com.dms.kalari.config;
+/*package com.dms.kalari.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,3 +63,4 @@ public class AuthenticationSuccessListener {
         
     }
 }
+*/
