@@ -39,5 +39,5 @@ public class NodeDTO extends BaseDTO {
     private Long parentId;
     private String parentName;
     private String nodeTypeLabel;
-    private List<NodeDTO> children;
+    //private List<NodeDTO> children;
 }

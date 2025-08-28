@@ -62,7 +62,8 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     @Query("SELECT u FROM CoreUser u " +
            "LEFT JOIN FETCH u.designation " +
            "LEFT JOIN FETCH u.userNode " +
-           "WHERE u.userNode.id = :nodeId AND u.userType = :userType AND u.deleted = false")
+           "WHERE u.userNode.id = :nodeId AND u.userType = :userType AND u.deleted = false " +
+		   "ORDER BY u.userFname ASC")
     List<CoreUser> findByUserNodeIdAndTypeAndNotDeleted(@Param("nodeId") Long nodeId, 
                                                        @Param("userType") UserType userType);
 

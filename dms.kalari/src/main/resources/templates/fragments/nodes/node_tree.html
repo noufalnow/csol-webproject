@@ -45,7 +45,7 @@
 	font-weight: bold;
 }
 
-.toggle-btn, .aspan{
+.toggle-btn, .aspan {
 	cursor: pointer;
 }
 
@@ -170,74 +170,96 @@ ul.collapsed {
 
 <div class="d-flex overflow-hidden mb-3 border-secondary">
 	<!-- Left column -->
-	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}" class="tree-column me-2 flex-shrink-0" style="width: 25%;">
+	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}"
+		class="tree-column me-2 flex-shrink-0" style="width: 25%;">
 		<div>
 			<!-- templates/fragments/node_tree.html -->
 			<!-- Main content fragment -->
+
 			<div th:fragment="content">
 				<h5 th:text="${pageTitle}" class="tree-title ms-3 mt-3">Node
 					Tree</h5>
 				<div class="tree-container">
 					<ul class="tree">
-						<li th:each="node : ${treeData}"><th:block
-								th:if="${node != null}">
-								<div
-									th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${node}, parentId=${parentId})}"></div>
-							</th:block></li>
+						<!-- Render the root -->
+						<li th:if="${rootNode != null}">
+							<div
+								th:replace="~{fragments/nodes/node_tree :: nodeItem(
+                    node=${rootNode}, 
+                    grouped=${groupedTree}, 
+                    parentId=${parentId}
+                )}"></div>
+						</li>
 					</ul>
 				</div>
 			</div>
 
-			<!-- Recursive nodeItem fragment -->
-			<div th:fragment="nodeItem(node, parentId)">
-				<th:block th:if="${node != null}">
+			<div th:fragment="nodeItem(node, grouped, parentId)">
+				<!-- Safely extract values with proper null checking -->
+
+
+
+				<th:block
+					th:with="
+    nodeId = ${node != null ? node.nodeId : null},
+    nodeName = ${node != null ? node.nodeName : ''},
+    nodeType = ${node != null ? node.nodeType : ''},
+    hasChildren = ${grouped != null && nodeId != null && grouped.containsKey(nodeId) && !grouped.get(nodeId).isEmpty()}
+">
+
 					<div
-					    th:class="'tree-node ' + ${node.nodeType}
-					             + (${node.nodeId==parentId} ? ' active' : '')
-					             + (${node.isActivePath} ? ' in-active-path' : '')"
-					    th:data-node-id="${node.nodeId}">
-					
-					    <!-- Toggle button (only if children exist) -->
-					    <span th:if="${!node.children.isEmpty()}" 
-					          class="toggle-btn"
-					          th:classappend="${node.isActivePath} ? 'open' : 'closed'">
-					        <i class="fa fa-folder-open"
-					           onclick="toggleTreeNode(event, this.closest('.tree-node'))"></i>
-					    </span>
-					    <span th:if="${node.children.isEmpty()}" class="empty-toggle"></span>
-					
-					    <!-- Node label -->
-					    <span class="aspan" th:if="${node.nodeId != null}"
-					          th:text="${node.nodeName}"
-					          th:data-node-type="${node.nodeType}"
-					          th:data-node-id="${node.nodeId}"
-     					      onclick="onTreeNodeClick(event, this, this.getAttribute('data-node-type'))">
-					        Node Name
-					    </span>
+						th:class="'tree-node ' + ${nodeType} + (${nodeId != null && nodeId == parentId} ? ' active' : '')"
+						th:data-node-id="${nodeId}">
+
+						<!-- Toggle button (only if children exist) -->
+						<span th:if="${hasChildren}" class="toggle-btn"> <i
+							class="fa fa-folder-open"
+							onclick="toggleTreeNode(event, this.closest('.tree-node'))"></i>
+						</span> <span th:if="${!hasChildren}" class="empty-toggle"></span>
+
+						<!-- Node label -->
+<span class="aspan" 
+      th:text="${nodeName}"
+      th:data-node-type="${nodeType}"
+      th:data-node-id="${nodeId != null ? xorMaskHelper.mask(nodeId) : ''}"
+      th:onclick="${nodeId != null} ? 'onTreeNodeClick(event, this, this.dataset.nodeType)' : null">
+    Node Name
+</span>
+
 					</div>
-					
+
 					<!-- Children list -->
-					<ul th:if="${!node.children.isEmpty()}"
-					    th:classappend="${node.isActivePath} ? 'expanded' : 'expanded'">
-					    <li th:each="child : ${node.children}">
-					        <div th:replace="~{fragments/nodes/node_tree :: nodeItem(node=${child}, parentId=${parentId})}"></div>
-					    </li>
+					<ul th:if="${hasChildren}" class="tree-children">
+						<li th:each="child : ${grouped.get(nodeId)}">
+							<div
+								th:replace="~{fragments/nodes/node_tree :: nodeItem(
+                node=${child}, 
+                grouped=${grouped}, 
+                parentId=${parentId}
+            )}"></div>
+						</li>
 					</ul>
 
 				</th:block>
+
+
+
+
+
 			</div>
 		</div>
-	</div>
-
-	<!-- Right column -->
-	<div class="content-column flex-grow-1">
-		<div id="users_target"></div>
-	</div>
 </div>
+		<!-- Right column -->
+		<div class="content-column flex-grow-1">
+			<div id="users_target"></div>
+		</div>
+	
 
-<div id="tree_form_target"></div>
+	<div id="tree_form_target"></div>
+	</div>
+	
 
-<script>
+	<script>
   function clearTreeForm() {
     $('#tree_form_target').html('');
   }
@@ -368,7 +390,7 @@ function toggleTreeNode(event, nodeElement) {
 </script>
 
 
-<script th:inline="javascript">
+	<script th:inline="javascript">
     var nodeType = /*[[${nodeType}]]*/ "KALARI";  // fallback string for IDE
 
     if (nodeType !== 'KALARI') {
@@ -377,8 +399,3 @@ function toggleTreeNode(event, nodeElement) {
         loadContent('/members_bynode/', '#users_target');
     }
 </script>
-
-
-
-
-

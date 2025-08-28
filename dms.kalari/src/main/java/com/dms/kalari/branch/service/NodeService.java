@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.mapper.NodeMapper;
 import com.dms.kalari.branch.repository.NodeRepository;
@@ -17,6 +18,7 @@ import com.dms.kalari.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -246,31 +248,41 @@ public class NodeService implements BaseService<NodeDTO> {
 	}
 	
 	
-	/************************ ONLY SUB TREE ---------------------------------*/
+	/************************ ONLY SUB TREE ---------------------------------
+	 * @return */
 	
 	
 	
-	public NodeDTO getSubTreeFromParent(Long parentId) {
-	    Node parentNode = nodeRepository.findById(parentId).orElse(null);
-	    if (parentNode == null) {
-	        return null;
+	public Map<String, Object> getSubTreeFromParent(Long parentId) {
+	    List<NodeFlatDTO> flatList = nodeRepository.findSubTreeFlat(parentId);
+
+	    Map<Long, List<NodeFlatDTO>> grouped = new HashMap<>();
+	    NodeFlatDTO rootNode = null;
+
+	    for (NodeFlatDTO node : flatList) {
+	        Long nodeId = node.getNodeId();
+	        Long parentIdValue = node.getParentId();
+
+	        grouped.computeIfAbsent(parentIdValue, k -> new ArrayList<>()).add(node);
+
+	        if (node.getLvl() == 0 || nodeId.equals(parentId)) {
+	            rootNode = node;
+	        }
 	    }
-	    return buildSubTreeDTO(parentNode);
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("grouped", grouped);
+	    result.put("rootNode", rootNode);
+	    result.put("parentId", parentId);
+
+	    return result;
 	}
 
-	private NodeDTO buildSubTreeDTO(Node node) {
-	    List<NodeDTO> kids = node.getChildren().stream()
-	                              .map(this::buildSubTreeDTO)
-	                              .toList(); // Java 16+, otherwise use collect(Collectors.toList())
 
-	    NodeDTO dto = new NodeDTO();
-	    dto.setNodeId(node.getNodeId());
-	    dto.setNodeName(node.getNodeName());
-	    dto.setNodeType(node.getNodeType());
-	    dto.setChildren(kids);
 
-	    return dto;
-	}
+
+
+
 
 
 }

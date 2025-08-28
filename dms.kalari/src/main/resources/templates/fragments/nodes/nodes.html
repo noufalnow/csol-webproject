@@ -80,7 +80,7 @@
             <thead class="table-light">
                 <tr>
                     <th scope="col">
-                        <a href="#" class="" data-field="nodeId">ID</a>
+                        <a href="#" class="" data-field="nodeId">#</a>
                     </th>
                     <th scope="col">
                         <a href="#" class="" data-field="nodeName">Name</a>
@@ -92,31 +92,33 @@
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr th:each="node : ${nodeList}">
-                    <td th:text="${node.nodeId}">1</td>
-                    <td th:text="${node.nodeName}">Node Name</td>
-                    <td th:text="${node.nodeType}">Type</td>
-                    <td>
-                        <span th:classappend="${node.nodeStatus == 1} ? 'badge bg-success' : 'badge bg-secondary'"
-                              th:text="${node.nodeStatus == 1} ? 'Active' : 'Inactive'">Status</span>
-                    </td>
-                    <td>
-                        <a class="ajax-link btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
-                           th:onclick="'loadContent(\'/branch_nodeview/' + ${node.nodeId} + '\', \'#content\')'">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                        <a class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
-                           th:onclick="'loadContent(\'/branch_nodeedit/' + ${node.nodeId} + '\', \'modal\')'">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                    </td>
-                </tr>
-                <!-- Empty state -->
-                <tr th:if="${#lists.isEmpty(nodeList)}">
-                    <td colspan="5" class="text-center">No nodes found</td>
-                </tr>
-            </tbody>
+<tbody>
+    <tr th:each="node, iterStat : ${nodeList}">
+        <th scope="row" th:text="${iterStat.count}">1</th>
+        <td th:text="${node.nodeName}">Node Name</td>
+        <td th:text="${node.nodeType}">Type</td>
+        <td>
+            <span th:classappend="${node.nodeStatus == 1} ? 'badge bg-success' : 'badge bg-secondary'"
+                  th:text="${node.nodeStatus == 1} ? 'Active' : 'Inactive'">Status</span>
+        </td>
+        <td>
+            <a class="ajax-link btn btn-sm btn-outline-primary me-1" href="javascript:void(0);"
+               th:onclick="'loadContent(\'/branch_nodeview/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'#content\')'">
+                <i class="fas fa-eye"></i> View
+            </a>
+            <a class="ajax-link btn btn-sm btn-outline-secondary" href="javascript:void(0);"
+               th:onclick="'loadContent(\'/branch_nodeedit/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'modal\')'">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </td>
+    </tr>
+
+    <!-- Empty state -->
+    <tr th:if="${nodeList == null or #lists.isEmpty(nodeList)}">
+        <td colspan="5" class="text-center">No nodes found</td>
+    </tr>
+</tbody>
+
         </table>
     </div>
 

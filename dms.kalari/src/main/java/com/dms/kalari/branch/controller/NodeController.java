@@ -13,11 +13,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.branch.dto.NodeDTO;
+import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.security.CustomUserPrincipal;
+import com.dms.kalari.util.XorMaskHelper;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,78 +66,96 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	}
 
 	@GetMapping({ "/nodelist", "/nodelist/{id}" })
-	public String listNodesByParent(@PathVariable(value = "id", required = false) Long nodeId, Model model,
-			Authentication authentication) {
+	public String listNodesByParent(@PathVariable(value = "id", required = false) Long nodeId,
+	                                Model model,
+	                                Authentication authentication) {
 
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 
-		// Fallback to logged-in user's node if none provided
-		if (nodeId == null) {
-			nodeId = principal.getInstId();
-		}
+	    // Fallback to logged-in user's node if none provided
+	    if (nodeId == null) {
+	        nodeId = principal.getInstId();
+	    } else {
+	        nodeId = XorMaskHelper.unmask(nodeId);
+	    }
 
-		if (principal.getInstId() != nodeId)
-			model.addAttribute("isChild", true);
-		else
-			model.addAttribute("isChild", false);
+	    model.addAttribute("isChild", !principal.getInstId().equals(nodeId));
 
-		// Always resolve node once
-		NodeDTO node = service.findById(nodeId);
+	    // Always resolve node once
+	    NodeDTO node = service.findById(nodeId);
 
-		model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
-		model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
+	    model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
+	    model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
 
-		List<NodeDTO> nodeList = service.findByParentId(nodeId);
+	    Map<String, Object> subtree = service.getSubTreeFromParent(nodeId);
 
-		model.addAttribute("nodeList", nodeList);
-		model.addAttribute("parentId", nodeId);
-		model.addAttribute("pageTitle", "Affiliations");
-		model.addAttribute("target", "users_target");
+	    @SuppressWarnings("unchecked")
+	    Map<Long, List<NodeFlatDTO>> grouped = (Map<Long, List<NodeFlatDTO>>) subtree.getOrDefault("grouped", new HashMap<>());
 
-		return "fragments/nodes/nodes";
+	    List<NodeFlatDTO> nodeList = grouped.getOrDefault(nodeId, Collections.emptyList());
+
+	    model.addAttribute("nodeList", nodeList);
+
+	    model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+	    model.addAttribute("pageTitle", "Affiliations");
+	    model.addAttribute("target", "users_target");
+
+	    return "fragments/nodes/nodes";
 	}
+
 
 	@GetMapping("/node/view/{id}")
 	public String viewNodeById(@PathVariable Long id, Model model) {
-		NodeDTO node = service.findById(id);
+		
+		Long nodeId = XorMaskHelper.unmask(id);
+		
+		NodeDTO node = service.findById(nodeId);
 		model.addAttribute("node", node);
-		model.addAttribute("children", service.findChildren(id));
+		model.addAttribute("children", service.findChildren(nodeId));
 		model.addAttribute("pageTitle", "Affiliation Detail - " + node.getName());
-		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(id));
+		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(nodeId));
 		return "fragments/nodes/node_detail";
 	}
 
 	@GetMapping("/node/add/{id}")
-	public String showAddNodeForm(@PathVariable(value = "id") Long parentId, Model model,
+	public String showAddNodeForm(@PathVariable(value = "id") Long mParentId, Model model,
 			Authentication authentication) {
+		
+		Long parentId = XorMaskHelper.unmask(mParentId);
 		
 		model.addAttribute("pageTitle", "Add Affiliation");
 		model.addAttribute("node", new NodeDTO());
-		model.addAttribute("parentId", parentId);
-		model.addAttribute("nodeType", service.getNextNodeType(parentId));
+		model.addAttribute("parentId", mParentId);
+		//model.addAttribute("nodeType", service.getNextNodeType(parentId));
 		return "fragments/nodes/add";
 	}
 
 	@PostMapping("/node/add/{id}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long parentId,@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result) {
+	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long mParentId,@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result) {
 
-		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "branch_nodelist"+parentId);
-		additionalData.put("target", "users_target");
+		Long parentId = XorMaskHelper.unmask(mParentId);
 		
-		NodeDTO node = service.findById(parentId);
-		nodeDTO.setNodeType(service.getNextNodeType(node.getParentId()));
+		
+		Map<String, Object> additionalData = new HashMap<>();
+		additionalData.put("loadnext", "branch_tree");
+		//additionalData.put("target", "users_target");
+		
+		//NodeDTO node = service.findById(parentId);
+		nodeDTO.setNodeType(service.getNextNodeType(parentId));
 		nodeDTO.setParentId(parentId);
 
 		return handleRequest(result, () -> service.save(nodeDTO), "Affiliation added successfully", additionalData);
 	}
 
-	@GetMapping("/node/edit/{id}")
-	public String editNode(@PathVariable Long id, Model model) {
+	@GetMapping("/node/edit/{mId}")
+	public String editNode(@PathVariable Long mId, Model model) {
+		
+		Long id = XorMaskHelper.unmask(mId);
+		
 		NodeDTO node = service.findById(id);
 		model.addAttribute("nodeDTO", node);
-		model.addAttribute("parentId", node.getParentId());
+		model.addAttribute("nodeId", mId);
 		model.addAttribute("nodeType", service.getNextNodeType(node.getParentId()));
 		model.addAttribute("pageTitle", "Edit Affiliation - " + node.getName());
 		return "fragments/nodes/edit";
@@ -144,14 +165,16 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,
 			BindingResult result) {
+		
+		Long nodeId = XorMaskHelper.unmask(id);
 
 		Map<String, Object> additionalData = new HashMap<>();
-		NodeDTO node = service.findById(id);
+		NodeDTO node = service.findById(nodeId);
 		nodeDTO.setParentId(node.getParentId());
-		additionalData.put("loadnext", "branch_nodelist/"+node.getParentId());
-		additionalData.put("target", "users_target");
+		additionalData.put("loadnext", "branch_tree");
+		//additionalData.put("target", "users_target");
 
-		return handleRequest(result, () -> service.update(id, nodeDTO), "Affiliations updated successfully", additionalData);
+		return handleRequest(result, () -> service.update(nodeId, nodeDTO), "Affiliations updated successfully", additionalData);
 	}
 
 	@GetMapping("/node/tree")
@@ -163,7 +186,13 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("userType", principal.getUserType());
 		model.addAttribute("nodeType", principal.getNodeType());
 
-		model.addAttribute("treeData", service.getSubTreeFromParent((Long) principal.getInstId()));
+		Map<String, Object> treeData = service.getSubTreeFromParent((Long) principal.getInstId());
+
+		model.addAttribute("groupedTree", treeData.get("grouped"));
+		model.addAttribute("rootNode", treeData.get("rootNode"));
+		model.addAttribute("parentId", treeData.get("parentId")); // 👈 pass to view
+
+	    
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/nodes/node_tree";
 	}

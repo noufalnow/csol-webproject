@@ -28,6 +28,7 @@ import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.security.CustomUserPrincipal;
+import com.dms.kalari.util.XorMaskHelper;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -93,6 +94,9 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 		if (nodeId == null) {
 			nodeId = principal.getInstId();
 		}
+		else {
+			nodeId = XorMaskHelper.unmask(nodeId);
+		}
 
 		if (principal.getInstId() != nodeId)
 			model.addAttribute("isChild", true);
@@ -111,7 +115,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 		model.addAttribute("nodeName", node.getNodeName());
 		model.addAttribute("nodeType", nodeType.name());
-		model.addAttribute("parentId", nodeId);
+        model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
 
@@ -120,15 +124,16 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 	@GetMapping("/details/{id}")
 	public String viewUserById(@PathVariable Long id, Model model) {
-		model.addAttribute("user", service.findById(id));
+		model.addAttribute("user", service.findById(XorMaskHelper.unmask(id)));
 		model.addAttribute("pageTitle", "Official Detail ");
 		return "fragments/manage/officials/view";
 	}
 
 	@GetMapping("/add/{id}")
-	public String showAddOfficialForm(@PathVariable(value = "id") Long nodeId, Model model) {
+	public String showAddOfficialForm(@PathVariable(value = "id") Long mNodeId, Model model) {
 
 		model.addAttribute("user", new OfficialAddDTO());
+        Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		if (nodeId != null) {
 
@@ -137,7 +142,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 			model.addAttribute("pageTitle", "Add Officials");
 			designations = designationService.findAllByType((short) 1);
 
-			model.addAttribute("nodeId", nodeId);
+			model.addAttribute("nodeId", mNodeId);
 
 			model.addAttribute("designations", designations);
 
@@ -147,16 +152,13 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 	@PostMapping("/add/{id}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addOfficial(@PathVariable(value = "id") Long nodeId,
+	public ResponseEntity<Map<String, Object>> addOfficial(@PathVariable(value = "id") Long mNodeId,
 			@Valid @ModelAttribute OfficialAddDTO CoreUserMemberDTO, BindingResult result,
 			HttpServletRequest request) {
 
 		logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
 
-		if (nodeId == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "ParentId not found in session"));
-		}
+		Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		logInfo("Request Parameters – setUserNodeId-parentId: {}", nodeId);
 
@@ -167,7 +169,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 		Map<String, Object> additionalData = new HashMap<>();
 
-		additionalData.put("loadnext", "officials_bynode/" + nodeId);
+		additionalData.put("loadnext", "officials_bynode/"  + mNodeId);
 
 		additionalData.put("target", "users_target");
 		return handleRequest(result, () -> service.saveMamber(CoreUserMemberDTO), "Official added successfully",
@@ -175,10 +177,14 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	}
 
 	@GetMapping("/edit/{id}")
-	public String editOfficialForm(@PathVariable Long id, Model model, HttpSession session) {
+	public String editOfficialForm(@PathVariable Long id, Model model) {
+		
+		Long userId = XorMaskHelper.unmask(id);
 		// Get the user entity
-		CoreUser user = coreUserRepository.findByIdAndNotDeleted(id)
-				.orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
+		CoreUser user = coreUserRepository.findByIdAndNotDeleted(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+		
+		
 
 		// Convert to CoreUserUpdateMemberDTO
 		OfficialUpdateDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
@@ -186,6 +192,7 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 		model.addAttribute("user", userDTO);
 		List<DesignationDTO> designations = null;
 
+		model.addAttribute("userId", id);
 		model.addAttribute("pageTitle", "Edit Officials");
 		designations = designationService.findAllByType((short) 1);
 		
@@ -195,14 +202,16 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 	@PostMapping("/edit/{refId}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> editOfficial(@PathVariable("refId") Long userId,
+	public ResponseEntity<Map<String, Object>> editOfficial(@PathVariable("refId") Long id,
 			@Valid @ModelAttribute OfficialUpdateDTO coreUserUpdateDTO, BindingResult result,
 			HttpSession session) {
 		Map<String, Object> additionalData = new HashMap<>();
 		
+		Long userId = XorMaskHelper.unmask(id);
+		
 		CoreUserDTO user = service.findById(userId);
 
-		additionalData.put("loadnext", "officials_bynode/" + user.getUserNode());
+		additionalData.put("loadnext", "officials_bynode/" + XorMaskHelper.mask(user.getUserNode()));
 
 		additionalData.put("target", "users_target");
 

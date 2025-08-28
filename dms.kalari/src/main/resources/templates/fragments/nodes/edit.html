@@ -7,7 +7,7 @@
 <!-- Modal Body -->
 <div class="modal-body">    
 <form id="editNodeForm"
-      th:action="@{/branch_nodeedit/{id}(id=${nodeDTO.nodeId})}"
+      th:action="@{/branch_nodeedit/{id}(id=${nodeId})}"
       method="post"
       th:object="${nodeDTO}">
 

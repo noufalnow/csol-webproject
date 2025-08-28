@@ -30,6 +30,7 @@ import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.security.CustomUserPrincipal;
+import com.dms.kalari.util.XorMaskHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +92,9 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 		if (nodeId == null) {
 			nodeId = principal.getInstId();
 		}
+		else {
+			nodeId = XorMaskHelper.unmask(nodeId);
+		}
 
 		if (principal.getInstId() != nodeId)
 			model.addAttribute("isChild", true);
@@ -106,7 +110,7 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
         model.addAttribute("nodeName", node.getNodeName());
         model.addAttribute("nodeType", nodeType.name());
-        model.addAttribute("parentId", nodeId);
+        model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
         model.addAttribute("users", users);
         model.addAttribute("target", "users_target");
 
@@ -115,29 +119,30 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
     @GetMapping("/details/{id}")
     public String viewMemberById(@PathVariable Long id, Model model) {
-        model.addAttribute("user", service.findById(id));
+        model.addAttribute("user", service.findById(XorMaskHelper.unmask(id)));
         model.addAttribute("pageTitle", "Member Detail ");
         return "fragments/manage/members/view";
     }
 
     @GetMapping("/profile/view/{id}")
     public String viewMemberProfileById(@PathVariable Long id, Model model) {
-        model.addAttribute("user", service.findById(id));
+        model.addAttribute("user", service.findById(XorMaskHelper.unmask(id)));
         model.addAttribute("pageTitle", "Participant's Profile ");
         return "fragments/admin/users/profile/view";
     }
 
     @GetMapping("/add/{id}")
-    public String showAddMemberForm(@PathVariable(value = "id") Long nodeId, Model model) {
+    public String showAddMemberForm(@PathVariable(value = "id") Long mNodeId, Model model) {
         model.addAttribute("user", new MemberAddDTO()); // ← use MemberAddDTO
-
+        Long nodeId = XorMaskHelper.unmask(mNodeId);
+        
         if (nodeId != null) {
             List<DesignationDTO> designations;
 
             model.addAttribute("pageTitle", "Add Participants");
             designations = designationService.findAllByType((short) 2);
 
-            model.addAttribute("nodeId", nodeId);
+            model.addAttribute("nodeId", mNodeId);
             model.addAttribute("designations", designations);
         }
         return "fragments/manage/members/add";
@@ -145,17 +150,16 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
     @PostMapping("/add/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> addMember(@PathVariable(value = "id") Long nodeId,
+    public ResponseEntity<Map<String, Object>> addMember(@PathVariable(value = "id") Long mNodeId,
                                                          @Valid @ModelAttribute MemberAddDTO memberAddDTO,
                                                          BindingResult result,
                                                          HttpServletRequest request) {
 
         logInfo("Request Parameters – memberAddDTO: {}", memberAddDTO);
-
-        if (nodeId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Node ID not found"));
-        }
+        
+        Long nodeId = XorMaskHelper.unmask(mNodeId);
+        
+        nodeId = XorMaskHelper.unmask(nodeId);
 
         logInfo("Request Parameters – setUserNodeId-parentId: {}", nodeId);
 
@@ -165,7 +169,7 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
         memberAddDTO.setUserUname("uname");
 
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("loadnext", "members_bynode/" + nodeId);
+        additionalData.put("loadnext", "members_bynode/" + mNodeId);
         additionalData.put("target", "users_target");
 
         return handleRequest(result, () -> service.saveMamber(memberAddDTO), "Participant added successfully",
@@ -173,15 +177,21 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
     }
 
     @GetMapping("/edit/{id}")
-    public String editMemberForm(@PathVariable Long id, Model model, HttpSession session) {
-        CoreUser user = coreUserRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new ResourceNotFoundException("CoreUser", id));
+    public String editMemberForm(@PathVariable Long id, Model model) {
+    	
+    	Long userId = XorMaskHelper.unmask(id);
+    	
+        CoreUser user = coreUserRepository.findByIdAndNotDeleted(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+        
+        
 
         MemberUpdateDTO userDTO = coreUserMapper.toMemberUpdateDTO(user); // ← mapper to MemberUpdateDTO
         
         //logInfo("User DTO: {}", userDTO);
 
         model.addAttribute("user", userDTO);
+        model.addAttribute("userId", id);
 
         List<DesignationDTO> designations;
         model.addAttribute("pageTitle", "Edit Participant's details");
@@ -193,14 +203,16 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
     @PostMapping("/edit/{refId}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> editMember(@PathVariable("refId") Long userId,
+    public ResponseEntity<Map<String, Object>> editMember(@PathVariable("refId") Long id,
                                                           @Valid @ModelAttribute MemberUpdateDTO coreUserUpdateDTO,
                                                           BindingResult result,
                                                           HttpSession session) {
         Map<String, Object> additionalData = new HashMap<>();
+        
+        Long userId = XorMaskHelper.unmask(id);
 
         MemberAddDTO user = service.findById(userId); // ← service returns MemberAddDTO
-        additionalData.put("loadnext", "members_bynode/" + user.getUserNode());
+        additionalData.put("loadnext", "members_bynode/" + XorMaskHelper.mask(user.getUserNode()));
         additionalData.put("target", "users_target");
 
         return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO),
