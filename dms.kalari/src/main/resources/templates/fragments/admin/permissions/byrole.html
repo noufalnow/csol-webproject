@@ -1,0 +1,85 @@
+<!-- Hidden fields -->
+<div class="inner-wrapper w-100 h-100 bg-light rounded mb-3 p-4 d-flex flex-column gap-3">
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <!-- Grand All Permission -->
+            <div class="header-checkbox form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="select-all" 
+                       onclick="toggleAllPermissions(this)" checked>
+                <label class="form-check-label ps-2 fs-6 fw-semibold" for="select-all">
+                    Grant All Permissions
+                </label>
+            </div>
+
+            <!-- Permission Tree -->
+            <ul class="collection todo-collection">
+                <!-- Check if permissions data exists -->
+                <form name="permissions_form" id="permissions_form" th:action="@{/permissions_update}" method="post">
+                <input type="hidden" id="moduleId" name="moduleId" th:value="${moduleId}" />
+				<input type="hidden" id="roleId" name="roleId" th:value="${roleId}" />
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div th:if="${permissions != null and !permissions.empty}">
+                    <div th:each="page : ${permissions}">
+                        <!-- Page Level -->
+                        <li class="collection-item">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input page-checkbox" 
+                                       type="checkbox"
+                                       th:id="'page-' + ${page.pageId}"
+                                       th:attr="data-pageid=${page.pageId}"
+                                       th:checked="${page.hasAllPermissions}"
+                                       onchange="togglePagePermissions(this)"/>
+                                <label class="form-check-label fw-semibold" 
+                                       th:for="'page-' + ${page.pageId}">
+                                    <span th:text="${page.pageName}">Page Name</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Operation Level -->
+                            <div class="ms-4">
+								<div th:each="operation : ${page.operations}" class="form-check mb-1">
+								    <input class="form-check-input operation-checkbox"
+								           type="checkbox"
+								           name="permissions"
+								           th:id="'op-' + ${page.pageId} + '-' + ${operation.operationId}"
+								           th:attr="data-pageid=${page.pageId}, data-operationid=${operation.operationId}"
+								           th:value="${operation.operationId}" 
+								           th:checked="${operation.hasPermission}" />
+								    <label class="form-check-label" 
+								           th:for="'op-' + ${page.pageId} + '-' + ${operation.operationId}">
+								        <span th:text="${operation.alias}">Operation Alias</span>
+								    </label>
+								</div>
+                            </div>
+                        </li>
+                    </div>
+                </div>
+                </form>
+                
+                <!-- Show message if no permissions found -->
+                <div th:if="${permissions == null or permissions.empty}">
+                    <li class="collection-item">
+                        <div class="alert alert-info">
+                            No permissions found for this module.
+                        </div>
+                    </li>
+                </div>
+            </ul>
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-12 col-md-6">
+            <div class="row justify-content-end g-3 g-md-0">
+                <div class="col-12 col-md-4">
+                    <button type="button" onclick="show_widget('permissions')"
+                            class="btn btn-light w-100" title="Back">Back</button>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button type="button" class="btn btn-primary w-100"
+                            onclick="submitHtmlForm('permissions_form')" title="Save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,114 @@
+<div class="container-fluid">
+    <div class="bg-light rounded p-4 mb-3 shadow">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 col-12 mb-3 mb-lg-0">
+                <div id="attached_deals_tab" class="d-flex flex-column gap-2">
+                    <button type="button" class="active bg-primary text-white rounded py-2 ps-2 text-start"
+                            title="Settings" data-id="1" onclick="show_permission(this)">
+                        Settings
+                    </button>
+
+                    <button type="button" class="py-2 ps-2 text-start"
+                            title="Masters" data-id="2" onclick="show_permission(this)">
+                        Masters
+                    </button>
+
+                    <button type="button" class="py-2 ps-2 text-start"
+                            title="Manage Users" data-id="3" onclick="show_permission(this)">
+                        Manage Users
+                    </button>
+
+                    <button type="button" class="py-2 ps-2 text-start"
+                            title="Affiliations" data-id="4" onclick="show_permission(this)">
+                        Affiliations
+                    </button>
+
+                    <button type="button" class="py-2 ps-2 text-start"
+                            title="Events" data-id="5" onclick="show_permission(this)">
+                        Events
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-12">
+
+                    <div class="d-flex flex-column gap-3">
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <select id="RollList" name="roleId" class="form-select"
+                                        onchange="show_permission(this)">
+                                    <option value="">-- Select Role --</option>
+                                    <option th:each="role : ${roles}"
+                                            th:value="${role.desigId}"
+                                            th:text="${role.desigName}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="permissions_target"></div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+var selectedModuleId = "1"; // default module (Settings)
+var selectedRoleId = null;
+
+function show_permission(el) {
+    // If it's a button → Module
+    if (el.tagName === "BUTTON") {
+        selectedModuleId = el.getAttribute("data-id");
+
+        // Toggle active state
+        document.querySelectorAll("#attached_deals_tab button").forEach(btn => {
+            btn.classList.remove("active", "bg-primary", "text-white");
+        });
+        el.classList.add("active", "bg-primary", "text-white");
+    }
+
+    // If it's a select → Role
+    if (el.tagName === "SELECT") {
+        selectedRoleId = el.value;
+    }
+
+    // Don’t proceed unless both are chosen
+    if (!selectedModuleId || !selectedRoleId) {
+        console.log("Waiting for both module and role selection...");
+        return;
+    }
+
+    console.log("Module ID:", selectedModuleId, "Role ID:", selectedRoleId);
+
+    // Load content dynamically
+    loadContent(`permissions_byrole/${selectedModuleId}/${selectedRoleId}`, "#permissions_target");
+}
+
+
+    /*<![CDATA[*/
+    function toggleAllPermissions(selectAllCheckbox) {
+        const isChecked = selectAllCheckbox.checked;
+        document.querySelectorAll('.page-checkbox, .operation-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        
+        // Update page states after toggling all
+        document.querySelectorAll('.page-checkbox').forEach(pageCheckbox => {
+            const pageId = pageCheckbox.getAttribute('data-pageid');
+            updatePageStatusForPage(pageId);
+        });
+    }
+
+    function togglePagePermissions(pageCheckbox) {
+        const pageId = pageCheckbox.getAttribute('data-pageid');
+        const isChecked = pageCheckbox.checked;
+        
+        document.querySelectorAll('.operation-checkbox[data-pageid="' + pageId + '"]').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+    }
+    </script>

@@ -23,7 +23,7 @@ public class AuthUserPrivilege extends BaseEntity {
     private Long roleId;
 
     @Column(name = "moduleid", nullable = false)
-    private Integer moduleId;
+    private Long moduleId;
 
     @ManyToOne
     @JoinColumn(name = "apppageid", referencedColumnName = "apppageid", nullable = false)

@@ -1,10 +1,13 @@
 package com.dms.kalari.admin.repository;
 
+import com.dms.kalari.admin.entity.AuthAppPageOperation;
 import com.dms.kalari.admin.entity.AuthUserPrivilege;
 import com.dms.kalari.admin.dto.UserPrivilegeProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,30 +23,107 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
                               @Param("appPageId") Long appPageId,
                               @Param("operationId") Long operationId);
 
-    // Preload all privileges for role (optionally filter by inst if you use it)
+    // Preload all privileges for role
     @Query("""
-    	    SELECT 
-    	        op.operationId as operationId,
-    	        op.alias as alias,
-    	        op.realPath as realPath,
-    	        up.roleId as roleId,
-    	        up.moduleId as moduleId,
-    	        up.appPage.appPageId as appPageId,
-    	        up.userPrivilegeId as userPrivilegeId
-    	    FROM AuthUserPrivilege up
-    	    JOIN up.operation op
-    	    WHERE up.roleId = :roleId
+        SELECT 
+            op.operationId as operationId,
+            op.alias as alias,
+            op.realPath as realPath,
+            up.roleId as roleId,
+            up.moduleId as moduleId,
+            up.appPage.appPageId as appPageId,
+            up.userPrivilegeId as userPrivilegeId
+        FROM AuthUserPrivilege up
+        JOIN up.operation op
+        WHERE up.roleId = :roleId
+    """)
+    List<UserPrivilegeProjection> findPrivilegesByRole(@Param("roleId") Long roleId);
+
+    // Get privileges by role and module
+    /*@Query("""
+        SELECT up FROM AuthUserPrivilege up
+        WHERE up.roleId = :roleId AND up.moduleId = :moduleId
+    """)
+    List<AuthUserPrivilege> findByRoleIdAndModuleId(@Param("roleId") Long roleId, 
+                                                   @Param("moduleId") Integer moduleId);*/
+
+    @Query(value = """
+        SELECT res.apppageid as appPageId,
+               CASE WHEN res.operation_count <= COALESCE(per.per_count, 0) THEN true ELSE false END as hasAllPermissions
+        FROM (
+            SELECT ap.apppageid, COUNT(ao.operationid) as operation_count
+            FROM auth_apppages ap
+            JOIN auth_apppagesoperations ao ON ap.apppageid = ao.apppageid
+            WHERE ao.active = 1
+            GROUP BY ap.apppageid
+        ) res
+        LEFT JOIN (
+            SELECT apppageid, COUNT(*) as per_count
+            FROM auth_userprivilages
+            WHERE roleid = :roleId AND moduleid = :moduleId
+            GROUP BY apppageid
+        ) per ON per.apppageid = res.apppageid
+    """, nativeQuery = true)
+    List<Object[]> countPagePermissions(@Param("roleId") Long roleId, 
+                                       @Param("moduleId") Long moduleId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM AuthUserPrivilege up WHERE up.roleId = :roleId AND up.moduleId = :moduleId " +
+           "AND (up.roleId <> :excludeRoleId OR up.appPage.appPageId <> :excludePageId)")
+    void deleteByRoleIdAndModuleIdWithExclusions(@Param("roleId") Long roleId, 
+                                                @Param("moduleId") Long moduleId,
+                                                @Param("excludeRoleId") Long excludeRoleId,
+                                                @Param("excludePageId") Long excludePageId);
+
+    // Get module resources (pages and operations)
+    /*@Query("""
+        SELECT DISTINCT up FROM AuthUserPrivilege up
+        JOIN FETCH up.appPage ap
+        JOIN FETCH up.operation op
+        WHERE up.moduleId = :moduleId
+        ORDER BY ap.appPageId, op.operationId
+    """)
+    List<AuthUserPrivilege> findModuleResources(@Param("moduleId") Integer moduleId);*/
+    
+    
+    @Query("""
+            SELECT up FROM AuthUserPrivilege up
+            JOIN FETCH up.appPage ap
+            JOIN FETCH up.operation op
+            WHERE up.roleId = :roleId AND up.moduleId = :moduleId
+        """)
+        List<AuthUserPrivilege> findByRoleIdAndModuleId(@Param("roleId") Long roleId, 
+                                                       @Param("moduleId") Long moduleId);
+        
+    @Query("""
+    	    SELECT o FROM AuthAppPageOperation o
+    	    JOIN o.appPage p
+    	    WHERE p.menu.appMenuId = :moduleId
+    	    ORDER BY p.pageName, p.appPageId, o.alias
     	""")
-    	List<UserPrivilegeProjection> findPrivilegesByRole(@Param("roleId") Long roleId);
+    	List<AuthAppPageOperation> findOperationsByModuleId(@Param("moduleId") Long moduleId);
 
+    
+    
+    
+    @Query("""
+            SELECT DISTINCT up FROM AuthUserPrivilege up
+            JOIN FETCH up.appPage ap
+            JOIN FETCH up.operation op
+            WHERE up.moduleId = :moduleId
+            ORDER BY ap.pageName, ap.appPageId, op.alias
+        """)
+        List<AuthUserPrivilege> findModuleResources(@Param("moduleId") Long moduleId); 
+            
 
-    // If you also need institute scoping:
+    // Alternative: Get privileges for role and module with institute scoping
     /*@Query("""
         SELECT new com.dms.kalari.admin.dto.UserPrivilegeProjection(
             up.userPrivilegeId,
             up.roleId,
             up.moduleId,
-            up.operationUniqueId,
+            up.operation.operationId,
             up.appPage.appPageId,
             op.operationId,
             op.alias,
@@ -51,8 +131,10 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
         )
         FROM AuthUserPrivilege up
         JOIN up.operation op
-        WHERE up.roleId = :roleId AND (:instId IS NULL OR up.instId = :instId)
+        WHERE up.roleId = :roleId AND up.moduleId = :moduleId 
+        AND (:instId IS NULL OR up.instId = :instId)
     """)
-    List<UserPrivilegeProjection> findPrivilegesByRoleAndInst(@Param("roleId") Long roleId,
-                                                              @Param("instId") Long instId);*/
+    List<UserPrivilegeProjection> findPrivilegesByRoleAndModuleAndInst(@Param("roleId") Long roleId,
+                                                                      @Param("moduleId") Integer moduleId,
+                                                                      @Param("instId") Long instId);*/
 }
