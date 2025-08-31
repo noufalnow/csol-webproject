@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivilege, Long> {
 
@@ -116,25 +117,24 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
         """)
         List<AuthUserPrivilege> findModuleResources(@Param("moduleId") Long moduleId); 
             
+ 
+    
+    @Query("""
+            SELECT DISTINCT CONCAT(up.appPage.appPageId, '_', up.operation.operationId)
+            FROM AuthUserPrivilege up
+            WHERE up.roleId = :roleId
+              AND up.moduleId = :moduleId
+        """)
+        Set<String> findRolePermissionKeys(@Param("roleId") Long roleId,
+                                           @Param("moduleId") Long moduleId);
 
-    // Alternative: Get privileges for role and module with institute scoping
-    /*@Query("""
-        SELECT new com.dms.kalari.admin.dto.UserPrivilegeProjection(
-            up.userPrivilegeId,
-            up.roleId,
-            up.moduleId,
-            up.operation.operationId,
-            up.appPage.appPageId,
-            op.operationId,
-            op.alias,
-            op.realPath
-        )
-        FROM AuthUserPrivilege up
-        JOIN up.operation op
-        WHERE up.roleId = :roleId AND up.moduleId = :moduleId 
-        AND (:instId IS NULL OR up.instId = :instId)
-    """)
-    List<UserPrivilegeProjection> findPrivilegesByRoleAndModuleAndInst(@Param("roleId") Long roleId,
-                                                                      @Param("moduleId") Integer moduleId,
-                                                                      @Param("instId") Long instId);*/
+        @Query("""
+            SELECT o FROM AuthAppPageOperation o
+            JOIN FETCH o.appPage ap
+            WHERE ap.menu.appMenuId = :moduleId
+            ORDER BY o.operationName, ap.appPageId, o.alias
+        """)
+        List<AuthAppPageOperation> findOperationsByModuleIdWithPage(@Param("moduleId") Long moduleId);
+
+    
 }

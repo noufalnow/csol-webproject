@@ -30,5 +30,9 @@ public class AuthAppPageOperation extends BaseEntity {
 
     @Column(name = "operation", nullable = false, length = 50)
     private String operation;
+    
+    @Column(name = "operation_name",  length = 100)
+    private String operationName;
+    
 }
 

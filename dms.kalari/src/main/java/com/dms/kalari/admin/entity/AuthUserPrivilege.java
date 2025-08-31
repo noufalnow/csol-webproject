@@ -24,10 +24,12 @@ public class AuthUserPrivilege extends BaseEntity {
 
     @Column(name = "moduleid", nullable = false)
     private Long moduleId;
-
-    @ManyToOne
-    @JoinColumn(name = "apppageid", referencedColumnName = "apppageid", nullable = false)
+    
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "apppageid", nullable = false)
     private AuthAppPage appPage;
+
 
     @ManyToOne
     @JoinColumn(name = "operationuniqueid", referencedColumnName = "operationid", nullable = false) // FIXED

@@ -39,61 +39,36 @@ import java.util.stream.Collectors;
      * Build module permissions (Page → Operations) for a role.
      */
     public List<PageWithOperations> getModulePermissions(Long roleId, Long moduleId) {
-        // Get ALL available operations for the module
-        List<AuthAppPageOperation> allOperations = privRepo.findOperationsByModuleId(moduleId);
+        // Use more descriptive variable names
+        List<AuthAppPageOperation> availableOperations = privRepo.findOperationsByModuleId(moduleId);
         
-        // Get existing role privileges
-        Set<String> existingPermissions = privRepo.findByRoleIdAndModuleId(roleId, moduleId)
-            .stream()
-            .filter(p -> p.getAppPage() != null && p.getOperation() != null)
-            .map(p -> p.getAppPage().getAppPageId() + "_" + p.getOperation().getOperationId())
-            .collect(Collectors.toSet());
-
-        // DEBUG
-        System.out.println("Existing permissions: " + existingPermissions);
-
+        // Consider using a dedicated DTO projection from repository
+        Set<String> existingPermissionKeys = privRepo.findRolePermissionKeys(roleId, moduleId);
+        
         Map<Long, PageWithOperations> pageMap = new LinkedHashMap<>();
 
-        for (AuthAppPageOperation operation : allOperations) {
-            if (operation.getAppPage() == null) {
-                continue;
-            }
+        for (AuthAppPageOperation operation : availableOperations) {
+            if (operation.getAppPage() == null) continue;
             
-            Long pageId = operation.getAppPage().getAppPageId();
-            String pageName = operation.getAppPage().getPageName();
+            AuthAppPage page = operation.getAppPage();
+            PageWithOperations pageDto = pageMap.computeIfAbsent(page.getAppPageId(), id -> 
+                new PageWithOperations(page.getAppPageId(), page.getPageName())
+            );
 
-            PageWithOperations page = pageMap.computeIfAbsent(pageId, id -> {
-                PageWithOperations newPage = new PageWithOperations();
-                newPage.setPageId(pageId);
-                newPage.setPageName(pageName);
-                newPage.setOperations(new ArrayList<>());
-                return newPage;
-            });
-
-            // Add operation - use the direct fields from AuthAppPageOperation
-            OperationWithPermission operationDto = new OperationWithPermission();
-            operationDto.setOperationId(operation.getOperationId()); // Use the ID from AuthAppPageOperation
-            operationDto.setOperationName(operation.getOperation()); // Use the 'operation' field
-            operationDto.setAlias(operation.getAlias()); // Use the 'alias' field
+            String permissionKey = page.getAppPageId() + "_" + operation.getOperationId();
+            boolean hasPermission = existingPermissionKeys.contains(permissionKey);
             
-            String permissionKey = pageId + "_" + operation.getOperationId();
-            
-            boolean hasPermission = existingPermissions.contains(permissionKey);
-            operationDto.setHasPermission(hasPermission);
-            
-            System.out.println("Checking permission for: " + permissionKey + " = " + hasPermission);
-
-            page.getOperations().add(operationDto);
+            pageDto.addOperation(new OperationWithPermission(
+                operation.getOperationId(),
+                operation.getOperationName(),
+                operation.getAlias(),
+                hasPermission
+            ));
         }
 
         // Calculate hasAllPermissions for each page
-        for (PageWithOperations page : pageMap.values()) {
-            boolean hasAll = !page.getOperations().isEmpty() && 
-                            page.getOperations().stream()
-                                .allMatch(OperationWithPermission::isHasPermission);
-            page.setHasAllPermissions(hasAll);
-        }
-
+        pageMap.values().forEach(PageWithOperations::calculateHasAllPermissions);
+        
         return new ArrayList<>(pageMap.values());
     }
 
@@ -127,24 +102,26 @@ import java.util.stream.Collectors;
      * @param authUserPrivilegeDTO 
      */
     @Transactional
-    public void updatePrivileges(Long roleId, Long moduleId, Collection<Long> operationIds) {
+    public void updatePrivileges(Long roleId, Long moduleId, List<Object[]> pageOperationPairs) {
 
-        // delete existing privileges, except exclusions
+        // delete existing privileges for this role and module
         privRepo.deleteByRoleIdAndModuleIdWithExclusions(roleId, moduleId, 1L, 1L);
 
-        if (operationIds != null && !operationIds.isEmpty()) {
-            List<AuthUserPrivilege> newPrivileges = operationIds.stream()
-                    .map(operationId -> {
+        if (pageOperationPairs != null && !pageOperationPairs.isEmpty()) {
+            List<AuthUserPrivilege> newPrivileges = pageOperationPairs.stream()
+                    .map(pair -> {
+                        Long pageId = (Long) pair[0];
+                        Long operationId = (Long) pair[1];
+                        
                         AuthUserPrivilege privilege = new AuthUserPrivilege();
                         privilege.setRoleId(roleId);
                         privilege.setModuleId(moduleId);
-
-                        // Get a reference to the operation
                         AuthAppPageOperation operation = entityManager.getReference(AuthAppPageOperation.class, operationId);
                         privilege.setOperation(operation);
 
-                        // Derive the page from the operation
-                        privilege.setAppPage(operation.getAppPage());
+                        // Get a reference to the app page using the extracted pageId
+                        AuthAppPage appPage = entityManager.getReference(AuthAppPage.class, pageId);
+                        privilege.setAppPage(appPage);
 
                         privilege.setActive((short) 1);
                         privilege.setInstId(1L);

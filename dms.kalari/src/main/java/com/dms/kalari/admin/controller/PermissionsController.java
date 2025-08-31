@@ -63,20 +63,38 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	public ResponseEntity<Map<String, Object>> updatePermissions(
 	        @RequestParam("roleId") Long roleId,
 	        @RequestParam("moduleId") Long moduleId,
-	        @RequestParam(value = "permissions", required = false) List<Long> permissionIds) { // Change to List<Long>
+	        @RequestParam(value = "permissions", required = false) List<String> permissionStrings) {
 
 	    Map<String, Object> additionalData = new HashMap<>();
 	    additionalData.put("target", "users_target");
 
 	    try {
-	        service.updatePrivileges(roleId, moduleId, permissionIds != null ? permissionIds : Collections.emptyList());
+	        // Parse the string permissions to extract both pageId and operationId
+	        List<Object[]> pageOperationPairs = permissionStrings != null ? 
+	            permissionStrings.stream()
+	                .map(str -> {
+	                    // Assuming format is "pageId_operationId"
+	                    String[] parts = str.split("_");
+	                    if (parts.length != 2) {
+	                        throw new IllegalArgumentException("Invalid permission string format: " + str);
+	                    }
+	                    Long pageId = Long.parseLong(parts[0]);
+	                    Long operationId = Long.parseLong(parts[1]);
+	                    return new Object[]{pageId, operationId};
+	                })
+	                .collect(Collectors.toList()) : 
+	            Collections.emptyList();
+	            
+	        service.updatePrivileges(roleId, moduleId, pageOperationPairs);
 	        return ResponseEntity.ok(Map.of(
+	            "status", "success",
 	            "success", true,
 	            "message", "Details updated successfully",
-	            "additionalData", additionalData
+	            "loadnext", "permissions_byrole/"+ moduleId+"/"+roleId,
+	            "target", "permissions_target"
 	        ));
 	    } catch (Exception e) {
-	        e.printStackTrace(); // Add logging
+	        e.printStackTrace();
 	        return ResponseEntity.badRequest().body(Map.of(
 	            "success", false,
 	            "message", "Error updating permissions: " + e.getMessage()
