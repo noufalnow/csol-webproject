@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.dms.kalari.admin.service.AuthUserPrivilegeService;
 import com.dms.kalari.admin.service.CoreUserService;
 import com.dms.kalari.admin.service.MisDesignationService;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.util.XorMaskHelper;
 import com.dms.kalari.admin.dto.AuthUserPrivilegeDTO;
@@ -15,6 +16,7 @@ import com.dms.kalari.admin.dto.CoreUserDTO;
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.dto.PageWithOperations;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,23 +38,37 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 
 	@GetMapping({ "/index", "/index/" })
 	public String index(Model model) {
-		List<DesignationDTO> designations = designationService.findAll();
+	    List<DesignationDTO> designations = designationService.findAll();
+	    designations = designations.stream()
+	            .filter(d -> d.getDesigId() != null)
+	            .collect(Collectors.toList());
 
-		designations = designations.stream().filter(d -> d.getDesigId() != null).collect(Collectors.toList());
+	    List<Node.Type> nodeTypes = Arrays.asList(Node.Type.values());
+	    model.addAttribute("nodeTypes", nodeTypes);
 
-		model.addAttribute("roles", designations);
-		return "fragments/admin/permissions/index";
+	    model.addAttribute("roles", designations);
+
+	    // 👇 New: Group designations by level
+	    Map<Node.Type, List<DesignationDTO>> designationMap = designations.stream()
+	            .collect(Collectors.groupingBy(DesignationDTO::getDesigLevel));
+	    model.addAttribute("designationMap", designationMap);
+
+	    return "fragments/admin/permissions/index";
 	}
 
-	@GetMapping("/byrole/{moduleId}/{roleId}")
-	public String permission(@PathVariable(value = "roleId", required = true) Long roleId,
-			@PathVariable(value = "moduleId", required = true) Long moduleId, Model model) {
 
-        List<PageWithOperations> permissions = privilegeService.getModulePermissions(roleId, moduleId);
+	@GetMapping("/byrole/{moduleId}/{roleId}/{nodeType}")
+	public String permission(@PathVariable(value = "roleId", required = true) Long roleId,
+			@PathVariable(value = "moduleId", required = true) Long moduleId, 
+			@PathVariable(value = "nodeType", required = true) Node.Type nodeType,
+			Model model) {
+
+        List<PageWithOperations> permissions = privilegeService.getModulePermissions(roleId, moduleId, nodeType);
         model.addAttribute("permissions", permissions);
         model.addAttribute("roleId", roleId);
         model.addAttribute("moduleId", moduleId);
 		model.addAttribute("menuId", moduleId);
+		model.addAttribute("level", nodeType);
 		model.addAttribute("target", "permissions_target");
 
 		return "fragments/admin/permissions/byrole";
@@ -63,6 +79,7 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	public ResponseEntity<Map<String, Object>> updatePermissions(
 	        @RequestParam("roleId") Long roleId,
 	        @RequestParam("moduleId") Long moduleId,
+	        @RequestParam("level") String level,
 	        @RequestParam(value = "permissions", required = false) List<String> permissionStrings) {
 
 	    Map<String, Object> additionalData = new HashMap<>();
@@ -90,7 +107,7 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	            "status", "success",
 	            "success", true,
 	            "message", "Details updated successfully",
-	            "loadnext", "permissions_byrole/"+ moduleId+"/"+roleId,
+	            "loadnext", "permissions_byrole/"+ moduleId+"/"+roleId+"/"+level,
 	            "target", "permissions_target"
 	        ));
 	    } catch (Exception e) {

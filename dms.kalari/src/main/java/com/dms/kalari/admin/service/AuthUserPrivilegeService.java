@@ -9,6 +9,7 @@ import com.dms.kalari.admin.entity.AuthUserPrivilege;
 import com.dms.kalari.admin.mapper.AuthUserPrivilegeMapper;
 import com.dms.kalari.admin.repository.AuthAppPageOperationRepository;
 import com.dms.kalari.admin.repository.AuthUserPrivilegeRepository;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseMapper;
 import com.dms.kalari.common.BaseService;
 
@@ -38,9 +39,10 @@ import java.util.stream.Collectors;
     /**
      * Build module permissions (Page → Operations) for a role.
      */
-    public List<PageWithOperations> getModulePermissions(Long roleId, Long moduleId) {
+    public List<PageWithOperations> getModulePermissions(Long roleId, Long moduleId, Node.Type nodeType) {
         // Use more descriptive variable names
-        List<AuthAppPageOperation> availableOperations = privRepo.findOperationsByModuleId(moduleId);
+    	
+        List<AuthAppPageOperation> availableOperations = privRepo.findOperationsByModuleId(moduleId, nodeType.name());
         
         // Consider using a dedicated DTO projection from repository
         Set<String> existingPermissionKeys = privRepo.findRolePermissionKeys(roleId, moduleId);

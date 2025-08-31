@@ -1,100 +1,102 @@
 <div class="container-fluid">
-    <div class="bg-light rounded p-4 mb-3 shadow">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-lg-3 col-12 mb-3 mb-lg-0">
-                <div id="attached_deals_tab" class="d-flex flex-column gap-2">
-                    <button type="button" class="active bg-primary text-white rounded py-2 ps-2 text-start"
-                            title="Settings" data-id="1" onclick="show_permission(this)">
-                        Settings
-                    </button>
+	<div class="bg-light rounded p-4 mb-3 shadow">
+		<div class="row">
+			<!-- Sidebar -->
+			<div class="col-lg-3 col-12 mb-3 mb-lg-0">
+				<div id="attached_deals_tab" class="d-flex flex-column gap-2">
+					<button type="button"
+						class="active bg-primary text-white rounded py-2 ps-2 text-start"
+						title="Settings" data-id="1" onclick="show_permission(this)">
+						Settings</button>
 
-                    <button type="button" class="py-2 ps-2 text-start"
-                            title="Masters" data-id="2" onclick="show_permission(this)">
-                        Masters
-                    </button>
+					<button type="button" class="py-2 ps-2 text-start" title="Masters"
+						data-id="2" onclick="show_permission(this)">Masters</button>
 
-                    <button type="button" class="py-2 ps-2 text-start"
-                            title="Manage Users" data-id="3" onclick="show_permission(this)">
-                        Manage Users
-                    </button>
+					<button type="button" class="py-2 ps-2 text-start"
+						title="Manage Users" data-id="3" onclick="show_permission(this)">
+						Manage Users</button>
 
-                    <button type="button" class="py-2 ps-2 text-start"
-                            title="Affiliations" data-id="4" onclick="show_permission(this)">
-                        Affiliations
-                    </button>
+					<button type="button" class="py-2 ps-2 text-start"
+						title="Affiliations" data-id="4" onclick="show_permission(this)">
+						Affiliations</button>
 
-                    <button type="button" class="py-2 ps-2 text-start"
-                            title="Events" data-id="5" onclick="show_permission(this)">
-                        Events
-                    </button>
-                </div>
-            </div>
+					<button type="button" class="py-2 ps-2 text-start" title="Events"
+						data-id="5" onclick="show_permission(this)">Events</button>
+				</div>
+			</div>
 
-            <!-- Main Content -->
-            <div class="col-lg-9 col-12">
+			<!-- Main Content -->
+			<div class="col-lg-9 col-12 " >
 
-                    <div class="d-flex flex-column gap-3">
-                        <div class="row">
-                            <div class="col-12 col-md-4">
-                                <select id="RollList" name="roleId" class="form-select"
-                                        onchange="show_permission(this)">
-                                    <option value="">-- Select Role --</option>
-                                    <option th:each="role : ${roles}"
-                                            th:value="${role.desigId}"
-                                            th:text="${role.desigName}">
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="permissions_target"></div>
-                    </div>
-            </div>
-        </div>
-    </div>
+				<div class="d-flex flex-column">
+					<div class="row" style="margin-left:1rem !important">
+						<div class="col-12 col-md-4">
+						    <label for="nodeType">LEVEL</label> 
+						    <select id="nodeType" name="nodeType" class="form-select" onchange="loadDesignations()">
+						        <option value="">-- Select Level --</option>
+						        <option th:each="type : ${nodeTypes}" th:value="${type.name()}" th:text="${type.name()}"></option>
+						    </select>
+						</div>
+						
+						<div class="col-12 col-md-4">
+						    <label for="RollList">DESIGNATION</label> 
+						    <select id="RollList" name="roleId" class="form-select" onchange="show_permission(this)">
+						        <option value="">-- Select Role --</option>
+						    </select>
+						</div>
+					</div>
+					<div id="permissions_target"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 
 <script th:inline="javascript">
-var selectedModuleId = "1"; // default module (Settings)
+var selectedModuleId = 1;
 var selectedRoleId = null;
+var selectedNodeType = null;
 
 function show_permission(el) {
-    // If it's a button → Module
+    // Button → set module
     if (el.tagName === "BUTTON") {
         selectedModuleId = el.getAttribute("data-id");
-
-        // Toggle active state
-        document.querySelectorAll("#attached_deals_tab button").forEach(btn => {
-            btn.classList.remove("active", "bg-primary", "text-white");
-        });
+        document.querySelectorAll("#attached_deals_tab button")
+            .forEach(btn => btn.classList.remove("active", "bg-primary", "text-white"));
         el.classList.add("active", "bg-primary", "text-white");
     }
 
-    // If it's a select → Role
-    if (el.tagName === "SELECT") {
+    // Designation select → set role
+    if (el.tagName === "SELECT" && el.id === "RollList") {
         selectedRoleId = el.value;
     }
 
-    // Don’t proceed unless both are chosen
-    if (!selectedModuleId || !selectedRoleId) {
-        console.log("Waiting for both module and role selection...");
+    // derive nodeType from selectedRoleId
+    let nodeType = null;
+    if (selectedRoleId) {
+        nodeType = Object.keys(designationMap).find(level =>
+            designationMap[level].some(r => r.desigId == selectedRoleId)
+        );
+    }
+
+    // only proceed if module + role + nodeType are all selected
+    if (!selectedModuleId || !selectedRoleId || !nodeType) {
+        console.log("Waiting for module & role selection…");
         return;
     }
 
-    console.log("Module ID:", selectedModuleId, "Role ID:", selectedRoleId);
+    console.log("Module ID:", selectedModuleId, "Role ID:", selectedRoleId, "Node Type:", nodeType);
 
-    // Load content dynamically
-    
     $('#permissions_target').html('');
-    
-    loadContent(`permissions_byrole/${selectedModuleId}/${selectedRoleId}`, "#permissions_target");
+    loadContent(`permissions_byrole/${selectedModuleId}/${selectedRoleId}/${nodeType}`, "#permissions_target");
 }
 
 
+
 function togglePagePermissions(checkbox) {
-    const pageId = checkbox.dataset.pageId;
-    const operationCheckboxes = document.querySelectorAll(
+	var pageId = checkbox.dataset.pageId;
+	var operationCheckboxes = document.querySelectorAll(
         `.operation-checkbox[data-page-id="${pageId}"]`
     );
     
@@ -104,10 +106,40 @@ function togglePagePermissions(checkbox) {
     });
 }
 
-    function selectAllPermissions(selectAll) {
-        document.querySelectorAll('.page-checkbox').forEach(checkbox => {
-            checkbox.checked = selectAll;
-            togglePagePermissions(checkbox);
+function toggleAllPermissions(selectAllCheckbox) {
+	var selectAll = selectAllCheckbox.checked;
+	var pageCheckboxes = document.querySelectorAll('.page-checkbox');
+    
+    pageCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAll;
+        togglePagePermissions(checkbox); // This should work now
+    });
+}
+
+
+
+
+
+let designationMap = /*[[${designationMap}]]*/ {};
+function loadDesignations() {
+
+	$('#permissions_target').html('');
+    var level = document.getElementById("nodeType").value;
+    var roleDropdown = document.getElementById("RollList");
+
+    roleDropdown.innerHTML = '<option value="">-- Select Role --</option>';
+
+    if (designationMap[level]) {
+        designationMap[level].forEach(role => {
+            let opt = document.createElement("option");
+            opt.value = role.desigId;
+            opt.text = role.desigName;
+            roleDropdown.add(opt);
         });
     }
+    
+}
+
+
+
     </script>

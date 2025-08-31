@@ -8,6 +8,7 @@ import java.util.List;  // Import statement for List
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
 
 @Entity
@@ -33,9 +34,11 @@ public class MisDesignation extends BaseEntity {
     @OneToMany(mappedBy = "designation")
     private List<CoreUser> users;
 
-    @Column(name = "desig_level")
-    private Long desigLevel;
-
     @Column(name = "desig_type")
     private Short desigType;
+    
+
+    @Column(name = "desig_level")
+    @Enumerated(EnumType.STRING) // store enum as string in DB
+    private Node.Type desigLevel;
 }
