@@ -20,8 +20,9 @@ public class DesignationDTO extends BaseDTO {
     private Short desigType;
     
     
-    public DesignationDTO(Long desigId, String desigName) {
+    public DesignationDTO(Long desigId, String desigName,Node.Type desigLevel) {
         this.desigId = desigId;
         this.desigName = desigName;
+        this.desigLevel = desigLevel;
     }
 }

@@ -3,26 +3,34 @@
 		<div class="row">
 			<!-- Sidebar -->
 			<div class="col-lg-3 col-12 mb-3 mb-lg-0">
-				<div id="attached_deals_tab" class="d-flex flex-column gap-2">
-					<button type="button"
-						class="active bg-primary text-white rounded py-2 ps-2 text-start"
-						title="Settings" data-id="1" onclick="show_permission(this)">
-						Settings</button>
+<div id="attached_deals_tab" class="d-flex flex-column gap-2">
+    <button type="button"
+        class="active bg-primary text-white rounded py-2 ps-2 text-start"
+        title="Settings" th:data-id="${xorMaskHelper.mask(1)}" onclick="show_permission(this)">
+        Settings
+    </button>
 
-					<button type="button" class="py-2 ps-2 text-start" title="Masters"
-						data-id="2" onclick="show_permission(this)">Masters</button>
+    <button type="button" class="py-2 ps-2 text-start"
+        title="Masters" th:data-id="${xorMaskHelper.mask(2)}" onclick="show_permission(this)">
+        Masters
+    </button>
 
-					<button type="button" class="py-2 ps-2 text-start"
-						title="Manage Users" data-id="3" onclick="show_permission(this)">
-						Manage Users</button>
+    <button type="button" class="py-2 ps-2 text-start"
+        title="Manage Users" th:data-id="${xorMaskHelper.mask(3)}" onclick="show_permission(this)">
+        Manage Users
+    </button>
 
-					<button type="button" class="py-2 ps-2 text-start"
-						title="Affiliations" data-id="4" onclick="show_permission(this)">
-						Affiliations</button>
+    <button type="button" class="py-2 ps-2 text-start"
+        title="Affiliations" th:data-id="${xorMaskHelper.mask(4)}" onclick="show_permission(this)">
+        Affiliations
+    </button>
 
-					<button type="button" class="py-2 ps-2 text-start" title="Events"
-						data-id="5" onclick="show_permission(this)">Events</button>
-				</div>
+    <button type="button" class="py-2 ps-2 text-start"
+        title="Events" th:data-id="${xorMaskHelper.mask(5)}" onclick="show_permission(this)">
+        Events
+    </button>
+</div>
+
 			</div>
 
 			<!-- Main Content -->
@@ -54,14 +62,17 @@
 
 
 <script th:inline="javascript">
-var selectedModuleId = 1;
+var selectedModuleId = /*[[${maskedModuleId}]]*/ '' + '';
 var selectedRoleId = null;
 var selectedNodeType = null;
+
+// designationMap should have desigId as string to prevent JS rounding issues
+var designationMap = /*[[${designationMap}]]*/ {};
 
 function show_permission(el) {
     // Button → set module
     if (el.tagName === "BUTTON") {
-        selectedModuleId = el.getAttribute("data-id");
+        selectedModuleId = el.getAttribute("data-id"); // string
         document.querySelectorAll("#attached_deals_tab button")
             .forEach(btn => btn.classList.remove("active", "bg-primary", "text-white"));
         el.classList.add("active", "bg-primary", "text-white");
@@ -69,16 +80,18 @@ function show_permission(el) {
 
     // Designation select → set role
     if (el.tagName === "SELECT" && el.id === "RollList") {
-        selectedRoleId = el.value;
+        selectedRoleId = el.value; // string
     }
 
-    // derive nodeType from selectedRoleId
-    let nodeType = null;
+    // derive nodeType from selectedRoleId safely
+    var nodeType = null;
     if (selectedRoleId) {
         nodeType = Object.keys(designationMap).find(level =>
-            designationMap[level].some(r => r.desigId == selectedRoleId)
+            designationMap[level].some(r => r.desigId === selectedRoleId)
         );
     }
+
+    nodeType = $('#nodeType').val();
 
     // only proceed if module + role + nodeType are all selected
     if (!selectedModuleId || !selectedRoleId || !nodeType) {
@@ -92,38 +105,29 @@ function show_permission(el) {
     loadContent(`permissions_byrole/${selectedModuleId}/${selectedRoleId}/${nodeType}`, "#permissions_target");
 }
 
-
-
 function togglePagePermissions(checkbox) {
-	var pageId = checkbox.dataset.pageId;
-	var operationCheckboxes = document.querySelectorAll(
+    var pageId = checkbox.dataset.pageId;
+    var operationCheckboxes = document.querySelectorAll(
         `.operation-checkbox[data-page-id="${pageId}"]`
     );
-    
+
     operationCheckboxes.forEach(opCheckbox => {
         opCheckbox.checked = checkbox.checked;
-        //opCheckbox.disabled = checkbox.checked; // Optional: disable when page is selected
     });
 }
 
 function toggleAllPermissions(selectAllCheckbox) {
-	var selectAll = selectAllCheckbox.checked;
-	var pageCheckboxes = document.querySelectorAll('.page-checkbox');
-    
+    var selectAll = selectAllCheckbox.checked;
+    var pageCheckboxes = document.querySelectorAll('.page-checkbox');
+
     pageCheckboxes.forEach(checkbox => {
         checkbox.checked = selectAll;
-        togglePagePermissions(checkbox); // This should work now
+        togglePagePermissions(checkbox);
     });
 }
 
-
-
-
-
-let designationMap = /*[[${designationMap}]]*/ {};
 function loadDesignations() {
-
-	$('#permissions_target').html('');
+    $('#permissions_target').html('');
     var level = document.getElementById("nodeType").value;
     var roleDropdown = document.getElementById("RollList");
 
@@ -131,14 +135,14 @@ function loadDesignations() {
 
     if (designationMap[level]) {
         designationMap[level].forEach(role => {
-            let opt = document.createElement("option");
-            opt.value = role.desigId;
+            var opt = document.createElement("option");
+            opt.value = role.desigId.toString(); // ensure string
             opt.text = role.desigName;
             roleDropdown.add(opt);
         });
     }
-    
 }
+</script>
 
 
 

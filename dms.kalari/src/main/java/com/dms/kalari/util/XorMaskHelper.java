@@ -1,106 +1,210 @@
 package com.dms.kalari.util;
 
-import java.util.Base64;
+import java.security.SecureRandom;
+import java.util.concurrent.ConcurrentHashMap;
+
+import jakarta.annotation.PreDestroy;
+import jakarta.servlet.http.HttpSession;
+
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
 
 @Component
-public final class XorMaskHelper {
+@SessionScope
+public class XorMaskHelper {
+    private static final long DEFAULT_TEST_KEY = 569874L;
+    private static final SecureRandom RANDOM = new SecureRandom();
+    
+    // Thread-local storage for session key to support static methods
+    private static final ThreadLocal<Long> sessionKeyHolder = new ThreadLocal<>();
+    private static final ConcurrentHashMap<String, Long> sessionKeyMap = new ConcurrentHashMap<>();
+    
+    private String sessionId;
+    private long sessionKey;
+    private boolean keyInitialized = false;
 
-    private static char MASK_KEY;
-    private static final long MIN_10_DIGIT = 1_000_000_000L; // smallest 10-digit number
-    private static final long MAX_9_DIGIT = 999_999_999L;    // largest 9-digit number
-    private static final long FLAG_BIT = 1L << 63;           // highest bit used as offset flag
+    // Inject HttpSession to get automatic session ID
+    private final HttpSession httpSession;
 
-    static {
-        String key = System.getProperty("app.mask.key",
-                System.getenv().getOrDefault("APP_MASK_KEY", "k"));
-        if (key != null && !key.isEmpty()) {
-            MASK_KEY = key.charAt(0);
+    public XorMaskHelper(HttpSession httpSession) {
+        this.httpSession = httpSession;
+        this.sessionId = httpSession.getId();
+    }
+
+    /**
+     * Initialize the session key once upon login
+     */
+    public void initializeSessionKey(long key) {
+        if (key == 0L) {
+            throw new IllegalArgumentException("Session key cannot be zero");
+        }
+        this.sessionKey = key;
+        this.keyInitialized = true;
+        
+        // Store in global map for static access
+        sessionKeyMap.put(this.sessionId, key);
+    }
+
+    /**
+     * Initialize with a randomly generated session key
+     */
+    public void initializeWithRandomKey() {
+        long key;
+        do {
+            key = RANDOM.nextLong();
+        } while (key == 0L);
+        initializeSessionKey(key);
+    }
+
+    /**
+     * Check if the session key has been initialized
+     */
+    public boolean isKeyInitialized() {
+        return keyInitialized;
+    }
+
+    /**
+     * Get the current session key
+     */
+    public long getSessionKey() {
+        if (!keyInitialized) {
+            initializeWithRandomKey();
+        }
+        return sessionKey;
+    }
+
+    /**
+     * Mask a value with the session key (instance method)
+     */
+    /*public long mask(long value) {
+        return value ^ getSessionKey();
+    }*/
+
+    /**
+     * Unmask a previously masked value with the session key (instance method)
+     */
+    /*public long unmask(long maskedValue) {
+        return maskedValue ^ getSessionKey();
+    }*/
+
+    /**
+     * Clean up when session is destroyed
+     */
+    @PreDestroy
+    public void cleanup() {
+        sessionKeyMap.remove(sessionId);
+    }
+
+    // =============== STATIC METHODS ===============
+
+    /**
+     * Set the current thread's session key for static method calls
+     */
+    public static void setThreadSessionKey(long key) {
+        sessionKeyHolder.set(key);
+    }
+
+    /**
+     * Set the current thread's session key by session ID for static method calls
+     */
+    public static void setThreadSessionKey(String sessionId) {
+        Long key = sessionKeyMap.get(sessionId);
+        if (key != null) {
+            sessionKeyHolder.set(key);
+        } else {
+            throw new IllegalStateException("No session key found for session ID: " + sessionId);
         }
     }
 
-    private XorMaskHelper() {}
-
-    public static void setMaskKey(char key) {
-        MASK_KEY = key;
+    /**
+     * Clear the current thread's session key
+     */
+    public static void clearThreadSessionKey() {
+        sessionKeyHolder.remove();
     }
 
-    public static char getMaskKey() {
-        return MASK_KEY;
+    /**
+     * Get the current thread's session key or null if not set
+     */
+    public static Long getCurrentThreadSessionKey() {
+        return sessionKeyHolder.get();
     }
 
-    // ==================== LONG MASK/UNMASK (always 10+ digits) ====================
+    /**
+     * Mask a value with the current thread's session key (static method)
+     */
     public static long mask(long value) {
-        long masked = value ^ MASK_KEY;
-
-        if (masked <= MAX_9_DIGIT) {
-            // Add offset and mark with flag bit
-            return (masked + MIN_10_DIGIT) | FLAG_BIT;
+        Long sessionKey = sessionKeyHolder.get();
+        if (sessionKey != null) {
+            return value ^ sessionKey;
         }
-        return masked;
+        return mask(value, DEFAULT_TEST_KEY);
     }
 
-    public static long unmask(long masked) {
-        if ((masked & FLAG_BIT) != 0) {
-            // Offset was applied → clear flag, subtract offset, then unmask
-            return ((masked & ~FLAG_BIT) - MIN_10_DIGIT) ^ MASK_KEY;
+    /**
+     * Unmask a previously masked value with the current thread's session key (static method)
+     */
+    public static long unmask(long maskedValue) {
+        Long sessionKey = sessionKeyHolder.get();
+        if (sessionKey != null) {
+            return maskedValue ^ sessionKey;
         }
-        return masked ^ MASK_KEY;
+        return unmask(maskedValue, DEFAULT_TEST_KEY);
     }
 
-    // ==================== STRING MASK/UNMASK ====================
-    public static String smask(String input) {
-        if (input == null) return null;
-        char[] chars = input.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            chars[i] ^= MASK_KEY;
+    /**
+     * Mask with a specific key (static method)
+     */
+    public static long mask(long value, long key) {
+        return value ^ key;
+    }
+
+    /**
+     * Unmask with a specific key (static method)
+     */
+    public static long unmask(long maskedValue, long key) {
+        return maskedValue ^ key;
+    }
+
+    /**
+     * Generate a random non-zero session key (static utility)
+     */
+    public static long generateSessionKey() {
+        long key;
+        do {
+            key = RANDOM.nextLong();
+        } while (key == 0L);
+        return key;
+    }
+
+    /**
+     * Result holder for masked value + key (for backward compatibility)
+     */
+    public static class MaskResult {
+        private final long maskedValue;
+        private final long sessionKey;
+
+        public MaskResult(long maskedValue, long sessionKey) {
+            this.maskedValue = maskedValue;
+            this.sessionKey = sessionKey;
         }
-        return new String(chars);
+
+        public long getMaskedValue() {
+            return maskedValue;
+        }
+
+        public long getSessionKey() {
+            return sessionKey;
+        }
     }
 
-    public static String sunmask(String masked) {
-        return smask(masked); // XOR is reversible
-    }
-
-    // ==================== GENERIC NUMBER MASK ====================
-    public static long smask(Number input) {
-        if (input == null) return 0L;
-
-        long value;
-        if (input instanceof Integer) value = input.longValue();
-        else if (input instanceof Long) value = (Long) input;
-        else if (input instanceof Double) value = Double.doubleToLongBits((Double) input);
-        else throw new IllegalArgumentException("Unsupported type: " + input.getClass().getSimpleName());
-
-        return mask(value);
-    }
-
-    public static Number sunmask(long masked, Class<?> targetType) {
-        long original = unmask(masked);
-
-        if (targetType == Integer.class) return (int) original;
-        if (targetType == Long.class) return original;
-        if (targetType == Double.class) return Double.longBitsToDouble(original);
-
-        throw new IllegalArgumentException("Unsupported target type: " + targetType.getSimpleName());
-    }
-
-    // ==================== BASE64 HELPERS ====================
-    public static String smaskBase64(String input) {
-        if (input == null) return null;
-        return Base64.getEncoder().encodeToString(smask(input).getBytes());
-    }
-
-    public static String sunmaskBase64(String base64) {
-        if (base64 == null) return null;
-        byte[] bytes = Base64.getDecoder().decode(base64);
-        return sunmask(new String(bytes));
-    }
-
-    // ==================== FORMATTED STRING OUTPUT ====================
-    public static String maskTo10DigitString(long value) {
-        long masked = mask(value);
-        return String.format("%010d", masked & ~FLAG_BIT); // clear flag for display
+    /**
+     * Convenience: mask with a new random key (static method)
+     */
+    public static MaskResult maskWithNewKey(long value) {
+        long key = generateSessionKey();
+        long masked = mask(value, key);
+        return new MaskResult(masked, key);
     }
 }

@@ -12,6 +12,7 @@ import com.dms.kalari.admin.repository.AuthUserPrivilegeRepository;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseMapper;
 import com.dms.kalari.common.BaseService;
+import com.dms.kalari.util.XorMaskHelper;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -39,29 +40,37 @@ import java.util.stream.Collectors;
     /**
      * Build module permissions (Page → Operations) for a role.
      */
+
     public List<PageWithOperations> getModulePermissions(Long roleId, Long moduleId, Node.Type nodeType) {
-        // Use more descriptive variable names
-    	
         List<AuthAppPageOperation> availableOperations = privRepo.findOperationsByModuleId(moduleId, nodeType.name());
-        
-        // Consider using a dedicated DTO projection from repository
+
+        // DB checks should always use raw IDs
         Set<String> existingPermissionKeys = privRepo.findRolePermissionKeys(roleId, moduleId);
-        
+
         Map<Long, PageWithOperations> pageMap = new LinkedHashMap<>();
 
         for (AuthAppPageOperation operation : availableOperations) {
             if (operation.getAppPage() == null) continue;
-            
+
             AuthAppPage page = operation.getAppPage();
-            PageWithOperations pageDto = pageMap.computeIfAbsent(page.getAppPageId(), id -> 
-                new PageWithOperations(page.getAppPageId(), page.getPageName())
+
+            // Masked IDs for the view
+            Long maskedPageId = XorMaskHelper.mask(page.getAppPageId());
+            Long maskedOperationId = XorMaskHelper.mask(operation.getOperationId());
+
+            // Keep map keyed by raw pageId (so grouping works correctly)
+            PageWithOperations pageDto = pageMap.computeIfAbsent(
+                page.getAppPageId(),
+                id -> new PageWithOperations(maskedPageId, page.getPageName())
             );
 
+            // Check permissions using raw IDs
             String permissionKey = page.getAppPageId() + "_" + operation.getOperationId();
             boolean hasPermission = existingPermissionKeys.contains(permissionKey);
-            
+
+            // Add masked operation IDs for the view
             pageDto.addOperation(new OperationWithPermission(
-                operation.getOperationId(),
+                maskedOperationId,
                 operation.getOperationName(),
                 operation.getAlias(),
                 hasPermission
@@ -70,9 +79,10 @@ import java.util.stream.Collectors;
 
         // Calculate hasAllPermissions for each page
         pageMap.values().forEach(PageWithOperations::calculateHasAllPermissions);
-        
+
         return new ArrayList<>(pageMap.values());
     }
+
 
     /**
      * Page-level permission status (does role have ALL ops for each page?).
@@ -116,6 +126,10 @@ import java.util.stream.Collectors;
                         Long operationId = (Long) pair[1];
                         
                         AuthUserPrivilege privilege = new AuthUserPrivilege();
+                        if (roleId.equals(1L) && pageId.equals(1L)) {
+                        	return privilege;
+                        }
+                        
                         privilege.setRoleId(roleId);
                         privilege.setModuleId(moduleId);
                         AuthAppPageOperation operation = entityManager.getReference(AuthAppPageOperation.class, operationId);

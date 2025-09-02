@@ -46,28 +46,37 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	    List<Node.Type> nodeTypes = Arrays.asList(Node.Type.values());
 	    model.addAttribute("nodeTypes", nodeTypes);
 
-	    model.addAttribute("roles", designations);
-
-	    // 👇 New: Group designations by level
 	    Map<Node.Type, List<DesignationDTO>> designationMap = designations.stream()
-	            .collect(Collectors.groupingBy(DesignationDTO::getDesigLevel));
+	    	    .filter(dto -> dto.getDesigLevel() != null)
+	    	    .map(dto -> new DesignationDTO(
+	    	        XorMaskHelper.mask(dto.getDesigId()),
+	    	        dto.getDesigName(),
+	    	        dto.getDesigLevel()
+	    	    ))
+	    	    .collect(Collectors.groupingBy(DesignationDTO::getDesigLevel));
 	    model.addAttribute("designationMap", designationMap);
+	    
+	    
+	    model.addAttribute("maskedModuleId", XorMaskHelper.mask(1));
 
 	    return "fragments/admin/permissions/index";
 	}
 
 
 	@GetMapping("/byrole/{moduleId}/{roleId}/{nodeType}")
-	public String permission(@PathVariable(value = "roleId", required = true) Long roleId,
-			@PathVariable(value = "moduleId", required = true) Long moduleId, 
+	public String permission(@PathVariable(value = "moduleId", required = true) Long mModuleId, 
+			@PathVariable(value = "roleId", required = true) Long mRoleId,
 			@PathVariable(value = "nodeType", required = true) Node.Type nodeType,
 			Model model) {
-
+		
+		Long roleId = XorMaskHelper.unmask(mRoleId);
+		Long moduleId = XorMaskHelper.unmask(mModuleId);
+		
         List<PageWithOperations> permissions = privilegeService.getModulePermissions(roleId, moduleId, nodeType);
         model.addAttribute("permissions", permissions);
-        model.addAttribute("roleId", roleId);
-        model.addAttribute("moduleId", moduleId);
-		model.addAttribute("menuId", moduleId);
+        model.addAttribute("roleId", mRoleId);
+        model.addAttribute("moduleId", mModuleId);
+		model.addAttribute("menuId", mModuleId);
 		model.addAttribute("level", nodeType);
 		model.addAttribute("target", "permissions_target");
 
@@ -77,13 +86,16 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	@PostMapping("/update")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updatePermissions(
-	        @RequestParam("roleId") Long roleId,
-	        @RequestParam("moduleId") Long moduleId,
+			@RequestParam("moduleId") Long mModuleId,
+	        @RequestParam("roleId") Long mRoleId,
 	        @RequestParam("level") String level,
 	        @RequestParam(value = "permissions", required = false) List<String> permissionStrings) {
 
 	    Map<String, Object> additionalData = new HashMap<>();
 	    additionalData.put("target", "users_target");
+	    
+		Long roleId = XorMaskHelper.unmask(mRoleId);
+		Long moduleId = XorMaskHelper.unmask(mModuleId);
 
 	    try {
 	        // Parse the string permissions to extract both pageId and operationId
@@ -97,7 +109,7 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	                    }
 	                    Long pageId = Long.parseLong(parts[0]);
 	                    Long operationId = Long.parseLong(parts[1]);
-	                    return new Object[]{pageId, operationId};
+	                    return new Object[]{XorMaskHelper.unmask(pageId), XorMaskHelper.unmask(operationId)};
 	                })
 	                .collect(Collectors.toList()) : 
 	            Collections.emptyList();
@@ -107,7 +119,7 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	            "status", "success",
 	            "success", true,
 	            "message", "Details updated successfully",
-	            "loadnext", "permissions_byrole/"+ moduleId+"/"+roleId+"/"+level,
+	            "loadnext", "permissions_byrole/"+ mModuleId+"/"+mRoleId+"/"+level,
 	            "target", "permissions_target"
 	        ));
 	    } catch (Exception e) {
@@ -119,8 +131,4 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	    }
 	}
 
-	private boolean isCurrentUserAdmin() {
-		// Implement your admin check logic
-		return true; // placeholder
-	}
 }
