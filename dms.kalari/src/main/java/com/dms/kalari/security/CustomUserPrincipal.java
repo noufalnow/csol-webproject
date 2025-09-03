@@ -17,6 +17,8 @@ public class CustomUserPrincipal implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
     private final Map<String, String> aliasToRealPath; // Store alias → real path mapping
     private final Map<String, String> aliasMappings; // Precomputed alias mappings for faster access
+    
+    private Long loginId;
 
     public CustomUserPrincipal(
             CoreUserDTO user,
@@ -51,6 +53,11 @@ public class CustomUserPrincipal implements UserDetails {
     }
 
     // Getters
+    
+    public Long getLoginId() { return loginId; }
+    public void setLoginId(Long loginId) { this.loginId = loginId; }
+
+    
     public Long getUserId() { return user.getUserId(); }
     public Long getRoleId() { return user.getUserDesig(); }
     public Long getInstId() { return user.getUserNode(); }

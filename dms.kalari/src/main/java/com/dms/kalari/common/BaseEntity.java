@@ -4,8 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.dms.kalari.security.CustomUserPrincipal;
 
 import java.time.LocalDateTime;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.dms.kalari.security.CustomUserPrincipal;
 
 @Data
 @NoArgsConstructor
@@ -35,12 +41,21 @@ public abstract class BaseEntity {
 
     @Column(name = "active", nullable = false)
     private Short active = 0;
+    
+    
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserPrincipal principal) {
+            return principal.getUserId();
+        }
+        return null;
+    }
+
 
     @PrePersist
     protected void onCreate() {
-        uCreated = 10L;
+        uCreated = getCurrentUserId();;
         tCreated = LocalDateTime.now();
-        tModified = tCreated;
         active = 1;
         deleted = false;
     }
@@ -48,13 +63,13 @@ public abstract class BaseEntity {
     @PreUpdate
     protected void onUpdate() {
         tModified = LocalDateTime.now();
-        uModified = 10L;
+        uModified = getCurrentUserId();;
     }
 
     @PreRemove
     protected void onDelete() {
-        uDeleted = 10L;
+        uDeleted = getCurrentUserId();;
         tDeleted = LocalDateTime.now();
-        deleted = false;
+        deleted = true;
     }
 }

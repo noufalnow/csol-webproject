@@ -2,10 +2,18 @@ package com.dms.kalari.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.dms.kalari.admin.service.AuthLogActionService;
+import com.dms.kalari.admin.service.AuthLoginLogService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @Component("privilegeChecker")
@@ -13,25 +21,87 @@ public class PrivilegeChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(PrivilegeChecker.class);
 
+    private final AuthLoginLogService authLoginLogService;
+    private final AuthLogActionService authLogActionService;
+
+    private final HttpServletRequest request;
+
+    @Autowired
+    public PrivilegeChecker(
+            AuthLoginLogService authLoginLogService,
+            AuthLogActionService authLogActionService,
+            HttpServletRequest request
+    ) {
+        this.authLoginLogService = authLoginLogService;
+        this.authLogActionService = authLogActionService;
+        this.request = request;
+    }
+
     // Record for optimized alias mapping results
     public record AliasMapping(String alias, String realPath) {}
 
     public boolean hasAccess(String requestUri) {
-        // REMOVED the isPublicResource() check here!
-        // SecurityConfig already handles public resources
-        
-        Optional<String> potentialAlias = extractAliasFromPath(requestUri);
-        if (potentialAlias.isPresent()) {
-            boolean hasAccess = hasAccessByAlias(potentialAlias.get());
-            if (!hasAccess) {
-                logger.debug("Denied access for resource: {} (alias: {})", requestUri, potentialAlias.get());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserPrincipal user = null;
+        Long loginId = null;
+
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomUserPrincipal u) {
+            user = u;
+            loginId = u.getLoginId();
+
+            // If we have an authenticated user but no loginId yet, create it once here
+            if (loginId == null) {
+                try {
+                    Long newLoginId = authLoginLogService.addLoginLog(u.getUserId(), request);
+                    u.setLoginId(newLoginId);
+                    loginId = newLoginId;
+                } catch (Exception ex) {
+                    logger.warn("Failed to create login log for user {}: {}", u.getUserId(), ex.getMessage());
+                }
             }
-            return hasAccess;
+        }
+
+        Optional<String> potentialAlias = extractAliasFromPath(requestUri);
+        boolean allowed;
+
+        if (potentialAlias.isPresent()) {
+            allowed = hasAccessByAlias(potentialAlias.get());
+        } else {
+            logger.debug("Denied access for resource: {} - no valid alias found", requestUri);
+            allowed = false;
+        }
+
+        // build a small copy of request parameters to log (avoid large bodies)
+        Map<String, String[]> paramMap = Collections.emptyMap();
+        try {
+            paramMap = request.getParameterMap();
+        } catch (Exception e) {
+            // ignore
         }
         
-        logger.debug("Denied access for resource: {} - no valid alias found", requestUri);
-        return false;
+        String method = request.getMethod();
+
+        // PRE action log (request snapshot + decision)
+        try {
+        	authLogActionService.logPreAction(loginId, requestUri, method, paramMap, allowed);
+        } catch (Exception e) {
+            logger.warn("Failed to write PRE action log for uri {}: {}", requestUri, e.getMessage());
+        }
+
+        // If access granted → allow later post-state log by services
+        if (allowed) {
+            // Example usage in services (after DB save):
+            // authLogActionService.logPostAction(loginId, requestUri, savedEntity);
+        	//authLogActionService.logPostAction(loginId, requestUri, method, savedEntity);
+
+        } else {
+            logger.debug("Denied access for resource: {} (alias: {})", requestUri, potentialAlias.orElse("<none>"));
+        }
+
+        return allowed;
     }
+
+
 
     // KEEP this method for other uses (like in checkAccessAndGetMapping)
     // but REMOVE the call from hasAccess() above
