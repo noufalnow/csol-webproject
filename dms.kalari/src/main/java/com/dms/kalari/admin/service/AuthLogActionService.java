@@ -3,12 +3,17 @@ package com.dms.kalari.admin.service;
 import com.dms.kalari.admin.entity.AuthLogAction;
 import com.dms.kalari.repository.AuthLogActionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthLogActionService {
@@ -16,19 +21,20 @@ public class AuthLogActionService {
     private final AuthLogActionRepository repository;
     private final ObjectMapper objectMapper;
 
-    private static final Set<String> SENSITIVE_PARAM_KEYS = Set.of(
-        "_csrf", "password", "secretKey", "jwt", "token", "authorization"
-    );
-
     public AuthLogActionService(AuthLogActionRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
         this.objectMapper = objectMapper;
     }
 
     /**
-     * Record request-time action (parameters + access decision).
+     * Log only for GET requests (pre + decision).
      */
     public void logPreAction(Long loginId, String requestUri, String httpMethod, Map<String, ?> params, boolean accessGranted) {
+        if (!"GET".equalsIgnoreCase(httpMethod)) {
+            // skip PRE logs for POST/PUT/DELETE
+            return;
+        }
+
         AuthLogAction log = new AuthLogAction();
         log.setLoginId(loginId);
         log.setRequestUri(requestUri);
@@ -36,21 +42,20 @@ public class AuthLogActionService {
         try {
             Map<String, Object> wrapper = Map.of(
                 "method", httpMethod,
-                "params", sanitizeParams(params),
+                "params", params != null ? params : Collections.emptyMap(),
                 "accessGranted", accessGranted,
                 "phase", "PRE"
             );
             log.setRequestData(objectMapper.writeValueAsString(wrapper));
         } catch (Exception e) {
-            log.setRequestData("{\"accessGranted\":" + accessGranted +
-                               ",\"phase\":\"PRE\",\"method\":\"" + httpMethod + "\"}");
+            log.setRequestData("{\"accessGranted\":" + accessGranted + ",\"phase\":\"PRE\",\"method\":\"" + httpMethod + "\"}");
         }
 
         repository.save(log);
     }
 
     /**
-     * Record final persisted state of an entity after modification.
+     * Log final state only if successful (2xx/3xx responses).
      */
     public void logPostAction(Long loginId, String requestUri, String httpMethod, Object entity) {
         AuthLogAction log = new AuthLogAction();
@@ -58,12 +63,16 @@ public class AuthLogActionService {
         log.setRequestUri(requestUri);
 
         try {
-            var wrapper = Map.of(
-                "method", httpMethod,
-                "entityType", entity != null ? entity.getClass().getSimpleName() : "null",
-                "entityDump", sanitizeEntity(entity),
-                "phase", "POST"
-            );
+            Map<String, Object> wrapper = new LinkedHashMap<>();
+            wrapper.put("method", httpMethod);
+            wrapper.put("phase", "POST");
+            
+            if (entity instanceof Map) {
+                wrapper.put("entityDump", entity); // Already sanitized
+            } else {
+                wrapper.put("entityDump", entity); // For other types
+            }
+
             log.setRequestData(objectMapper.writeValueAsString(wrapper));
         } catch (Exception e) {
             log.setRequestData("{\"phase\":\"POST\", \"error\":\"serialize-failed\",\"method\":\"" + httpMethod + "\"}");
@@ -72,39 +81,6 @@ public class AuthLogActionService {
         repository.save(log);
     }
 
-    /**
-     * Remove sensitive fields from request parameters.
-     */
-    private Map<String, ?> sanitizeParams(Map<String, ?> params) {
-        if (params == null || params.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        Map<String, Object> cleaned = new HashMap<>();
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            if (!SENSITIVE_PARAM_KEYS.contains(entry.getKey().toLowerCase())) {
-                cleaned.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return cleaned;
-    }
 
-    /**
-     * Sanitize entity before logging (remove sensitive fields).
-     */
-    private Object sanitizeEntity(Object entity) {
-        if (entity == null) {
-            return Collections.emptyMap();
-        }
-        try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> rawMap = objectMapper.convertValue(entity, Map.class);
 
-            for (String key : SENSITIVE_PARAM_KEYS) {
-                rawMap.remove(key);
-            }
-            return rawMap;
-        } catch (Exception e) {
-            return Map.of("error", "failed-to-convert-entity");
-        }
-    }
 }
