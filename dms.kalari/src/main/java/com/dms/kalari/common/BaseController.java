@@ -8,6 +8,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+
+import com.dms.kalari.exception.GlobalExceptionHandler;
+
 import org.springframework.ui.Model;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,19 +58,35 @@ public abstract class BaseController<DTO, S extends BaseService<DTO>> {
         return ResponseEntity.noContent().build();
     }
 
-    protected ResponseEntity<Map<String, Object>> handleRequest(BindingResult result, Supplier<DTO> serviceAction, String successMessage, Map<String, Object> additionalData) {
+    protected ResponseEntity<Map<String, Object>> handleRequest(
+            BindingResult result,
+            Supplier<DTO> serviceAction,
+            String successMessage,
+            Map<String, Object> additionalData) {
+
         Map<String, String> validationErrors = validate(result);
         if (!validationErrors.isEmpty()) {
             return buildErrorResponse(validationErrors, "Validation failed");
         }
-        
+
         try {
             DTO resultDto = serviceAction.get();
             return buildResponse(successMessage, additionalData);
         } catch (Exception e) {
+            // ✅ Let Spring handle DB constraint violations
+            if (e.getCause() instanceof org.springframework.dao.DataIntegrityViolationException) {
+                throw (org.springframework.dao.DataIntegrityViolationException) e.getCause();
+            }
+            if (e instanceof org.springframework.dao.DataIntegrityViolationException) {
+                throw (org.springframework.dao.DataIntegrityViolationException) e;
+            }
+
+            // For other exceptions, keep your current fallback
             return buildErrorResponse(new HashMap<>(), "Error occurred: " + e.getMessage());
         }
     }
+
+
 
     protected Map<String, String> validate(BindingResult result) {
         Map<String, String> validationErrors = new HashMap<>();

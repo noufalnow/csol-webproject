@@ -1,6 +1,7 @@
 package com.dms.kalari.security;
 
 import com.dms.kalari.admin.entity.AuthLogAction;
+
 import com.dms.kalari.admin.service.AuthLogActionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import com.dms.kalari.util.XorUrlUnMasker;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,7 +68,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
 
                     authLogActionService.logPostAction(
                         loginId,
-                        request.getRequestURI(),
+                        XorUrlUnMasker.unmaskUri(request.getRequestURI()),
                         request.getMethod(),
                         parsedPayload
                     );
@@ -74,7 +76,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
                 } catch (Exception e) {
                     authLogActionService.logPostAction(
                     	loginId,
-                        request.getRequestURI(),
+                    	XorUrlUnMasker.unmaskUri(request.getRequestURI()),
                         request.getMethod(),
                         Map.of("phase", "POST", "error", "payload-capture-failed")
                     );

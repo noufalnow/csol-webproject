@@ -82,5 +82,25 @@ public interface NodeRepository extends BaseRepository<Node, Long> {
 
 			    	    """, nativeQuery = true)
 	List<NodeFlatDTO> findSubTreeFlat(@Param("nodeId") Long nodeId);
+	
+	
+	@Query(value = """
+	        WITH RECURSIVE node_hierarchy AS (
+	            SELECT n.node_id, n.parent_id, 0 AS lvl
+	            FROM nodes n
+	            WHERE n.node_id = :nodeId AND n.deleted = false
+
+	            UNION ALL
+
+	            SELECT c.node_id, c.parent_id, nh.lvl + 1
+	            FROM nodes c
+	            JOIN node_hierarchy nh ON c.parent_id = nh.node_id
+	            WHERE c.deleted = false
+	        )
+	        SELECT nh.node_id
+	        FROM node_hierarchy nh;
+	        """, nativeQuery = true)
+	List<Long> findAllowedNodeIds(@Param("nodeId") Long nodeId);
+
 
 }

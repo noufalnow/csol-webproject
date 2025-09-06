@@ -118,9 +118,13 @@ import java.util.stream.Collectors;
 
         // delete existing privileges for this role and module
         privRepo.deleteByRoleIdAndModuleIdWithExclusions(roleId, moduleId, 1L, 1L);
+        
+        
+        System.out.println("After unmasking and Outside map - roleId: " + roleId + ", moduleId: " + moduleId);
 
         if (pageOperationPairs != null && !pageOperationPairs.isEmpty()) {
             List<AuthUserPrivilege> newPrivileges = pageOperationPairs.stream()
+            		.filter(pair -> !(roleId.equals(1L) && ((Long) pair[0]).equals(1L)))
                     .map(pair -> {
                         Long pageId = (Long) pair[0];
                         Long operationId = (Long) pair[1];
@@ -129,6 +133,8 @@ import java.util.stream.Collectors;
                         if (roleId.equals(1L) && pageId.equals(1L)) {
                         	return privilege;
                         }
+                        
+                	    System.out.println("After unmasking and in loop - roleId: " + roleId + ", moduleId: " + moduleId);
                         
                         privilege.setRoleId(roleId);
                         privilege.setModuleId(moduleId);

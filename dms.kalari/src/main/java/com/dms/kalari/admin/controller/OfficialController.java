@@ -24,6 +24,7 @@ import com.dms.kalari.admin.service.CoreUserService;
 import com.dms.kalari.admin.service.MisDesignationService;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.exception.ResourceNotFoundException;
@@ -37,6 +38,8 @@ import org.springframework.data.domain.Sort;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.dms.kalari.admin.repository.CoreUserRepository;
 
 @Controller
@@ -47,15 +50,17 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	private final NodeService nodeService;
 	private final CoreUserRepository coreUserRepository; // Add this
 	private final CoreUserMapper coreUserMapper; // Add this
+	private final NodeRepository nodeRepository;
 
 	// Inject both services via constructor
 	public OfficialController(CoreUserService coreUserService, MisDesignationService designationService,
-			CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, NodeService nodeService) {
+			CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, NodeService nodeService,NodeRepository nodeRepository) {
 		super(coreUserService);
 		this.designationService = designationService; // Properly assign the designationService
 		this.nodeService = nodeService;
 		this.coreUserRepository = coreUserRepository;
 		this.coreUserMapper = coreUserMapper;
+		this.nodeRepository = nodeRepository;
 	}
 
 	@GetMapping("/")
@@ -136,11 +141,23 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
         Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		if (nodeId != null) {
-
-			List<DesignationDTO> designations = null;
+		
+			
+			NodeDTO node = nodeService.findById(nodeId);
+			Node.Type nodeType = node.getNodeType();
 
 			model.addAttribute("pageTitle", "Add Officials");
-			designations = designationService.findAllByType((short) 1);
+			List<DesignationDTO> designations = designationService.findAllByDesigNodeLevelAndType(nodeType, (short) 1 );
+			designations = designations.stream()
+			        .filter(dto -> dto.getDesigLevel() != null)
+			        .map(dto -> new DesignationDTO(
+			            XorMaskHelper.mask(dto.getDesigId()),  // mask id
+			            dto.getDesigName(),
+			            dto.getDesigLevel()
+			        ))
+			        .collect(Collectors.toList());  // keep it as List
+
+			model.addAttribute("designations", designations);
 
 			model.addAttribute("nodeId", mNodeId);
 
@@ -154,21 +171,40 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addOfficial(@PathVariable(value = "id") Long mNodeId,
 			@Valid @ModelAttribute OfficialAddDTO CoreUserMemberDTO, BindingResult result,
+			Authentication authentication,
 			HttpServletRequest request) {
 
-		logInfo("Request Parameters – CoreUserMemberDTO: {}", CoreUserMemberDTO);
-
 		Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		logInfo("Request Parameters – setUserNodeId-parentId: {}", nodeId);
 
 		CoreUserMemberDTO.setUserNode(nodeId);
 		CoreUserMemberDTO.setUserType(CoreUser.UserType.OFFICIAL);
 		CoreUserMemberDTO.setUserPassword("123456");
 		CoreUserMemberDTO.setUserUname("uname");
+		
+		//Check tamper with the masked ID in the form submission and inject a designation that isn’t valid for that node level.
+	    NodeDTO node = nodeService.findById(nodeId);
+	    Node.Type nodeType = node.getNodeType();
+	    
+	    
+		if (CoreUserMemberDTO.getUserDesig() != null) {
+			Long unmaskedId = XorMaskHelper.unmask(CoreUserMemberDTO.getUserDesig());
+			List<Long> validDesigIds = designationService.findAllByDesigNodeLevel(nodeType).stream()
+					.map(DesignationDTO::getDesigId).collect(Collectors.toList());
+			if (!validDesigIds.contains(unmaskedId)) {
+				throw new IllegalArgumentException("Invalid designation submitted!");
+			}
+			CoreUserMemberDTO.setUserDesig(unmaskedId);
+		}
+	    		
+	    //Validate allowed node IDs
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds( principal.getInstId());
+	    if (!allowedNodeIds.contains(node.getNodeId())) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
+		
 
 		Map<String, Object> additionalData = new HashMap<>();
-
 		additionalData.put("loadnext", "officials_bynode/"  + mNodeId);
 
 		additionalData.put("target", "users_target");
@@ -188,15 +224,29 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 		// Convert to CoreUserUpdateMemberDTO
 		OfficialUpdateDTO userDTO = coreUserMapper.toUpdateMemberDTO(user);
+		userDTO.setUserDesig(XorMaskHelper.mask(userDTO.getUserDesig()));
 
 		model.addAttribute("user", userDTO);
-		List<DesignationDTO> designations = null;
 
 		model.addAttribute("userId", id);
 		model.addAttribute("pageTitle", "Edit Officials");
-		designations = designationService.findAllByType((short) 1);
+		NodeDTO node = nodeService.findById(userDTO.getUserNode());
+		Node.Type nodeType = node.getNodeType();
+		//designations = designationService.findAllByDesigNodeLevel(nodeType);
 		
+		List<DesignationDTO> designations = designationService.findAllByDesigNodeLevelAndType(nodeType, (short) 1 );
+
+		designations = designations.stream()
+		        .filter(dto -> dto.getDesigLevel() != null)
+		        .map(dto -> new DesignationDTO(
+		            XorMaskHelper.mask(dto.getDesigId()),  // mask id
+		            dto.getDesigName(),
+		            dto.getDesigLevel()
+		        ))
+		        .collect(Collectors.toList());  // keep it as List
+
 		model.addAttribute("designations", designations);
+		
 		return "fragments/manage/officials/edit";
 	}
 
@@ -204,12 +254,34 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> editOfficial(@PathVariable("refId") Long id,
 			@Valid @ModelAttribute OfficialUpdateDTO coreUserUpdateDTO, BindingResult result,
+			Authentication authentication,
 			HttpSession session) {
 		Map<String, Object> additionalData = new HashMap<>();
 		
 		Long userId = XorMaskHelper.unmask(id);
 		
 		CoreUserDTO user = service.findById(userId);
+			
+	    NodeDTO node = nodeService.findById(user.getUserNode());
+	    Node.Type nodeType = node.getNodeType();
+	    
+	    
+		if (coreUserUpdateDTO.getUserDesig() != null) {
+			Long unmaskedId = XorMaskHelper.unmask(coreUserUpdateDTO.getUserDesig());
+			List<Long> validDesigIds = designationService.findAllByDesigNodeLevel(nodeType).stream()
+					.map(DesignationDTO::getDesigId).collect(Collectors.toList());
+			if (!validDesigIds.contains(unmaskedId)) {
+				throw new IllegalArgumentException("Invalid designation submitted!");
+			}
+			coreUserUpdateDTO.setUserDesig(unmaskedId);
+		}
+	    
+	    //Validate allowed node IDs
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds( principal.getInstId());
+	    if (!allowedNodeIds.contains(node.getNodeId())) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
 
 		additionalData.put("loadnext", "officials_bynode/" + XorMaskHelper.mask(user.getUserNode()));
 

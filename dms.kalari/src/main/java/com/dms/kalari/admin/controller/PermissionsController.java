@@ -94,8 +94,8 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 	    Map<String, Object> additionalData = new HashMap<>();
 	    additionalData.put("target", "users_target");
 	    
-		Long roleId = XorMaskHelper.unmask(mRoleId);
-		Long moduleId = XorMaskHelper.unmask(mModuleId);
+	    Long roleId = XorMaskHelper.unmask(mRoleId);
+	    Long moduleId = XorMaskHelper.unmask(mModuleId);
 
 	    try {
 	        // Parse the string permissions to extract both pageId and operationId

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.dms.kalari.admin.service.AuthLogActionService;
 import com.dms.kalari.admin.service.AuthLoginLogService;
+import com.dms.kalari.util.XorUrlUnMasker;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -83,7 +84,7 @@ public class PrivilegeChecker {
 
         // PRE action log (request snapshot + decision)
         try {
-        	authLogActionService.logPreAction(loginId, requestUri, method, paramMap, allowed);
+        	authLogActionService.logPreAction(loginId, XorUrlUnMasker.unmaskUri(requestUri), method, paramMap, allowed);
         } catch (Exception e) {
             logger.warn("Failed to write PRE action log for uri {}: {}", requestUri, e.getMessage());
         }

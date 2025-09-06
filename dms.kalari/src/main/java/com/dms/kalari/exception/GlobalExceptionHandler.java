@@ -14,8 +14,10 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -68,19 +70,65 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         String rootCauseMessage = ex.getRootCause() != null ? ex.getRootCause().getMessage() : "Unknown error";
         log.error("Data integrity violation: {}", rootCauseMessage, ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.CONFLICT.value(),
-            "Data integrity violation: " + rootCauseMessage,
-            "Data Integrity Violation",
-            "ERR001", // Example error code
-            null,
-            null
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+
+        Map<String, String> errors = mapDbExceptionToFieldErrors(rootCauseMessage);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "error");
+        response.put("message", "Data integrity violation");
+        response.put("errors", errors); // Use "errors" instead of "validationErrors"
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+
+    
+    private Map<String, String> mapDbExceptionToFieldErrors(String dbMessage) {
+        Map<String, String> errors = new HashMap<>();
+
+        // Look for the actual column name in the error message
+        Pattern pattern = Pattern.compile("\\(([a-z_]+)::text\\)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(dbMessage);
+        
+        if (matcher.find()) {
+            String columnName = matcher.group(1).trim();
+            String dtoField = toCamelCase(columnName);
+            errors.put(dtoField, "Value already exists");
+        } else {
+            // Fallback: try the original approach
+            Pattern fallbackPattern = Pattern.compile("Key \\(.*?([a-z_]+).*?\\)=\\(.+\\) already exists", Pattern.CASE_INSENSITIVE);
+            Matcher fallbackMatcher = fallbackPattern.matcher(dbMessage);
+            if (fallbackMatcher.find()) {
+                String columnName = fallbackMatcher.group(1).trim();
+                if (!columnName.equals("lower")) {
+                    String dtoField = toCamelCase(columnName);
+                    errors.put(dtoField, "Value already exists");
+                } else {
+                    errors.put("error", "Duplicate value exists");
+                }
+            } else {
+                errors.put("error", "Duplicate value exists");
+            }
+        }
+
+        return errors;
+    }
+
+    private static String toCamelCase(String s) {
+        String[] parts = s.split("_");
+        StringBuilder sb = new StringBuilder(parts[0].toLowerCase());
+        for (int i = 1; i < parts.length; i++) {
+            sb.append(parts[i].substring(0, 1).toUpperCase())
+              .append(parts[i].substring(1).toLowerCase());
+        }
+        return sb.toString();
+    }
+
+
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {

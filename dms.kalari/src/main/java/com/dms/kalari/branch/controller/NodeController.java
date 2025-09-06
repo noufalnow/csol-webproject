@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.security.CustomUserPrincipal;
@@ -28,10 +29,16 @@ import java.util.Map;
 @Controller
 @RequestMapping("/branch")
 public class NodeController extends BaseController<NodeDTO, NodeService> {
+	
+	
+	private final NodeRepository nodeRepository;
 
-	public NodeController(NodeService nodeService) {
+	public NodeController(NodeService nodeService,NodeRepository nodeRepository) {
 		super(nodeService);
+		this.nodeRepository = nodeRepository;
 	}
+	
+	
 
 	@GetMapping("/nodes")
 	public String listNodes(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
@@ -130,14 +137,24 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 	@PostMapping("/node/add/{id}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long mParentId,@Valid @ModelAttribute NodeDTO nodeDTO, BindingResult result) {
+	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long mParentId,@Valid @ModelAttribute NodeDTO nodeDTO,
+			Authentication authentication,
+			BindingResult result) {
 
 		Long parentId = XorMaskHelper.unmask(mParentId);
 		
+	    //Validate allowed node IDs
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds( principal.getInstId());
+	    	    
+	    
+	    if (!allowedNodeIds.contains(parentId)) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
 		
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "branch_tree");
-		//additionalData.put("target", "users_target");
+		additionalData.put("loadnext", "branch_nodelist/"  + mParentId);
+		additionalData.put("target", "users_target");
 		
 		//NodeDTO node = service.findById(parentId);
 		nodeDTO.setNodeType(service.getNextNodeType(parentId));
@@ -162,16 +179,24 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	@PostMapping("/node/edit/{id}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,
+			Authentication authentication,
 			BindingResult result) {
 		
 		Long nodeId = XorMaskHelper.unmask(id);
+		
+	    //Validate allowed node IDs
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds( principal.getInstId());
+	    
+	    if (!allowedNodeIds.contains(nodeId)) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
 
 		Map<String, Object> additionalData = new HashMap<>();
 		NodeDTO node = service.findById(nodeId);
 		nodeDTO.setParentId(node.getParentId());
-		additionalData.put("loadnext", "branch_tree");
-		//additionalData.put("target", "users_target");
-
+		additionalData.put("loadnext", "branch_nodelist/"  + XorMaskHelper.mask(node.getParentId()));
+		additionalData.put("target", "users_target");
 		return handleRequest(result, () -> service.update(nodeId, nodeDTO), "Affiliations updated successfully", additionalData);
 	}
 

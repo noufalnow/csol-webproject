@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.dms.kalari.admin.entity.MisDesignation;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseRepository;
 
 @Repository
@@ -24,5 +25,10 @@ public interface MisDesignationRepository extends BaseRepository<MisDesignation,
     Page<MisDesignation> findAllNotDeleted(String search, Pageable pageable);
     
     List<MisDesignation> findByDeletedFalseAndDesigType(Short desigType);
+    
+    List<MisDesignation> findByDeletedFalseAndDesigLevel(Node.Type desigLevel);
+    
+    List<MisDesignation> findByDeletedFalseAndDesigLevelAndDesigType(Node.Type desigLevel ,Short desigType);
+    
 }
 

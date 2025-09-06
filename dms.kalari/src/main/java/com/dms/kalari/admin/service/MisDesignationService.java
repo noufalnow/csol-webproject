@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.mapper.MisDesignationMapper;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.repository.MisDesignationRepository;
@@ -55,6 +56,19 @@ public class MisDesignationService implements BaseService<DesignationDTO> {
     
     public List<DesignationDTO> findAllByType(Short type) {
         return misDesignationRepository.findByDeletedFalseAndDesigType(type).stream()
+                .map(misDesignationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    
+    public List<DesignationDTO> findAllByDesigNodeLevel(Node.Type type) {
+        return misDesignationRepository.findByDeletedFalseAndDesigLevel(type).stream()
+                .map(misDesignationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    public List<DesignationDTO> findAllByDesigNodeLevelAndType(Node.Type type,Short desigType) {
+        return misDesignationRepository.findByDeletedFalseAndDesigLevelAndDesigType(type, desigType).stream()
                 .map(misDesignationMapper::toDTO)
                 .collect(Collectors.toList());
     }

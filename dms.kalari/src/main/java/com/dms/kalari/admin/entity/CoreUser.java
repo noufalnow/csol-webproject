@@ -13,7 +13,12 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "core_users")
+@Table(
+	    name = "core_users",
+	    uniqueConstraints = {
+	        @UniqueConstraint(columnNames = {"user_email"})
+	    }
+	)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
