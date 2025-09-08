@@ -143,50 +143,40 @@ $(document).ready(function() {
 
 
 	function handleFormErrors(response) {
-		// Clear previous error messages
-		$('#error-messages').empty(); // Clear error messages container
-		$('.error-message').remove(); // Remove all existing error messages
-		$('input, select').removeClass('has-error'); // Remove error classes
+	    // Clear previous error messages
+	    $('#error-messages').empty(); // Clear error messages container
+	    $('.error-message').remove(); // Remove all existing error messages
+	    $('input, select, textarea').removeClass('has-error'); // Remove error classes
 
-		// Display the general error message
-		if (response.message) {
-			$('#error-messages').append('<p class="error-message" style="color:red;">' + response.message + '</p>');
-		}
+	    // Display the general error message
+	    if (response.message) {
+	        $('#error-messages').append('<p class="error-message" style="color:red;">' + response.message + '</p>');
+	    }
 
-		// Iterate through each error in the response
-		$.each(response.errors, function(field, error) {
-			// Normalize the field name to match the input names in the form
-			var fieldIndex = field.match(/\d+/); // Extract the index (e.g., 0 or 1)
-			var normalizedFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/\[\d+\]/, '[]'); // Normalize to snake_case
+	    // Iterate through each error in the response
+	    $.each(response.errors, function(field, error) {
+	        // Use the field name directly (no snake_case conversion)
+	        var fieldElement = $('[name="' + field + '"]');
 
-			// Handle array-type fields
-			if (fieldIndex) {
-				// Construct the selector for the array fields
-				var fieldElement = $('[name="' + normalizedFieldName + '"]').eq(fieldIndex[0]);
+	        if (fieldElement.length > 0) {
+	            // Highlight the field
+	            fieldElement.addClass('has-error');
 
-				if (fieldElement.length > 0) {
-					// Highlight the field and display the error message
-					fieldElement.addClass('has-error');
-					fieldElement.after('<span class="error-message" style="color:red;">' + error + '</span>');
-				} else {
-					// If the field is not found, append the error message to the container
-					$('#error-messages').append('<p class="error-message" style="color:red;">' + error + '</p>');
-				}
-			} else {
-				// Handle regular fields (without array notation)
-				var fieldElement = $('[name="' + field + '"]');
-
-				if (fieldElement.length > 0) {
-					// Highlight the field and display the error message
-					fieldElement.addClass('has-error');
-					fieldElement.after('<span class="error-message" style="color:red;">' + error + '</span>');
-				} else {
-					// If the field is not found, append the error message to the container
-					$('#error-messages').append('<p class="error-message" style="color:red;">' + error + '</p>');
-				}
-			}
-		});
+	            // Special case: radio or checkbox → show message after the group
+	            if (fieldElement.attr('type') === 'radio' || fieldElement.attr('type') === 'checkbox') {
+	                fieldElement.last().closest('.form-check-inline, .form-check, div')
+	                    .after('<span class="error-message" style="color:red;">' + error + '</span>');
+	            } else {
+	                // Regular input/select/textarea → show message right after field
+	                fieldElement.after('<span class="error-message" style="color:red;">' + error + '</span>');
+	            }
+	        } else {
+	            // If the field is not found, append the error message to the container
+	            $('#error-messages').append('<p class="error-message" style="color:red;">' + error + '</p>');
+	        }
+	    });
 	}
+
 
 
 

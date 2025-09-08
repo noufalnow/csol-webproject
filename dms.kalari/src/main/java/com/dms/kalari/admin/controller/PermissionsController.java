@@ -38,7 +38,7 @@ public class PermissionsController extends BaseController<AuthUserPrivilegeDTO, 
 
 	@GetMapping({ "/index", "/index/" })
 	public String index(Model model) {
-	    List<DesignationDTO> designations = designationService.findAll();
+	    List<DesignationDTO> designations = designationService.findAllByType((short) 1);
 	    designations = designations.stream()
 	            .filter(d -> d.getDesigId() != null)
 	            .collect(Collectors.toList());

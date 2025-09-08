@@ -2,133 +2,152 @@
 <div th:fragment="content">
 <div class="modal-header">
     <h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Edit Node</h5>
-    <button type="button" class="btn-close" 
-        onclick="closeNestedModalOnly()" 
-        aria-label="Close">
-	</button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <!-- Modal Body -->
 <div class="modal-body">
         <div class="card-body">
-        <div class="dms-card">
-            <div class="dms-card-header">
-                <i class="fas fa-user-circle me-2"></i>CANDIDATE PROFILE RECORD
-            </div>
-            <div class="dms-card-body">
-                <div class="row align-items-center">
-                    <!-- Left Column - Name & Details -->
-                    <div class="col-md-8">
-                        <h2 class="mb-2">RAJESH KUMAR</h2>
-                        <p class="text-muted mb-3">
-                            <i class="fas fa-trophy me-1"></i> Senior Level Athlete
-                        </p>
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <span class="badge-dms">
-                                <i class="fas fa-id-card me-1"></i> ID: SP2023-00456
-                            </span>
-                            <span class="badge bg-secondary">
-                                <i class="fas fa-user-tag me-1"></i> Senior Category
-                            </span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <div class="detail-label">Date of Birth:</div>
-                            <div class="detail-value">15-07-2001 (22 years)</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Gender:</div>
-                            <div class="detail-value">Male</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Aadhaar Number:</div>
-                            <div class="detail-value">XXXX-XXXX-7890</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Right Column - Photo -->
-                    <div class="col-md-4 text-center">
-                        <div class="profile-photo-container mx-auto mb-3">
-                            <img src="https://img.freepik.com/free-photo/indian-man-smiling-mockup-psd-cheerful-expression-closeup-portra_53876-143269.jpg" alt="Candidate Photo" class="profile-photo">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="row">
-            <!-- Personal Information Column -->
-            <div class="col-lg-6">
-                <div class="dms-card">
-                    <div class="dms-card-header">
-                        <i class="fas fa-info-circle me-2"></i>PERSONAL INFORMATION
-                    </div>
-                    <div class="dms-card-body">
-                        <div class="info-group">
-                            <div class="info-label">FATHER'S NAME</div>
-                            <div class="info-value">Vijay Kumar</div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">MOTHER'S NAME</div>
-                            <div class="info-value">Priya Kumari</div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">ADDRESS</div>
-                            <div class="info-value">
-                                123 Main Street, <br>
-                                Bangalore, Karnataka - 560001
-                            </div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">STATE & NATIONALITY</div>
-                            <div class="info-value">Karnataka, Indian</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Contact & Status Column -->
-            <div class="col-lg-6">
-                <div class="dms-card">
-                    <div class="dms-card-header">
-                        <i class="fas fa-address-card me-2"></i>CONTACT & STATUS
-                    </div>
-                    <div class="dms-card-body">
-                        <div class="info-group">
-                            <div class="info-label">PARTICIPANT STATUS</div>
-                            <div class="info-value">
-                                <span class="status-badge status-student">
-                                    <i class="fas fa-graduation-cap me-1"></i> STUDENT
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">MOBILE NUMBER</div>
-                            <div class="info-value">
-                                <i class="fas fa-phone me-2"></i> 9876543210
-                            </div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">EMAIL ADDRESS</div>
-                            <div class="info-value">
-                                <i class="fas fa-envelope me-2"></i> rajesh.kumar@example.com
-                            </div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">EMERGENCY CONTACT</div>
-                            <div class="info-value">
-                                <i class="fas fa-phone-alt me-2"></i> 9876543211 (Father)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+			<div class="dms-card">
+				<div class="dms-card-header">
+					<i class="fas fa-user-circle me-2"></i>CANDIDATE PROFILE RECORD
+				</div>
+				<div class="dms-card-body">
+					<div class="row align-items-center">
+						<!-- Left Column - Name & Details -->
+						<div class="col-md-8">
+							<h2 class="mb-2"
+								th:text="${user.userFname + ' ' + user.userLname}">Full
+								Name</h2>
+							<h5 class="mb-2 fw-bold" th:text="${user.designationName}">Affiliation
+								/ Role</h5>
+							<p class="text-muted mb-3">
+								<i class="fas fa-trophy me-1"></i> <span
+									th:text="${user.userType}">User Type</span>
+							</p>
+
+							<div class="d-flex flex-wrap gap-2 mb-4">
+								<span class="badge-dms"> <i class="fas fa-id-card me-1"></i>
+									ID: <span th:text="${user.userId}">SP2023-00456</span>
+								</span> <span class="badge bg-secondary"> <i
+									class="fas fa-user-tag me-1"></i> <span
+									th:text="${user.userMemberCategory}">Category</span>
+								</span>
+							</div>
+
+							<div class="detail-row">
+								<div class="detail-label">Date of Birth:</div>
+								<div class="detail-value" th:text="${user.userDob}">--/--/----</div>
+							</div>
+							<div class="detail-row">
+								<div class="detail-label">Gender:</div>
+								<div class="detail-value" th:text="${user.gender}">--</div>
+							</div>
+							<div class="detail-row">
+								<div class="detail-label">Aadhaar Number:</div>
+								<div class="detail-value" th:text="${user.aadhaarNumber}">XXXX-XXXX-XXXX</div>
+							</div>
+						</div>
+
+						<!-- Right Column - Photo -->
+						<div class="col-md-4 text-center">
+							<div class="profile-photo-container mx-auto mb-3">
+								<img th:if="${user.photoFile != null}"
+									th:src="@{/files/view/{id}(id=${user.photoFile})}"
+									alt="Candidate Photo" class="profile-photo"> <img
+									th:if="${user.photoFile == null}"
+									src="/images/default-user.png" alt="Default Photo"
+									class="profile-photo">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<!-- Personal Information Column -->
+				<div class="col-lg-6">
+					<div class="dms-card">
+						<div class="dms-card-header">
+							<i class="fas fa-info-circle me-2"></i>PERSONAL INFORMATION
+						</div>
+						<div class="dms-card-body">
+							<div class="info-group">
+								<div class="info-label">FATHER'S NAME</div>
+								<div class="info-value" th:text="${user.fatherName}">Father
+									Name</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">MOTHER'S NAME</div>
+								<div class="info-value" th:text="${user.motherName}">Mother
+									Name</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">ADDRESS</div>
+								<div class="info-value">
+									<span th:text="${user.addressLine1}"></span><br> <span
+										th:text="${user.addressLine2}"></span><br> <span
+										th:text="${user.addressLine3}"></span>, <span
+										th:text="${user.addressState}"></span> - <span
+										th:text="${user.addressPin}"></span>
+								</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">STATE & NATIONALITY</div>
+								<div class="info-value">
+									<span th:text="${user.addressState}"></span>, <span
+										th:text="${user.addressState}">Indian</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Contact & Status Column -->
+				<div class="col-lg-6">
+					<div class="dms-card">
+						<div class="dms-card-header">
+							<i class="fas fa-address-card me-2"></i>CONTACT & STATUS
+						</div>
+						<div class="dms-card-body">
+							<div class="info-group">
+								<div class="info-label">PARTICIPANT STATUS</div>
+								<div class="info-value">
+									<span th:if="${user.userStatus == 1}"
+										class="status-badge status-student"> <i
+										class="fas fa-check-circle me-1"></i> ACTIVE
+									</span> <span th:if="${user.userStatus == 2}"
+										class="status-badge status-inactive"> <i
+										class="fas fa-times-circle me-1"></i> INACTIVE
+									</span>
+								</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">MOBILE NUMBER</div>
+								<div class="info-value">
+									<i class="fas fa-phone me-2"></i> <span
+										th:text="${user.mobileNumber}"></span>
+								</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">EMAIL ADDRESS</div>
+								<div class="info-value">
+									<i class="fas fa-envelope me-2"></i> <span
+										th:text="${user.userEmail}"></span>
+								</div>
+							</div>
+							<div class="info-group">
+								<div class="info-label">EMERGENCY CONTACT</div>
+								<div class="info-value">
+									<i class="fas fa-phone-alt me-2"></i> <span
+										th:text="${user.emergencyContact}"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
         
         <!-- Championship Participation Section -->
         <h3 class="section-title">

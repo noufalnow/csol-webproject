@@ -148,15 +148,23 @@
         </div>
 
         <!-- Right side: Profile Photo -->
-        <div class="col-12 col-lg-4 text-center mt-3 mt-lg-0">
-          <label class="form-label d-block">Profile Photo</label>
-          <input type="file" id="photoFileId" name="photoFileId"
-                 th:field="*{photoFileId}"
-                 class="d-none" accept="image/*">
-          <div id="imagePreview" class="preview-box">Click to upload</div>
-          <small class="text-muted">Max 512KB (JPG, PNG, BMP)</small>
-          <div id="fileError" class="text-danger small mt-1"></div>
-        </div>
+		<div class="col-12 col-lg-4 text-center mt-3 mt-lg-0">
+		  <label class="form-label d-block">Profile Photo</label>
+		
+		  <input type="file" id="photoFileId" name="photoFileId"
+		         th:field="*{photoFileId}"
+		         class="d-none" accept="image/*">
+		
+		  <!-- Preview box will hold existing or uploaded image -->
+		  <div id="imagePreview"
+		       class="preview-box"
+		       th:style="${user.photoFile != null} ? 'background-image:url(/files/view/' + ${user.photoFile} + '); color:transparent;' : ''">
+		       Click to upload
+		  </div>
+		
+		  <small class="text-muted">Max 512KB (JPG, PNG, BMP)</small>
+		  <div id="fileError" class="text-danger small mt-1"></div>
+		</div>
       </div>
     </form>
   </div>

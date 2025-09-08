@@ -110,4 +110,7 @@ public class MemberAddDTO extends BaseDTO {
     
     private Long photoFile;
     
+    
+    private String userMemberCategory;
+    
 }

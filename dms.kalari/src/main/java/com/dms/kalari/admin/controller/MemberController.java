@@ -122,7 +122,9 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 	@GetMapping("/details/{id}")
 	public String viewMemberById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(XorMaskHelper.unmask(id)));
-		model.addAttribute("pageTitle", "Member Detail ");
+		
+		
+		model.addAttribute("pageTitle", "Participant's Detail ");
 		return "fragments/manage/members/view";
 	}
 

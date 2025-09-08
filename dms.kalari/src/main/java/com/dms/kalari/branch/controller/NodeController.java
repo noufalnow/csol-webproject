@@ -118,8 +118,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("node", node);
 		model.addAttribute("children", service.findChildren(nodeId));
 		model.addAttribute("pageTitle", "Affiliation Detail - " + node.getName());
-		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(nodeId));
-		return "fragments/nodes/node_detail";
+		return "fragments/nodes/view";
 	}
 
 	@GetMapping("/node/add/{id}")
@@ -138,8 +137,9 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	@PostMapping("/node/add/{id}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> addNode(@PathVariable(value = "id") Long mParentId,@Valid @ModelAttribute NodeDTO nodeDTO,
-			Authentication authentication,
-			BindingResult result) {
+			BindingResult result,
+			Authentication authentication
+			) {
 
 		Long parentId = XorMaskHelper.unmask(mParentId);
 		
@@ -178,9 +178,9 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 	@PostMapping("/node/edit/{id}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,
-			Authentication authentication,
-			BindingResult result) {
+	public ResponseEntity<Map<String, Object>> updateNode(@PathVariable Long id, @Valid @ModelAttribute NodeDTO nodeDTO,BindingResult result,
+			Authentication authentication
+			) {
 		
 		Long nodeId = XorMaskHelper.unmask(id);
 		

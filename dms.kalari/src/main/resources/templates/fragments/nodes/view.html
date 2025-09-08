@@ -1,0 +1,110 @@
+<!-- fragments/nodes/view.html -->
+<div th:fragment="content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title">Affiliation Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+        <div class="container-fluid">
+
+            <!-- -------------------- First Row: Name + Register Number -------------------- -->
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-8">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <p class="fw-bold mb-1">Name:</p>
+                            <p th:text="${node.nodeName}"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="fw-bold mb-1">Register Number:</p>
+                            <p th:text="${node.registerNumber}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right side Logo/Emblem -->
+                <div class="col-md-4 text-center">
+                    <p class="fw-bold mb-1">Logo / Emblem:</p>
+                    <div th:if="${node.photoFile != null}">
+                        <img th:src="@{/files/view/{id}(id=${node.photoFile})}"
+                             alt="Affiliation Logo"
+                             class="img-thumbnail shadow-sm"
+                             style="max-height:150px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- -------------------- Second Row: Status -------------------- -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p class="fw-bold mb-1">Status:</p>
+                    <p th:text="${node.nodeStatus == 1 ? 'Active' : 'Inactive'}"></p>
+                </div>
+            </div>
+
+            <!-- -------------------- Third Row: Address Information -------------------- -->
+            <div class="row mb-2">
+                <div class="col-12">
+                    <h6 class="border-bottom pb-2">Address Information</h6>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p class="fw-bold mb-1">Building No. / Building Name:</p>
+                    <p th:text="${node.addressLine1}"></p>
+                </div>
+                <div class="col-md-4">
+                    <p class="fw-bold mb-1">Street / Lane / Road:</p>
+                    <p th:text="${node.addressLine2}"></p>
+                </div>
+                <div class="col-md-4">
+                    <p class="fw-bold mb-1">Village / Thaluk / District:</p>
+                    <p th:text="${node.addressLine3}"></p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="fw-bold mb-1">State:</p>
+                    <p th:text="${node.addressState}"></p>
+                </div>
+                <div class="col-md-6">
+                    <p class="fw-bold mb-1">PIN Code:</p>
+                    <p th:text="${node.addressPin}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+</div>
+
+
+
+<style>
+    .modal-body p {
+        margin-bottom: 0.5rem;
+    }
+    .fw-bold {
+        font-weight: 600;
+        color: #495057;
+    }
+    .img-thumbnail {
+        max-height: 150px;
+    }
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-dialog {
+  max-width: 90% !important; /* wider on desktops */
+}
+</style>

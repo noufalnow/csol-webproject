@@ -6,15 +6,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.mapper.NodeMapper;
 import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.common.BaseService;
+import com.dms.kalari.core.entity.CoreFile;
+import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,33 +40,48 @@ public class NodeService implements BaseService<NodeDTO> {
 
 	private final NodeRepository nodeRepository;
 	private final NodeMapper nodeMapper;
+	private final CoreFileRepository coreFileRepository;
 
 	@Autowired
-	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper) {
+	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository) {
 		this.nodeRepository = nodeRepository;
 		this.nodeMapper = nodeMapper;
+		this.coreFileRepository = coreFileRepository;
 	}
 
 	@Override
 	public NodeDTO save(NodeDTO nodeDTO) {
 		validateNodeType(nodeDTO);
 		Node node = nodeMapper.toEntity(nodeDTO);
+		
+		
+        // 1. Save user first (to generate userId)
 		Node savedNode = nodeRepository.save(node);
+
+        // 2. Handle photo upload if provided
+		savedNode = handleFileUpload(nodeDTO.getPhotoFileId(), savedNode);
+
 		return nodeMapper.toDTO(savedNode);
 	}
 
 	@Override
 	public NodeDTO update(Long nodeId, NodeDTO nodeDTO) {
-		Node existingNode = nodeRepository.findByIdAndNotDeleted(nodeId)
-				.orElseThrow(() -> new ResourceNotFoundException("Node", nodeId));
+	    Node existingNode = nodeRepository.findByIdAndNotDeleted(nodeId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Node", nodeId));
 
-		validateNodeType(nodeDTO);
-		nodeMapper.updateNodeFromDto(nodeDTO, existingNode);
-		existingNode.setTModified(LocalDateTime.now());
+	    validateNodeType(nodeDTO);
 
-		Node updatedNode = nodeRepository.save(existingNode);
-		return nodeMapper.toDTO(updatedNode);
+	    nodeMapper.updateNodeFromDto(nodeDTO, existingNode);
+
+	    existingNode.setTModified(LocalDateTime.now());
+
+	    Node updatedNode = nodeRepository.save(existingNode);
+
+	    updatedNode = handleFileUpload(nodeDTO.getPhotoFileId(), updatedNode);
+
+	    return nodeMapper.toDTO(updatedNode);
 	}
+
 
 	@Override
 	public List<NodeDTO> findAll() {
@@ -277,8 +301,57 @@ public class NodeService implements BaseService<NodeDTO> {
 
 	    return result;
 	}
+	
+	
+    /**
+     * Common method to handle file upload and metadata persistence.
+     */
+    private Node handleFileUpload(MultipartFile photoFile, Node node) {
+        if (photoFile == null || photoFile.isEmpty()) {
+            return node;
+        }
+
+        try {
+            // Create file metadata
+            CoreFile file = new CoreFile();
+            file.setFileSrc("users");
+            file.setFileRefId(node.getNodeId());
+            file.setFileActualName(photoFile.getOriginalFilename());
+            file.setFileExten(getExtension(photoFile.getOriginalFilename()));
+            file.setFileSize(photoFile.getSize());
+
+            // Save binary file to disk
+            Path uploadPath = Paths.get("uploads/nodes/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID() + "_" + photoFile.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(photoFile.getInputStream(), filePath);
+
+            // Store file path if needed
+            file.setFilePath(filePath.toString());
+
+            // Save file metadata
+            CoreFile savedFile = coreFileRepository.save(file);
+
+            // Link fileId to user
+            node.setPhotoFile(savedFile.getFileId());
+            node = nodeRepository.save(node);
+
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed", e);
+        }
+
+        return node;
+    }
 
 
+    private String getExtension(String fileName) {
+        return fileName != null && fileName.contains(".") 
+               ? fileName.substring(fileName.lastIndexOf(".") + 1) 
+               : null;
+    }
 
 
 
