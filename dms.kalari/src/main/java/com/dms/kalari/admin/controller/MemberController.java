@@ -167,7 +167,7 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
 		Long nodeId = XorMaskHelper.unmask(mNodeId);
 
-		nodeId = XorMaskHelper.unmask(nodeId);
+		//nodeId = XorMaskHelper.unmask(mNodeId);
 
 		logInfo("Request Parameters – setUserNodeId-parentId: {}", nodeId);
 

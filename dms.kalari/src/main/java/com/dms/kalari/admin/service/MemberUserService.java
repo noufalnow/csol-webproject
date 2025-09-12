@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,10 +109,19 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
         user.setUserType(UserType.MEMBER);
 
         CoreUser savedUser = coreUserRepository.save(user);
-        savedUser = handleFileUpload(dto.getPhotoFileId(), savedUser);
+
+        // photo
+        savedUser = handleFileUpload(dto.getPhotoFileId(), savedUser, CoreUser::setPhotoFile);
+
+        // ID proof
+        savedUser = handleFileUpload(dto.getIdFileId(), savedUser, CoreUser::setIdFile);
+
+        // Age proof
+        savedUser = handleFileUpload(dto.getAgeproofFileId(), savedUser, CoreUser::setAgeproofFile);
 
         return coreUserMapper.toMemberAddDTO(savedUser);
     }
+
 
     /** Update existing member using MemberUpdateDTO */
     public MemberAddDTO updateMember(Long userId, MemberUpdateDTO dto) {
@@ -128,13 +138,26 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
         existingUser.setTModified(LocalDateTime.now());
 
         CoreUser updatedUser = coreUserRepository.save(existingUser);
-        updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser);
+        //updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser);
+        
+        updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser, CoreUser::setPhotoFile);
+
+        // ID proof
+        updatedUser = handleFileUpload(dto.getIdFileId(), updatedUser, CoreUser::setIdFile);
+
+        // Age proof
+        updatedUser = handleFileUpload(dto.getAgeproofFileId(), updatedUser, CoreUser::setAgeproofFile);
+        
 
         return coreUserMapper.toMemberAddDTO(updatedUser);
     }
 
     /** Common file upload handler */
-    private CoreUser handleFileUpload(MultipartFile file, CoreUser user) {
+    private CoreUser handleFileUpload(
+            MultipartFile file, 
+            CoreUser user, 
+            BiConsumer<CoreUser, Long> fileSetter) {
+
         if (file == null || file.isEmpty()) return user;
 
         try {
@@ -155,13 +178,16 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
             meta.setFilePath(filePath.toString());
             CoreFile savedMeta = coreFileRepository.save(meta);
 
-            user.setPhotoFile(savedMeta.getFileId());
+            // Apply correct setter dynamically
+            fileSetter.accept(user, savedMeta.getFileId());
             user = coreUserRepository.save(user);
+
         } catch (IOException e) {
             throw new RuntimeException("File upload failed", e);
         }
         return user;
     }
+
 
     private String getExtension(String fileName) {
         return (fileName != null && fileName.contains(".")) ?

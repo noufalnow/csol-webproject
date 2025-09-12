@@ -105,10 +105,19 @@ public class MemberAddDTO extends BaseDTO {
     
     @ValidFile(maxSize = 524288, allowedExtensions = {"jpg", "jpeg", "png"})
     private MultipartFile photoFileId;
-    
-    private String filePath;  
-    
+
+    @ValidFile(maxSize = 524288, allowedExtensions = {"jpg", "jpeg", "png"})
+    private MultipartFile idFileId;
+
+    @ValidFile(maxSize = 524288, allowedExtensions = {"jpg", "jpeg", "png"})
+    private MultipartFile ageproofFileId;
+
     private Long photoFile;
+    private Long idFile;
+    private Long ageproofFile;
+
+    private String filePath;
+
     
     
     private String userMemberCategory;

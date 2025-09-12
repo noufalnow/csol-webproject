@@ -121,6 +121,12 @@ public class CoreUser extends BaseEntity {
     @Column(name = "photo_file")
     private Long photoFile;
     
+    @Column(name = "id_file")
+    private Long idFile;
+    
+    @Column(name = "ageproof_file")
+    private Long ageproofFile;
+    
     public enum UserType {
         MEMBER,
         OFFICIAL

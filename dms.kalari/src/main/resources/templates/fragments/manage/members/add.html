@@ -112,52 +112,81 @@
         </div>
       </div>
 
-      <div class="row mb-3">
-        <!-- Left side: Address -->
-        <div class="col-12 col-lg-8">
-          <div class="row g-3 mb-2">
-            <div class="col-12 col-lg-6">
-              <label for="fatherName" class="form-label">Father's Name</label>
-              <input type="text" id="fatherName" th:field="*{fatherName}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-6">
-              <label for="motherName" class="form-label">Mothers Name</label>
-              <input type="text" id="motherName" th:field="*{motherName}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-6">
-              <label for="addressLine1" class="form-label">House No./ House Name</label>
-              <input type="text" id="addressLine1" th:field="*{addressLine1}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-6">
-              <label for="addressLine2" class="form-label">Street / Lane / Road</label>
-              <input type="text" id="addressLine2" th:field="*{addressLine2}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-4">
-              <label for="addressLine3" class="form-label">Village/ Thaluk / District</label>
-              <input type="text" id="addressLine3" th:field="*{addressLine3}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-4">
-              <label for="addressState" class="form-label">State</label>
-              <input type="text" id="addressState" th:field="*{addressState}" class="form-control">
-            </div>
-            <div class="col-12 col-lg-4">
-              <label for="addressPin" class="form-label">PIN Code</label>
-              <input type="text" id="addressPin" th:field="*{addressPin}" class="form-control" maxlength="6" placeholder="6-digit PIN">
-            </div>
-          </div>
-        </div>
-
-        <!-- Right side: Profile Photo -->
-        <div class="col-12 col-lg-4 text-center mt-3 mt-lg-0">
-          <label class="form-label d-block">Profile Photo</label>
-          <input type="file" id="photoFileId" name="photoFileId"
-                 th:field="*{photoFileId}"
-                 class="d-none" accept="image/*">
-          <div id="imagePreview" class="preview-box">Click to upload</div>
-          <small class="text-muted">Max 512KB (JPG, PNG, BMP)</small>
-          <div id="fileError" class="text-danger small mt-1"></div>
-        </div>
+<div class="row mb-3">
+  <!-- Address & Parents Information -->
+  <div class="col-12">
+    <div class="row g-3 mb-2">
+      <div class="col-12 col-lg-6">
+        <label for="fatherName" class="form-label">Father's Name</label>
+        <input type="text" id="fatherName" th:field="*{fatherName}" class="form-control">
       </div>
+      <div class="col-12 col-lg-6">
+        <label for="motherName" class="form-label">Mother's Name</label>
+        <input type="text" id="motherName" th:field="*{motherName}" class="form-control">
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <label for="addressLine1" class="form-label">House No./ House Name</label>
+        <input type="text" id="addressLine1" th:field="*{addressLine1}" class="form-control">
+      </div>
+      <div class="col-12 col-lg-6">
+        <label for="addressLine2" class="form-label">Street / Lane / Road</label>
+        <input type="text" id="addressLine2" th:field="*{addressLine2}" class="form-control">
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <label for="addressLine3" class="form-label">Village / Taluk / District</label>
+        <input type="text" id="addressLine3" th:field="*{addressLine3}" class="form-control">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label for="addressState" class="form-label">State</label>
+        <input type="text" id="addressState" th:field="*{addressState}" class="form-control">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label for="addressPin" class="form-label">PIN Code</label>
+        <input type="text" id="addressPin" th:field="*{addressPin}" class="form-control" maxlength="6" placeholder="6-digit PIN">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Address Information -->
+<div class="row mb-3 mt-4">
+  <div class="col-12">
+    <h6 class="border-bottom pb-2">Documents</h6>
+  </div>
+</div>
+
+<!-- File Uploads in one row -->
+<div class="row g-3 mb-3">
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">Profile Photo</label>
+    <input type="file" id="photoFileId" name="photoFileId"
+           th:field="*{photoFileId}" class="d-none" accept="image/*">
+    <div id="photoFilePreview" class="preview-box">Click to upload</div>
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="photoFileError" class="text-danger small mt-1"></div>
+  </div>
+
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">ID Proof</label>
+    <input type="file" id="idFileId" name="idFileId"
+           th:field="*{idFileId}" class="d-none" accept="image/*">
+    <div id="idFilePreview" class="preview-box">Click to upload</div>
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="idFileError" class="text-danger small mt-1"></div>
+  </div>
+
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">Age Proof</label>
+    <input type="file" id="ageproofFileId" name="ageproofFileId"
+           th:field="*{ageproofFileId}" class="d-none" accept="image/*">
+    <div id="ageproofFilePreview" class="preview-box">Click to upload</div>
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="ageproofFileError" class="text-danger small mt-1"></div>
+  </div>
+</div>
+
     </form>
   </div>
   
@@ -203,42 +232,51 @@ form { max-width: 100%;
 
 <script>
 (function () {
-  let fileInput = document.getElementById("photoFileId");
-  let imagePreview = document.getElementById("imagePreview");
-  let fileError = document.getElementById("fileError");
+	  const allowedExtensions = ["jpg", "jpeg", "png"];
+	  const maxSize = 512 * 1024;
 
-  if (!fileInput) return;
+	  function initFileUpload(inputId, previewId, errorId) {
+	    const fileInput = document.getElementById(inputId);
+	    const previewBox = document.getElementById(previewId);
+	    const errorBox = document.getElementById(errorId);
 
-  const allowedExtensions = ["jpg", "jpeg", "png", "bmp"];
-  const maxSize = 512 * 1024;
+	    if (!fileInput || !previewBox || !errorBox) return;
 
-  imagePreview.addEventListener("click", () => fileInput.click());
+	    previewBox.addEventListener("click", () => fileInput.click());
 
-  fileInput.addEventListener("change", function () {
-    fileError.textContent = "";
-    const file = this.files[0];
+	    fileInput.addEventListener("change", function () {
+	      errorBox.textContent = "";
+	      const file = this.files[0];
 
-    if (file) {
-      const ext = file.name.split(".").pop().toLowerCase();
-      if (!allowedExtensions.includes(ext)) {
-        fileError.textContent = "Allowed formats: JPEG, JPG, PNG, BMP.";
-        fileInput.value = "";
-        return;
-      }
+	      if (file) {
+	        const ext = file.name.split(".").pop().toLowerCase();
+	        if (!allowedExtensions.includes(ext)) {
+	          errorBox.textContent = "Allowed formats: JPEG, JPG, PNG";
+	          fileInput.value = "";
+	          return;
+	        }
 
-      if (file.size > maxSize) {
-        fileError.textContent = "File size must be less than 512KB.";
-        fileInput.value = "";
-        return;
-      }
+	        if (file.size > maxSize) {
+	          errorBox.textContent = "File size must be less than 512KB.";
+	          fileInput.value = "";
+	          return;
+	        }
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.style.backgroundImage = `url(${e.target.result})`;
-        imagePreview.textContent = "";
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-})();
+	        const reader = new FileReader();
+	        reader.onload = function (e) {
+	          previewBox.style.backgroundImage = `url(${e.target.result})`;
+	          previewBox.textContent = "";
+	        };
+	        reader.readAsDataURL(file);
+	      }
+	    });
+	  }
+
+	  // initialize all file inputs
+	  initFileUpload("photoFileId", "photoFilePreview", "photoFileError");
+	  initFileUpload("idFileId", "idFilePreview", "idFileError");
+	  initFileUpload("ageproofFileId", "ageproofFilePreview", "ageproofFileError");
+
+	})();
+
 </script>

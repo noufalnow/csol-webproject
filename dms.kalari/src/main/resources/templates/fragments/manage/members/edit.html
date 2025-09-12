@@ -111,7 +111,7 @@
 
       <div class="row mb-3">
         <!-- Left side: Address -->
-        <div class="col-12 col-lg-8">
+        <div class="col-12">
           <div class="row g-3 mb-2">
           
           
@@ -147,25 +147,75 @@
           </div>
         </div>
 
-        <!-- Right side: Profile Photo -->
-		<div class="col-12 col-lg-4 text-center mt-3 mt-lg-0">
-		  <label class="form-label d-block">Profile Photo</label>
-		
-		  <input type="file" id="photoFileId" name="photoFileId"
-		         th:field="*{photoFileId}"
-		         class="d-none" accept="image/*">
-		
-		  <!-- Preview box will hold existing or uploaded image -->
-		  <div id="imagePreview"
-		       class="preview-box"
-		       th:style="${user.photoFile != null} ? 'background-image:url(/files/view/' + ${user.photoFile} + '); color:transparent;' : ''">
-		       Click to upload
-		  </div>
-		
-		  <small class="text-muted">Max 512KB (JPG, PNG, BMP)</small>
-		  <div id="fileError" class="text-danger small mt-1"></div>
-		</div>
+
       </div>
+      
+      
+      <!-- Address Information -->
+<div class="row mb-3 mt-4">
+  <div class="col-12">
+    <h6 class="border-bottom pb-2">Documents</h6>
+  </div>
+</div>
+
+<!-- File Uploads in one row -->
+<div class="row g-3 mb-3">
+
+  <!-- Profile Photo -->
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">Profile Photo</label>
+    <input type="file" id="photoFileId" name="photoFileId"
+           th:field="*{photoFileId}" class="d-none" accept="image/*">
+
+    <div id="photoFilePreview"
+         class="preview-box"
+         th:style="${user.photoFile != null} ?
+           'background-image:url(/files/view/' + ${user.photoFile} + '); color:transparent;' : ''">
+         Click to upload
+    </div>
+
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="photoFileError" class="text-danger small mt-1"></div>
+  </div>
+
+  <!-- ID Proof -->
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">ID Proof</label>
+    <input type="file" id="idFileId" name="idFileId"
+           th:field="*{idFileId}" class="d-none" accept="image/*">
+
+    <div id="idFilePreview"
+         class="preview-box"
+         th:style="${user.idFile != null} ?
+           'background-image:url(/files/view/' + ${user.idFile} + '); color:transparent;' : ''">
+         Click to upload
+    </div>
+
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="idFileError" class="text-danger small mt-1"></div>
+  </div>
+
+  <!-- Age Proof -->
+  <div class="col-12 col-lg-4 text-center">
+    <label class="form-label d-block">Age Proof</label>
+    <input type="file" id="ageproofFileId" name="ageproofFileId"
+           th:field="*{ageproofFileId}" class="d-none" accept="image/*">
+
+    <div id="ageproofFilePreview"
+         class="preview-box"
+         th:style="${user.ageproofFile != null} ?
+           'background-image:url(/files/view/' + ${user.ageproofFile} + '); color:transparent;' : ''">
+         Click to upload
+    </div>
+
+    <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
+    <div id="ageproofFileError" class="text-danger small mt-1"></div>
+  </div>
+
+</div>
+      
+      
+      
     </form>
   </div>
 
@@ -210,42 +260,54 @@ form { max-width: 100%;
 
 
 <script>
+
 (function () {
-	  let fileInput = document.getElementById("photoFileId");
-	  let imagePreview = document.getElementById("imagePreview");
-	  let fileError = document.getElementById("fileError");
-
-	  if (!fileInput || !imagePreview) return;
-
-	  const allowedExtensions = ["jpg", "jpeg", "png", "bmp"];
+	  const allowedExtensions = ["jpg", "jpeg", "png"];
 	  const maxSize = 512 * 1024;
 
-	  imagePreview.addEventListener("click", () => fileInput.click());
+	  function initFileUpload(inputId, previewId, errorId) {
+	    const fileInput = document.getElementById(inputId);
+	    const previewBox = document.getElementById(previewId);
+	    const errorBox = document.getElementById(errorId);
 
-	  fileInput.addEventListener("change", function () {
-	    if (fileError) fileError.textContent = "";
-	    const file = this.files[0];
+	    if (!fileInput || !previewBox || !errorBox) return;
 
-	    if (file) {
-	      const ext = file.name.split(".").pop().toLowerCase();
-	      if (!allowedExtensions.includes(ext)) {
-	        if (fileError) fileError.textContent = "Allowed formats: JPEG, JPG, PNG, BMP.";
-	        fileInput.value = "";
-	        return;
+	    previewBox.addEventListener("click", () => fileInput.click());
+
+	    fileInput.addEventListener("change", function () {
+	      errorBox.textContent = "";
+	      const file = this.files[0];
+
+	      if (file) {
+	        const ext = file.name.split(".").pop().toLowerCase();
+	        if (!allowedExtensions.includes(ext)) {
+	          errorBox.textContent = "Allowed formats: JPEG, JPG, PNG";
+	          fileInput.value = "";
+	          return;
+	        }
+
+	        if (file.size > maxSize) {
+	          errorBox.textContent = "File size must be less than 512KB.";
+	          fileInput.value = "";
+	          return;
+	        }
+
+	        const reader = new FileReader();
+	        reader.onload = function (e) {
+	          previewBox.style.backgroundImage = `url(${e.target.result})`;
+	          previewBox.textContent = "";
+	        };
+	        reader.readAsDataURL(file);
 	      }
-	      if (file.size > maxSize) {
-	        if (fileError) fileError.textContent = "File size must be less than 512KB.";
-	        fileInput.value = "";
-	        return;
-	      }
-	      const reader = new FileReader();
-	      reader.onload = function (e) {
-	        imagePreview.style.backgroundImage = `url(${e.target.result})`;
-	        imagePreview.style.color = "transparent"; // hide "Click to upload"
-	      };
-	      reader.readAsDataURL(file);
-	    }
-	  });
+	    });
+	  }
+
+	  // initialize all file inputs
+	  initFileUpload("photoFileId", "photoFilePreview", "photoFileError");
+	  initFileUpload("idFileId", "idFilePreview", "idFileError");
+	  initFileUpload("ageproofFileId", "ageproofFilePreview", "ageproofFileError");
+
 	})();
+
 
 </script>
