@@ -1,5 +1,6 @@
 package com.dms.kalari.branch.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -70,4 +71,10 @@ public class NodeDTO extends BaseDTO {
     private String filePath;  
     
     private Long photoFile;
+    
+    private String branchHistory;
+    
+    private String branchActivity;
+    
+    private String branchVision;
 }

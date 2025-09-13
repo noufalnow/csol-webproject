@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9'          // Name you configured under "Manage Jenkins → Global Tool Configuration"
+        jdk   'jdk-17'             // Optional: match your Java version
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checks out the entire repository
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('dms.kalari') {    // 👈 change to your subfolder name
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                dir('my-app') {
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+
+        // optional: run tests
+        /*stage('Test') {
+            steps {
+                dir('my-app') {
+                    sh 'mvn test'
+                }
+            }
+        }*/
+
+        // optional: deploy step (SSH, Docker, etc.)
+        // stage('Deploy') { ... }
+    }
+}

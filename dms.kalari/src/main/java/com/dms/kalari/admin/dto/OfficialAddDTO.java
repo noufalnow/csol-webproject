@@ -12,6 +12,7 @@ import com.dms.kalari.admin.dto.validation.PasswordMatches;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.common.BaseDTO;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
@@ -103,5 +104,7 @@ public class OfficialAddDTO extends BaseDTO {
     private String filePath;  
     
     private Long photoFile;
+    
+    private String officialDescription;
     
 }

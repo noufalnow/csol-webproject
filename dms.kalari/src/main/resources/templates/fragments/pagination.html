@@ -1,43 +1,76 @@
 <!-- fragments/pagination.html -->
-<div th:fragment="pagination">
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-            <!-- First page link -->
-            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != 0}"
-                   th:onclick="'loadContent(\'' + @{${pageUrl}(page=0, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">First</a>
-                <span class="page-link" th:if="${currentPage == 0}">First</span>
-            </li>
+<div th:fragment="pagination" class="mt-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
 
-            <!-- Previous page link -->
-            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != 0}"
-                   th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Previous</a>
-                <span class="page-link" th:if="${currentPage == 0}">Previous</span>
-            </li>
+      <!-- First -->
+      <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+        <a class="page-link d-flex align-items-center gap-1"
+           href="javascript:void(0);"
+           th:if="${currentPage != 0}"
+           aria-label="First page"
+           th:onclick="'loadContent(\'' + @{${pageUrl}(page=0, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">
+          <i class="fas fa-angle-double-left"></i><span class="d-none d-sm-inline">First</span>
+        </a>
+        <span class="page-link d-flex align-items-center gap-1" th:if="${currentPage == 0}">
+          <i class="fas fa-angle-double-left"></i><span class="d-none d-sm-inline">First</span>
+        </span>
+      </li>
 
-            <!-- Page numbers -->
-            <li class="page-item" th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                th:classappend="${i == currentPage} ? ' active'">
-                <a class="page-link" href="javascript:void(0);" th:if="${i != currentPage}"
-                   th:onclick="'loadContent(\'' + @{${pageUrl}(page=${i}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'"
-                   th:text="${i + 1}"></a>
-                <span class="page-link" th:if="${i == currentPage}" th:text="${i + 1}"></span>
-            </li>
+      <!-- Previous -->
+      <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+        <a class="page-link" href="javascript:void(0);"
+           th:if="${currentPage != 0}"
+           aria-label="Previous page"
+           th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">
+          <i class="fas fa-angle-left"></i>
+        </a>
+        <span class="page-link" th:if="${currentPage == 0}">
+          <i class="fas fa-angle-left"></i>
+        </span>
+      </li>
 
-            <!-- Next page link -->
-            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
-                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
-                   th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Next</a>
-                <span class="page-link" th:if="${currentPage == totalPages - 1}">Next</span>
-            </li>
+      <!-- Numbered pages -->
+      <li class="page-item"
+          th:each="i : ${#numbers.sequence(startPage, endPage)}"
+          th:classappend="${i == currentPage} ? ' active'">
+        <a class="page-link"
+           href="javascript:void(0);"
+           th:if="${i != currentPage}"
+           th:text="${i + 1}"
+           th:onclick="'loadContent(\'' + @{${pageUrl}(page=${i}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">
+        </a>
+        <span class="page-link" th:if="${i == currentPage}" th:text="${i + 1}"></span>
+      </li>
 
-            <!-- Last page link -->
-            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
-                <a class="page-link" href="javascript:void(0);" th:if="${currentPage != totalPages - 1}"
-                   th:onclick="'loadContent(\'' + @{${pageUrl}(page=${totalPages - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">Last</a>
-                <span class="page-link" th:if="${currentPage == totalPages - 1}">Last</span>
-            </li>
-        </ul>
-    </nav>
+      <!-- Next -->
+      <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+        <a class="page-link"
+           href="javascript:void(0);"
+           th:if="${currentPage != totalPages - 1}"
+           aria-label="Next page"
+           th:onclick="'loadContent(\'' + @{${pageUrl}(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">
+          <i class="fas fa-angle-right"></i>
+        </a>
+        <span class="page-link" th:if="${currentPage == totalPages - 1}">
+          <i class="fas fa-angle-right"></i>
+        </span>
+      </li>
+
+      <!-- Last -->
+      <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? ' disabled'">
+        <a class="page-link d-flex align-items-center gap-1"
+           href="javascript:void(0);"
+           th:if="${currentPage != totalPages - 1}"
+           aria-label="Last page"
+           th:onclick="'loadContent(\'' + @{${pageUrl}(page=${totalPages - 1}, size=${size}, sortField=${sortField}, sortDir=${sortDir})} + '\', \'#content\')'">
+          <span class="d-none d-sm-inline">Last</span><i class="fas fa-angle-double-right"></i>
+        </a>
+        <span class="page-link d-flex align-items-center gap-1" th:if="${currentPage == totalPages - 1}">
+          <span class="d-none d-sm-inline">Last</span><i class="fas fa-angle-double-right"></i>
+        </span>
+      </li>
+
+    </ul>
+  </nav>
 </div>

@@ -108,4 +108,6 @@ public class CoreUserDTO extends BaseDTO {
     private String emergencyContact;
         
     private Long photoFile;
+    
+    private String officialDescription;
 }

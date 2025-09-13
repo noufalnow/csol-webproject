@@ -93,4 +93,6 @@ public class OfficialUpdateDTO extends BaseDTO {
     private String filePath;  
     
     private Long photoFile;
+    
+    private String officialDescription;
 }

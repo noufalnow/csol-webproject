@@ -114,6 +114,52 @@
 							required>
 					</div>
 				</div>
+				
+							<!-- Branch Details -->
+			<div class="row mb-3 mt-4">
+			  <div class="col-12">
+			    <h6 class="border-bottom pb-2">Branch Details</h6>
+			  </div>
+			</div>
+			
+			<div class="row g-3 mb-2">
+			  <!-- Branch History -->
+			  <div class="col-12">
+			    <label for="branchHistory" class="form-label">
+			      History <small class="text-muted">(Formation, founders, development)</small>
+			    </label>
+			    <textarea id="branchHistory"
+			              th:field="*{branchHistory}"
+			              class="form-control"
+			              rows="3"
+			              placeholder="Describe formation, founders, and development"></textarea>
+			  </div>
+			
+			  <!-- Branch Activity -->
+			  <div class="col-12">
+			    <label for="branchActivity" class="form-label">
+			      Activities <small class="text-muted">(Courses and other services)</small>
+			    </label>
+			    <textarea id="branchActivity"
+			              th:field="*{branchActivity}"
+			              class="form-control"
+			              rows="3"
+			              placeholder="List courses, training, and other services offered"></textarea>
+			  </div>
+			
+			  <!-- Branch Vision -->
+			  <div class="col-12">
+			    <label for="branchVision" class="form-label">
+			      Vision <small class="text-muted">(Vision and Mission)</small>
+			    </label>
+			    <textarea id="branchVision"
+			              th:field="*{branchVision}"
+			              class="form-control"
+			              rows="3"
+			              placeholder="State the branch’s vision and mission"></textarea>
+			  </div>
+			</div>
+				
 
 				<div id="error-messages" class="text-danger"></div>
 		</form>

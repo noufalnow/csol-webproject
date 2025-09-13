@@ -53,8 +53,8 @@
                                 PEOPLE
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item ajax-link" th:href="@{/officials}">OFFICIALS</a></li>
-								<li sec:authorize="hasAuthority('PRIV_users')">
+                                <li sec:authorize="hasAuthority('PRIV_users_x')"><a class="dropdown-item ajax-link" th:href="@{/officials}">OFFICIALS</a></li>
+								<li sec:authorize="hasAuthority('PRIV_users_x')">
 								    <a class="dropdown-item ajax-link" th:href="@{/users}">MEMBERS</a>
 								</li>
                             </ul>
@@ -65,6 +65,9 @@
                                 MASTERS
                             </a>
                             <ul class="dropdown-menu">
+                                <li sec:authorize="hasAuthority('PRIV_designations')">
+								    <a class="dropdown-item ajax-link" th:href="@{/designations}">DESIGNATIONS</a>
+								</li>
                                 <li sec:authorize="hasAuthority('PRIV_masters')"><a class="dropdown-item ajax-link" th:href="@{/event-items/html}">ITEMS</a></li>
                             </ul>
                         </li>

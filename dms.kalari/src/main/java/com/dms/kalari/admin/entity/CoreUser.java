@@ -142,6 +142,10 @@ public class CoreUser extends BaseEntity {
         MALE,
         FEMALE
     }
+    
+    
+    @Column(name = "official_description")
+    private String officialDescription;
 }
 
 

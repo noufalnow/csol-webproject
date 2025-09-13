@@ -84,4 +84,13 @@ public class Node extends BaseEntity {
     
     @Column(name = "photo_file")
     private Long photoFile;
+    
+    @Column(name = "branch_history", nullable = true)
+    private String branchHistory;
+    
+    @Column(name = "branch_activity", nullable = true)
+    private String branchActivity;
+    
+    @Column(name = "branch_vision", nullable = true)
+    private String branchVision;
 }

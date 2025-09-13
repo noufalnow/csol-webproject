@@ -101,6 +101,7 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
     	    SELECT o FROM AuthAppPageOperation o
     	    JOIN o.appPage p
     	    WHERE p.menu.appMenuId = :moduleId
+    	    AND o.active = 1
     	    AND o.pageOperationLevel LIKE '%' || :level || '%'
     	    ORDER BY p.pageName, p.appPageId, o.alias
     	""")
@@ -134,7 +135,7 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
         @Query("""
             SELECT o FROM AuthAppPageOperation o
             JOIN FETCH o.appPage ap
-            WHERE ap.menu.appMenuId = :moduleId
+            WHERE ap.menu.appMenuId = :moduleId AND o.active = 1
             ORDER BY o.operationName, ap.appPageId, o.alias
         """)
         List<AuthAppPageOperation> findOperationsByModuleIdWithPage(@Param("moduleId") Long moduleId);

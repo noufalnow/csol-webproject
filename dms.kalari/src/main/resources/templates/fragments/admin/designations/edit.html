@@ -1,0 +1,116 @@
+<div class="container-fluid">
+  <!-- Modal Header -->
+  <div class="modal-header">
+    <h5 class="modal-title" id="updateDesignationModalLabel"
+        th:text="${pageTitle}">Update Designation</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <!-- Modal Body -->
+  <div class="modal-body">
+    <form id="updateDesignationForm"
+          th:action="@{/designation_update/{id}(id=${designation.desigId})}"
+          method="post"
+          th:object="${designation}"
+          enctype="multipart/form-data">
+
+      <!-- CSRF Token -->
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+      <!-- Hidden ID for safety -->
+      <input type="hidden" th:field="*{desigId}" />
+
+      <div class="row g-3 mb-2">
+        <!-- Code -->
+        <div class="col-12 col-lg-6">
+          <label for="desigCode" class="form-label">Designation Code</label>
+          <input type="text" id="desigCode"
+                 th:field="*{desigCode}"
+                 class="form-control"
+                 placeholder="Enter code"
+                 required />
+        </div>
+
+        <!-- Name -->
+        <div class="col-12 col-lg-6">
+          <label for="desigName" class="form-label">Designation Name</label>
+          <input type="text" id="desigName"
+                 th:field="*{desigName}"
+                 class="form-control"
+                 placeholder="Enter name"
+                 required />
+        </div>
+      </div>
+
+      <div class="row g-3 mb-2">
+        <!-- Level -->
+        <div class="col-12 col-lg-6">
+          <label for="desigLevel" class="form-label">Level</label>
+          <select id="desigLevel" th:field="*{desigLevel}" class="form-select" required>
+            <option value="">-- Select Level --</option>
+            <option value="COUNTRY">COUNTRY</option>
+            <option value="STATE">STATE</option>
+            <option value="DISTRICT">DISTRICT</option>
+        	<option value="KALARI">KALARI</option>
+          </select>
+        </div>
+
+        <!-- Type -->
+        <div class="col-12 col-lg-6 mt-3">
+          <label for="desigType" class="form-label">Type</label>
+          <select id="desigType" th:field="*{desigType}" class="form-select" required>
+            <!-- Will be filled by JS -->
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal Footer -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="button" class="btn btn-primary"
+            onclick="submitHtmlForm('updateDesignationForm')">Update Designation</button>
+  </div>
+</div>
+
+<script>
+  function updateTypeOptions() {
+    const level = document.getElementById('desigLevel').value;
+    const typeSelect = document.getElementById('desigType');
+    const currentType = /*[[${designation.desigType}]]*/ ''; // Thymeleaf will replace
+
+    typeSelect.innerHTML = ''; // clear
+
+    if (level === 'KALARI') {
+      typeSelect.innerHTML = `
+        <option value="1">Official</option>
+        <option value="2">Participants</option>
+      `;
+    } else if (level) {
+      typeSelect.innerHTML = `<option value="1">Official</option>`;
+    }
+
+    // Reselect previously saved type if present
+    if (currentType) {
+      [...typeSelect.options].forEach(opt => {
+        if (opt.value === currentType) opt.selected = true;
+      });
+    }
+  }
+
+  document.getElementById('desigLevel').addEventListener('change', updateTypeOptions);
+  // Initialize on page load to show current type
+  updateTypeOptions();
+</script>
+
+<style>
+#updateDesignationForm {
+  max-width: 100%;
+}
+.modal-dialog { max-width: 60% !important; }
+@media (max-width: 768px) {
+  .modal-dialog { max-width: 100% !important; margin: 10px; }
+}
+.modal-body { max-height: 70vh; overflow-y: auto; }
+</style>

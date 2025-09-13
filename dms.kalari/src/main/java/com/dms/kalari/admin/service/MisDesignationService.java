@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.mapper.MisDesignationMapper;
+import com.dms.kalari.admin.repository.MisDesignationRepository;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.exception.ResourceNotFoundException;
-import com.dms.kalari.repository.MisDesignationRepository;
 
 import java.util.List;
 import java.util.Optional;
