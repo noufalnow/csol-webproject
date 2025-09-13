@@ -11,17 +11,15 @@ pipeline {
         stage('Build & Deploy') {
             steps {
                 dir('dms.kalari') {
-                    // Stop service
                     sh 'sudo systemctl stop kalari-app || true'
-
-                    // Build JAR
                     sh 'mvn clean package -DskipTests'
-
-                    // Start service with new JAR
                     sh 'sudo systemctl start kalari-app'
+                    sh 'sleep 5'
+                    sh 'sudo systemctl status kalari-app'
                 }
             }
         }
+
 
         stage('Archive Artifact') {
             steps {
