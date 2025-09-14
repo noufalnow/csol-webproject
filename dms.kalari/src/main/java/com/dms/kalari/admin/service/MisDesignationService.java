@@ -1,5 +1,6 @@
 package com.dms.kalari.admin.service;
 
+import org.hibernate.validator.internal.util.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,9 @@ import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
+import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,20 +34,26 @@ public class MisDesignationService implements BaseService<DesignationDTO> {
     }
 
     @Override
+    @Transactional
     public DesignationDTO update(Long desigId, DesignationDTO designationDTO) {
-        Optional<MisDesignation> existingDesignationOptional = misDesignationRepository.findById(desigId);
-        if (existingDesignationOptional.isPresent()) {
-            MisDesignation existingDesignation = existingDesignationOptional.get();
-            existingDesignation.setDesigCode(designationDTO.getDesigCode());
-            existingDesignation.setDesigName(designationDTO.getDesigName());
-            existingDesignation.setDesigLevel(designationDTO.getDesigLevel());
-            existingDesignation.setDesigType(designationDTO.getDesigType());
+        MisDesignation existingDesignation = misDesignationRepository.findById(desigId)
+            .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", desigId));
 
-            MisDesignation updatedDesignation = misDesignationRepository.save(existingDesignation);
-            return misDesignationMapper.toDTO(updatedDesignation);
-        } else {
-            throw new ResourceNotFoundException("MisDesignation", desigId);
-        }
+        existingDesignation.setDesigCode(designationDTO.getDesigCode());
+        existingDesignation.setDesigName(designationDTO.getDesigName());
+        existingDesignation.setDesigLevel(designationDTO.getDesigLevel());
+        //existingDesignation.setDesigLevel(designationDTO.getDesigLevel().name());
+        existingDesignation.setDesigType(designationDTO.getDesigType());
+        existingDesignation.setTModified(LocalDateTime.now());  // <-- add this
+
+        MisDesignation updatedDesignation = misDesignationRepository.save(existingDesignation);
+        misDesignationRepository.flush();  // force SQL execution
+
+        // Print or log the updated entity
+        System.out.println("Updated Designation: " + updatedDesignation);
+
+        return misDesignationMapper.toDTO(updatedDesignation);
+
     }
 
     // Fetch all designations that are not deleted

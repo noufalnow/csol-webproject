@@ -86,7 +86,7 @@ public class DesignationController extends BaseController<DesignationDTO, MisDes
     public String editForm(@PathVariable Long maskedId, Model model) {
         Long realId = XorMaskHelper.unmask(maskedId);
         DesignationDTO dto = service.findById(realId);
-        dto.setDesigId(XorMaskHelper.mask(dto.getDesigId())); // re-mask for the view
+        dto.setDesigId(maskedId);
         model.addAttribute("designation", dto);
         model.addAttribute("pageTitle", "Edit Designation");
         return "fragments/admin/designations/edit";

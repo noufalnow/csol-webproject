@@ -2,7 +2,9 @@ package com.dms.kalari.admin.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import java.util.List;  // Import statement for List
 
@@ -16,8 +18,8 @@ import com.dms.kalari.common.BaseEntity;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
+//@Cacheable
+//@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MisDesignation extends BaseEntity {
     
     @Id
@@ -31,14 +33,11 @@ public class MisDesignation extends BaseEntity {
     @Column(name = "desig_name", nullable = false)
     private String desigName;
     
-    @OneToMany(mappedBy = "designation")
-    private List<CoreUser> users;
-
     @Column(name = "desig_type")
     private Short desigType;
-    
-
+        
+    @Enumerated(EnumType.STRING)
     @Column(name = "desig_level")
-    @Enumerated(EnumType.STRING) // store enum as string in DB
     private Node.Type desigLevel;
+    
 }

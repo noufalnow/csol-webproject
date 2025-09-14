@@ -9,7 +9,7 @@
   <!-- Modal Body -->
   <div class="modal-body">
     <form id="updateDesignationForm"
-          th:action="@{/designation_update/{id}(id=${designation.desigId})}"
+          th:action="@{/designation_edit/{id}(id=${designation.desigId})}"
           method="post"
           th:object="${designation}"
           enctype="multipart/form-data">
