@@ -33,6 +33,8 @@ public class DesignationDTO extends BaseDTO {
      */
     @NotNull(message = "Designation type is required")
     private Short desigType;
+    
+    
 
     public DesignationDTO(Long desigId, String desigName, Node.Type desigLevel) {
         this.desigId = desigId;

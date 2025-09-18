@@ -69,18 +69,24 @@ $(document).ready(function() {
 		var fileInput = formElement.querySelector('input[name="photoFileId"]');
 		var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
 		
-
+		var pageParams =getEntities();
+		
 	    if (hasFile) {
 	        // --- If photo file present, use FormData ---
 	        dataToSend = new FormData(form[0]);
 	        processData = false;
 	        contentType = false;
+			dataToSend.append('pageParams', pageParams);
 	    } else {
 	        // --- Otherwise, serialize normal form data ---
 	        dataToSend = form.serialize();
 	        processData = true;
 	        contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
+			dataToSend += '&pageParams=' + encodeURIComponent(pageParams);
 	    }
+		
+		
+		
 
 	    var actionUrl = form.attr('action');
 		var refIdElement = formElement.querySelector('#ref_id');
@@ -224,16 +230,66 @@ $(document).ready(function() {
 });
 
 // Search functionality
+
 function searchEntities(listingUrl, targetContainer, defaultSortField) {
-	var search = $('input[name="search"]').val();
-	var sortField = $('.sort.active').data('field') || defaultSortField;
-	var sortDir = $('.sort.active').data('dir') || 'asc';
-	var page = $('.pagination .active').find('a').data('page') || 0;
+    // find the nearest form so the button can live anywhere inside it
+    var $form     = $('button[onclick*="searchEntities"]').closest('form');
+    var sortField = $('.sort.active').data('field') || defaultSortField;
+    var sortDir   = $('.sort.active').data('dir')   || 'asc';
+    var page      = $('.pagination .active').find('a').data('page') || 0;
 
-	var url = listingUrl + '?page=' + page + '&sortField=' + sortField + '&sortDir=' + sortDir + '&search=' + encodeURIComponent(search);
+    // build query from every form element that has a name
+    const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('sortField', sortField);
+    params.append('sortDir', sortDir);
 
-	loadContent(url, targetContainer);  // Use loadContent to handle AJAX
+    $form.find(':input[name]').each(function () {
+        var name  = this.name;
+        let   value = $(this).val();
+        if (value !== null && value !== '') {          // skip empty
+            params.append(name, value);
+        }
+    });
+
+    const url = listingUrl + '?' + params.toString();
+    loadContent(url, targetContainer);
 }
+
+
+function getEntities() {
+    // Get the form
+    var $form = $('#search-form');
+
+    // Determine sorting
+    var $activeSort = $('.sort.active');
+    var sortField   = $activeSort.data('field');
+    var sortDir     = $activeSort.data('dir') || 'asc';
+
+    // Determine current page
+    var page = $('.pagination .active').find('a').data('page') || 0;
+
+    // Build query string
+    const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('sortField', sortField);
+    params.append('sortDir', sortDir);
+
+    // Append form inputs
+    $form.find(':input[name]').each(function () {
+        var name  = this.name;
+        var value = $(this).val();
+        if (value !== null && value !== '') {
+            params.append(name, value);
+        }
+    });
+
+    return params.toString(); // returns like: "page=0&sortField=desigId&sortDir=asc&level=COUNTRY"
+}
+
+
+
+
 
 
 function filterReports(listingUrl, targetContainer, defaultSortField) {
@@ -407,6 +463,23 @@ function loadContent(url, targetSelector) {
 		}*/
 	});
 }
+
+
+
+function showAll(listingUrl, targetContainer, defaultSortField) {
+  // Clear all input fields
+  document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], textarea').forEach(el => el.value = '');
+
+  // Clear all checkboxes and radios
+  document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+
+  // Reset all select elements
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+
+  // Call the searchEntities function
+  searchEntities(listingUrl, targetContainer, defaultSortField);
+}
+
 
 function closeNestedModalOnly() {
 	const nestedModal = bootstrap.Modal.getInstance('#nestedModal');

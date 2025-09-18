@@ -45,7 +45,7 @@ public class HomeController {
 
         if (principal.getUserType() != null 
                 && principal.getUserType().name().equalsIgnoreCase("MEMBER")) {
-            model.addAttribute("content", "fragments/admin/users/profile/profile");
+            //model.addAttribute("content", "fragments/admin/users/profile/profile");
         } else {
             model.addAttribute("content", "fragments/manage/officials/profile/profile-view");
         }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.service.MisDesignationService;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.util.XorMaskHelper;
 
@@ -31,32 +32,49 @@ public class DesignationController extends BaseController<DesignationDTO, MisDes
 
     /** List + mask IDs */
     @GetMapping("/list")
-    public String listDesignations(@RequestParam(defaultValue = "0") int page,
-		            @RequestParam(defaultValue = "10") int size,
-		            @RequestParam(defaultValue = "desigId") String sortField,
-		            @RequestParam(defaultValue = "asc") String sortDir,
-		            @RequestParam(required = false) String search,
-		            Model model) {
-		
-		Pageable pageable = PageRequest.of(page, size,
-		Sort.by(Sort.Direction.fromString(sortDir), sortField));
-		
-		Page<DesignationDTO> desigPage = service.findAllPaginate(pageable, search);
-		
-		// Pass DTOs as-is (real IDs)
-		setupPagination(model, desigPage, sortField, sortDir);
-		
-		// Add attributes needed for running number and template
-		model.addAttribute("currentPage", page);
-		model.addAttribute("size", size);
-		model.addAttribute("items", desigPage.getContent());
-		model.addAttribute("totalCount", desigPage.getTotalElements());
-		model.addAttribute("search", search);
-		model.addAttribute("pageTitle", "Designation List");
-		model.addAttribute("pageUrl", "/designations");
-		
-		return "fragments/admin/designations/list";
-		}
+    public String listDesignations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "desigId") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Node.Type level,   // <-- enum directly
+            @RequestParam(required = false) Short type,        // <-- Short directly
+            Model model) {
+    	
+    	
+    	if (sortField == null || sortField.isEmpty() || "undefined".equals(sortField)) {
+    	    sortField = "desigId";
+    	}
+
+        Pageable pageable = PageRequest.of(page, size,
+            Sort.by(Sort.Direction.fromString(sortDir), sortField));
+
+        Page<DesignationDTO> desigPage =
+            service.findAllPaginate(pageable, code, name, level, type);
+
+        setupPagination(model, desigPage, sortField, sortDir);
+
+        model.addAttribute("currentPage", page);
+        model.addAttribute("size", size);
+        model.addAttribute("items", desigPage.getContent());
+        model.addAttribute("totalCount", desigPage.getTotalElements());
+
+        
+        Map<String,String> paramx = new HashMap<>();
+        paramx.put("code",  code);
+        paramx.put("name",  name);
+        paramx.put("level", level  != null ? level.name()    : "");
+        paramx.put("type",  type   != null ? type.toString() : "");
+        model.addAttribute("paramx", paramx);
+        
+        model.addAttribute("pageTitle", "Designation List");
+        model.addAttribute("pageUrl", "/designations");
+
+        return "fragments/admin/designations/list";
+    }
+
 
 
 
@@ -71,15 +89,20 @@ public class DesignationController extends BaseController<DesignationDTO, MisDes
     /** Save new */
     @PostMapping("/add")
     @ResponseBody
+    
     public ResponseEntity<Map<String,Object>> add(@Valid @ModelAttribute DesignationDTO dto,
-                                                  BindingResult result) {
+                                                  BindingResult result,
+                                                  @RequestParam(name = "pageParams", required = false) String pageParams) {
+
         Map<String,Object> extra = new HashMap<>();
-        extra.put("loadnext", "designations");
+        extra.put("loadnext", "designations?" + (pageParams != null ? pageParams : ""));
+
         return handleRequest(result,
-                () -> service.save(dto),
-                "Designation added successfully",
-                extra);
+                             () -> service.save(dto),
+                             "Designation added successfully",
+                             extra);
     }
+
 
     /** Edit form – unmask ID before service call */
     @GetMapping("/edit/{maskedId}")
@@ -97,10 +120,11 @@ public class DesignationController extends BaseController<DesignationDTO, MisDes
     @ResponseBody
     public ResponseEntity<Map<String,Object>> update(@PathVariable Long maskedId,
                                                      @Valid @ModelAttribute DesignationDTO dto,
-                                                     BindingResult result) {
+                                                     BindingResult result,@RequestParam(name = "pageParams", required = false) String pageParams) {
+
         Long realId = XorMaskHelper.unmask(maskedId);
         Map<String,Object> extra = new HashMap<>();
-        extra.put("loadnext", "designations");
+        extra.put("loadnext", "designations?" + (pageParams != null ? pageParams : ""));
         return handleRequest(result,
                 () -> service.update(realId, dto),
                 "Designation updated successfully",

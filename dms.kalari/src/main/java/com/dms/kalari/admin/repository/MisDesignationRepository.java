@@ -23,12 +23,21 @@ public interface MisDesignationRepository extends BaseRepository<MisDesignation,
     // Find all designations that are not deleted
     List<MisDesignation> findAllByDeletedFalse();
 
-    @Query("SELECT md FROM MisDesignation md " +
-    	       "WHERE md.deleted = false " +
-    	       "AND (LOWER(md.desigName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-    	       "OR LOWER(md.desigCode) LIKE LOWER(CONCAT('%', :search, '%')) " +
-    	       "OR STR(md.desigLevel) LIKE CONCAT('%', :search, '%'))")
-    	Page<MisDesignation> findAllNotDeleted(@Param("search") String search, Pageable pageable);
+    @Query("""
+    	       SELECT md FROM MisDesignation md
+    	       WHERE md.deleted = false
+    	         AND (:code IS NULL OR :code = '' OR LOWER(md.desigCode) LIKE LOWER(CONCAT('%', :code, '%')))
+    	         AND (:name IS NULL OR :name = '' OR LOWER(md.desigName) LIKE LOWER(CONCAT('%', :name, '%')))
+    	         AND (:level IS NULL OR md.desigLevel = :level)
+    	         AND (:type IS NULL OR md.desigType = :type)
+    	       """)
+    	Page<MisDesignation> findAllNotDeleted(@Param("code")  String code,
+    	                                       @Param("name")  String name,
+    	                                       @Param("level") Node.Type level,
+    	                                       @Param("type")  Short type,
+    	                                       Pageable pageable);
+
+
  
     List<MisDesignation> findByDeletedFalseAndDesigType(Short desigType);
     

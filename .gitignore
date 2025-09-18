@@ -6,3 +6,5 @@ tenant-service/target/
 dms.kalari/target/
 
 dms.kalari/uploads/
+
+dms.kalari/.classpath

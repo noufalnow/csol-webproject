@@ -24,99 +24,100 @@ import java.util.stream.Collectors;
 @Service
 public class MisDesignationService implements BaseService<DesignationDTO> {
 
-    private final MisDesignationRepository misDesignationRepository;
-    private final MisDesignationMapper misDesignationMapper;
+	private final MisDesignationRepository misDesignationRepository;
+	private final MisDesignationMapper misDesignationMapper;
 
-    @Autowired
-    public MisDesignationService(MisDesignationRepository misDesignationRepository, MisDesignationMapper misDesignationMapper) {
-        this.misDesignationRepository = misDesignationRepository;
-        this.misDesignationMapper = misDesignationMapper;
-    }
+	@Autowired
+	public MisDesignationService(MisDesignationRepository misDesignationRepository,
+			MisDesignationMapper misDesignationMapper) {
+		this.misDesignationRepository = misDesignationRepository;
+		this.misDesignationMapper = misDesignationMapper;
+	}
 
-    @Override
-    @Transactional
-    public DesignationDTO update(Long desigId, DesignationDTO designationDTO) {
-        MisDesignation existingDesignation = misDesignationRepository.findById(desigId)
-            .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", desigId));
+	@Override
+	@Transactional
+	public DesignationDTO update(Long desigId, DesignationDTO designationDTO) {
+		MisDesignation existingDesignation = misDesignationRepository.findById(desigId)
+				.orElseThrow(() -> new ResourceNotFoundException("MisDesignation", desigId));
 
-        existingDesignation.setDesigCode(designationDTO.getDesigCode());
-        existingDesignation.setDesigName(designationDTO.getDesigName());
-        existingDesignation.setDesigLevel(designationDTO.getDesigLevel());
-        //existingDesignation.setDesigLevel(designationDTO.getDesigLevel().name());
-        existingDesignation.setDesigType(designationDTO.getDesigType());
-        existingDesignation.setTModified(LocalDateTime.now());  // <-- add this
+		existingDesignation.setDesigCode(designationDTO.getDesigCode());
+		existingDesignation.setDesigName(designationDTO.getDesigName());
+		existingDesignation.setDesigLevel(designationDTO.getDesigLevel());
+		// existingDesignation.setDesigLevel(designationDTO.getDesigLevel().name());
+		existingDesignation.setDesigType(designationDTO.getDesigType());
+		existingDesignation.setTModified(LocalDateTime.now()); // <-- add this
 
-        MisDesignation updatedDesignation = misDesignationRepository.save(existingDesignation);
-        misDesignationRepository.flush();  // force SQL execution
+		MisDesignation updatedDesignation = misDesignationRepository.save(existingDesignation);
+		misDesignationRepository.flush(); // force SQL execution
 
-        // Print or log the updated entity
-        System.out.println("Updated Designation: " + updatedDesignation);
+		// Print or log the updated entity
+		System.out.println("Updated Designation: " + updatedDesignation);
 
-        return misDesignationMapper.toDTO(updatedDesignation);
+		return misDesignationMapper.toDTO(updatedDesignation);
 
-    }
+	}
 
-    // Fetch all designations that are not deleted
-    @Override
-    public List<DesignationDTO> findAll() {
-        return misDesignationRepository.findAllByDeletedFalse().stream()
-                .map(misDesignationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    public List<DesignationDTO> findAllByType(Short type) {
-        return misDesignationRepository.findByDeletedFalseAndDesigType(type).stream()
-                .map(misDesignationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    
-    public List<DesignationDTO> findAllByDesigNodeLevel(Node.Type type) {
-        return misDesignationRepository.findByDeletedFalseAndDesigLevel(type).stream()
-                .map(misDesignationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    public List<DesignationDTO> findAllByDesigNodeLevelAndType(Node.Type type,Short desigType) {
-        return misDesignationRepository.findByDeletedFalseAndDesigLevelAndDesigType(type, desigType).stream()
-                .map(misDesignationMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    
-    
+	// Fetch all designations that are not deleted
+	@Override
+	public List<DesignationDTO> findAll() {
+		return misDesignationRepository.findAllByDeletedFalse().stream().map(misDesignationMapper::toDTO)
+				.collect(Collectors.toList());
+	}
 
-    @Override
-    public DesignationDTO findById(Long desigId) {
-        return misDesignationRepository.findById(desigId)
-                .map(misDesignationMapper::toDTO)
-                .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", desigId));
-    }
+	public List<DesignationDTO> findAllByType(Short type) {
+		return misDesignationRepository.findByDeletedFalseAndDesigType(type).stream().map(misDesignationMapper::toDTO)
+				.collect(Collectors.toList());
+	}
 
-    @Override
-    public DesignationDTO save(DesignationDTO designationDTO) {
-        MisDesignation misDesignation = misDesignationMapper.toEntity(designationDTO);
-        MisDesignation savedDesignation = misDesignationRepository.save(misDesignation);
-        return misDesignationMapper.toDTO(savedDesignation);
-    }
+	public List<DesignationDTO> findAllByDesigNodeLevel(Node.Type type) {
+		return misDesignationRepository.findByDeletedFalseAndDesigLevel(type).stream().map(misDesignationMapper::toDTO)
+				.collect(Collectors.toList());
+	}
 
-    @Override
-    public void softDeleteById(Long desigId) {
-        Optional<MisDesignation> designationOptional = misDesignationRepository.findById(desigId);
-        if (designationOptional.isPresent()) {
-            MisDesignation designation = designationOptional.get();
-            designation.setDeleted(true);
-            designation.setTDeleted(java.time.LocalDateTime.now());
-            misDesignationRepository.save(designation);
-        } else {
-            throw new ResourceNotFoundException("MisDesignation", desigId);
-        }
-    }
-    
-    // Fetch paginated results of designations that are not deleted and allow search functionality
-    @Override
-    public Page<DesignationDTO> findAllPaginate(Pageable pageable, String search) {
-        return misDesignationRepository.findAllNotDeleted(search == null ? "" : search, pageable)
-                .map(misDesignationMapper::toDTO);
-    }
+	public List<DesignationDTO> findAllByDesigNodeLevelAndType(Node.Type type, Short desigType) {
+		return misDesignationRepository.findByDeletedFalseAndDesigLevelAndDesigType(type, desigType).stream()
+				.map(misDesignationMapper::toDTO).collect(Collectors.toList());
+	}
+
+	@Override
+	public DesignationDTO findById(Long desigId) {
+		return misDesignationRepository.findById(desigId).map(misDesignationMapper::toDTO)
+				.orElseThrow(() -> new ResourceNotFoundException("MisDesignation", desigId));
+	}
+
+	@Override
+	public DesignationDTO save(DesignationDTO designationDTO) {
+		MisDesignation misDesignation = misDesignationMapper.toEntity(designationDTO);
+		MisDesignation savedDesignation = misDesignationRepository.save(misDesignation);
+		return misDesignationMapper.toDTO(savedDesignation);
+	}
+
+	@Override
+	public void softDeleteById(Long desigId) {
+		Optional<MisDesignation> designationOptional = misDesignationRepository.findById(desigId);
+		if (designationOptional.isPresent()) {
+			MisDesignation designation = designationOptional.get();
+			designation.setDeleted(true);
+			designation.setTDeleted(java.time.LocalDateTime.now());
+			misDesignationRepository.save(designation);
+		} else {
+			throw new ResourceNotFoundException("MisDesignation", desigId);
+		}
+	}
+
+	// Fetch paginated results of designations that are not deleted and allow search
+	// functionality
+	@Override
+	public Page<DesignationDTO> findAllPaginate(Pageable pageable, String search) {
+		return null;
+	}
+
+	public Page<DesignationDTO> findAllPaginate(Pageable pageable, String code, String name, Node.Type level,
+			Short type) {
+		code = (code != null && !code.trim().isEmpty()) ? code.trim() : null;
+		name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+		return misDesignationRepository.findAllNotDeleted(code, name, level, type, pageable)
+				.map(misDesignationMapper::toDTO);
+	}
+
 }

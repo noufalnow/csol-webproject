@@ -153,8 +153,8 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    }
 		
 		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "branch_nodelist/"  + mParentId);
-		additionalData.put("target", "users_target");
+		additionalData.put("loadnext", "branch_tree");
+		additionalData.put("target", "content");
 		
 		//NodeDTO node = service.findById(parentId);
 		nodeDTO.setNodeType(service.getNextNodeType(parentId));
