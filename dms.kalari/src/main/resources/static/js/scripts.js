@@ -8,7 +8,7 @@ $(document).ready(function() {
 		var page = $(this).data('page');
 		var entity = $(this).data('entity') || 'users';
 		var container = $(this).data('target') || '#content';
-		var sortField = $('.sort.active').data('field') || 'userId';
+		var sortField = $('.sort.active').data('field') || defaultSortField;
 		var sortDir = $('.sort.active').data('dir') || 'asc';
 		var search = encodeURIComponent($('input[name="search"]').val() || '');
 
@@ -25,7 +25,7 @@ $(document).ready(function() {
 
 	// Handle search input change with AJAX
 	/*$(document).on('input', 'input[name="search"]', function () {
-		searchEntities('/users', '#content', 'userId');
+		searchEntities('/users', '#content', defaultSortField);
 	});*/
 
 	// Handle AJAX link clicks
@@ -312,18 +312,37 @@ function filterReports(listingUrl, targetContainer, defaultSortField) {
 }
 
 function sortEntities(sortField) {
-	var targetContainer = '#content'; // Container where the content will be loaded
-	var defaultSortField = 'userId'; // Default sort field
+    const targetContainer = '#content';
 
-	var sortDir = $('.sort[data-field="' + sortField + '"]').data('dir') === 'asc' ? 'desc' : 'asc';  // Toggle sort direction
+    const $link = $('a.sort[data-field="' + sortField + '"]');
 
-	// Update the sorting state in the DOM
-	$('.sort').removeClass('active').data('dir', 'asc'); // Reset all to 'asc'
-	$('.sort[data-field="' + sortField + '"]').addClass('active').data('dir', sortDir);
+    // Toggle direction based on current attribute
+    const sortDir = $link.attr('data-dir') === 'asc' ? 'desc' : 'asc';
+    $link.attr('data-dir', sortDir);
 
-	// Trigger the search with updated sort direction and field
-	searchEntities(listingUrl, targetContainer, defaultSortField);
+    // Reset others
+    $('a.sort').not($link).each(function () {
+        $(this)
+            .removeClass('active')
+            .attr('data-dir', 'asc')
+            .find('i')
+            .removeClass('fa-sort-up fa-sort-down')
+            .addClass('fa-sort');
+    });
+
+    // Mark this link active
+    $link.addClass('active');
+
+    // Update icon for this column
+    const $icon = $link.find('i');
+    $icon.removeClass('fa-sort fa-sort-up fa-sort-down');
+    $icon.addClass(sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+
+    // Trigger your search / reload
+    searchEntities(listingUrl, targetContainer, sortField, sortDir);
 }
+
+
 
 
 function loadContent(url, targetSelector) {

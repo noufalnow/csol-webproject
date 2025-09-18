@@ -66,32 +66,58 @@
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
-                        <tr>
-                            <th scope="col" style="width: 50px;">
-                                <a href="javascript:void(0);"
-                                   class="text-decoration-none d-inline-flex align-items-center"
-                                   data-field="desigId"
-                                   th:attr="data-dir=${sortStatus['desigId'] ?: 'asc'}"
-                                   onclick="sortEntities('desigId')">
-                                    <span class="me-1">#</span>
-                                    <i class="fas"
-                                       th:classappend="${sortField == 'desigId' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
-                                </a>
-                            </th>
-                            <th scope="col"><a href="javascript:void(0);" data-field="desigCode" th:attr="data-dir=${sortStatus['desigCode'] ?: 'asc'}" onclick="sortEntities('desigCode')">
-                                Code <i class="fas ms-1" th:classappend="${sortField == 'desigCode' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
-                            </a></th>
-                            <th scope="col"><a href="javascript:void(0);" data-field="desigName" th:attr="data-dir=${sortStatus['desigName'] ?: 'asc'}" onclick="sortEntities('desigName')">
-                                Name <i class="fas ms-1" th:classappend="${sortField == 'desigName' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
-                            </a></th>
-                            <th scope="col" class="d-none d-md-table-cell"><a href="javascript:void(0);" data-field="desigLevel" th:attr="data-dir=${sortStatus['desigLevel'] ?: 'asc'}" onclick="sortEntities('desigLevel')">
-                                Level <i class="fas ms-1" th:classappend="${sortField == 'desigLevel' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
-                            </a></th>
-                            <th scope="col"><a href="javascript:void(0);" data-field="desigType" th:attr="data-dir=${sortStatus['desigType'] ?: 'asc'}" onclick="sortEntities('desigType')">
-                                Type <i class="fas ms-1" th:classappend="${sortField == 'desigType' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
-                            </a></th>
-                            <th scope="col" class="text-center" style="width: 70px;">Actions</th>
-                        </tr>
+<tr>
+    <th scope="col" style="width:50px;">
+        <a href="javascript:void(0);"
+           class="sort text-decoration-none d-inline-flex align-items-center"
+           data-field="desigId"
+           th:attr="data-dir=${sortStatus['desigId'] ?: 'asc'}"
+           onclick="sortEntities('desigId')">
+            <span class="me-1">#</span>
+            <i class="fas"
+               th:classappend="${sortField == 'desigId' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
+        </a>
+    </th>
+
+    <th scope="col">
+        <a href="javascript:void(0);" class="sort" data-field="desigCode"
+           th:attr="data-dir=${sortStatus['desigCode'] ?: 'asc'}"
+           onclick="sortEntities('desigCode')">
+            Code <i class="fas ms-1"
+                    th:classappend="${sortField == 'desigCode' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
+        </a>
+    </th>
+
+    <th scope="col">
+        <a href="javascript:void(0);" class="sort" data-field="desigName"
+           th:attr="data-dir=${sortStatus['desigName'] ?: 'asc'}"
+           onclick="sortEntities('desigName')">
+            Name <i class="fas ms-1"
+                     th:classappend="${sortField == 'desigName' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
+        </a>
+    </th>
+
+    <th scope="col" class="d-none d-md-table-cell">
+        <a href="javascript:void(0);" class="sort" data-field="desigLevel"
+           th:attr="data-dir=${sortStatus['desigLevel'] ?: 'asc'}"
+           onclick="sortEntities('desigLevel')">
+            Level <i class="fas ms-1"
+                      th:classappend="${sortField == 'desigLevel' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
+        </a>
+    </th>
+
+    <th scope="col">
+        <a href="javascript:void(0);" class="sort" data-field="desigType"
+           th:attr="data-dir=${sortStatus['desigType'] ?: 'asc'}"
+           onclick="sortEntities('desigType')">
+            Type <i class="fas ms-1"
+                     th:classappend="${sortField == 'desigType' ? (sortDir == 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort'}"></i>
+        </a>
+    </th>
+
+    <th scope="col" class="text-center" style="width:70px;">Actions</th>
+</tr>
+
                     </thead>
                     <tbody>
                         <tr th:each="d, iterStat : ${items}">
@@ -232,6 +258,7 @@
 <script>
 	// base listing URL - used by your existing searchEntities/sortEntities functions
 	var listingUrl = '/designations';
+	var defaultSortField = 'desigId';
 	// convenience: ensure the search form submits via your search function on Enter
 	document.addEventListener('DOMContentLoaded', function() {
 		var sf = document.getElementById('search-form');

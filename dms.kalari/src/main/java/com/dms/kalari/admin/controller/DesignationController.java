@@ -56,6 +56,8 @@ public class DesignationController extends BaseController<DesignationDTO, MisDes
 
         setupPagination(model, desigPage, sortField, sortDir);
 
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
         model.addAttribute("currentPage", page);
         model.addAttribute("size", size);
         model.addAttribute("items", desigPage.getContent());
