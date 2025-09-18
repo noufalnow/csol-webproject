@@ -267,11 +267,11 @@ function getEntities() {
     var sortDir     = $activeSort.data('dir') || 'asc';
 
     // Determine current page
-    var page = $('.pagination .active').find('a').data('page') || 0;
+    var page = parseInt($('.pagination .active .page-link').text(), 10) || 0;
 
     // Build query string
     const params = new URLSearchParams();
-    params.append('page', page);
+    params.append('page', page-1);
     params.append('sortField', sortField);
     params.append('sortDir', sortDir);
 
