@@ -1,7 +1,6 @@
 pipeline {
     agent any
     
-    
     tools {
         git 'Default'
     }
@@ -9,7 +8,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main',
+                     url: 'https://github.com/noufalnow/csol-webproject.git',
+                     credentialsId: '' // Leave empty if public repo, otherwise use your credentials ID
             }
         }
 
@@ -25,7 +26,6 @@ pipeline {
             }
         }
 
-
         stage('Archive Artifact') {
             steps {
                 dir('dms.kalari') {
@@ -33,17 +33,5 @@ pipeline {
                 }
             }
         }
-
-        // Optional testing
-        /*
-        stage('Test') {
-            steps {
-                dir('dms.kalari') {
-                    sh 'mvn test'
-                }
-            }
-        }
-        */
     }
 }
-
