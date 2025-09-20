@@ -1,13 +1,49 @@
 pipeline {
     agent any
+    
+    
+    tools {
+        git 'Default'
+    }
+
     stages {
-        stage('Check Tools') {
+        stage('Checkout') {
             steps {
-                sh 'which git'
-                sh 'git --version'
-                sh 'mvn --version'
+                checkout scm
             }
         }
+
+        stage('Build & Deploy') {
+            steps {
+                dir('dms.kalari') {
+                    sh 'sudo systemctl stop kalari-app || true'
+                    sh 'mvn clean package -DskipTests'
+                    sh 'sudo systemctl start kalari-app'
+                    sh 'sleep 5'
+                    sh 'sudo systemctl status kalari-app'
+                }
+            }
+        }
+
+
+        stage('Archive Artifact') {
+            steps {
+                dir('dms.kalari') {
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+
+        // Optional testing
+        /*
+        stage('Test') {
+            steps {
+                dir('dms.kalari') {
+                    sh 'mvn test'
+                }
+            }
+        }
+        */
     }
 }
 
