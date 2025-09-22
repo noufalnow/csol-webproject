@@ -7,8 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.dms.kalari.events.service.EventService;
 import com.dms.kalari.security.CustomUserPrincipal;
-import com.dms.kalari.service.EventService;
 
 @Controller
 public class HomeController {

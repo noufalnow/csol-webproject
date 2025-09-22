@@ -68,7 +68,7 @@
                                 <li sec:authorize="hasAuthority('PRIV_designations')">
 								    <a class="dropdown-item ajax-link" th:href="@{/designations}">DESIGNATIONS</a>
 								</li>
-                                <li sec:authorize="hasAuthority('PRIV_masters')"><a class="dropdown-item ajax-link" th:href="@{/event-items/html}">ITEMS</a></li>
+                                <li sec:authorize="hasAuthority('PRIV_items')"><a class="dropdown-item ajax-link" th:href="@{/items}">EVENT ITEMS</a></li>
                             </ul>
                         </li>
 
@@ -242,6 +242,40 @@
 	}
     
 </style>
+
+
+<script>
+(function () {
+  // Prompt when user presses F5 or Ctrl/⌘+R
+  document.addEventListener('keydown', function (e) {
+    if (
+      e.key === 'F5' ||
+      (e.ctrlKey && e.key.toLowerCase() === 'r') ||
+      (e.metaKey && e.key.toLowerCase() === 'r')
+    ) {
+      e.preventDefault();       // stop the browser's default reload
+      e.stopPropagation();
+
+      if (confirm('Are you sure you want to reload the application?')) {
+        location.reload();      // reload only if user confirmed
+      }
+    }
+  });
+
+  // Handle refresh/close via toolbar or tab close
+  window.addEventListener('beforeunload', function (e) {
+    // Show a confirm dialog
+    const shouldLeave = confirm('Do you really want to leave or reload?');
+    if (!shouldLeave) {
+      // Cancel the event (stay on page)
+      e.preventDefault();
+      e.returnValue = ''; // Some browsers need this line
+    }
+    // If user clicked OK, the page will reload/close normally
+  });
+})();
+</script>
+
 
 
 

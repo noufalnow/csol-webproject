@@ -1,5 +1,5 @@
 <!-- fragments/add_event_item.html -->
-<div th:fragment="content">
+<div th:fragment="content" class="container-fluid">
     <!-- Modal Header -->
     <div class="modal-header">
         <h5 class="modal-title" id="addEventItemModalLabel" th:text="${pageTitle}">Add Event Item</h5>
@@ -8,74 +8,78 @@
 
     <!-- Modal Body -->
     <div class="modal-body">
-        <form id="addEventItemForm" action="/event-items/html/add" method="post" th:object="${eventItem}">
-            <div class="row mb-2">
-                <div class="col-12">
+        <form id="addEventItemForm"
+              th:action="@{/items_add}"
+              method="post"
+              th:object="${eventItem}"
+              enctype="multipart/form-data">
+
+            <!-- CSRF Token -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="row g-3 mb-2">
+                <!-- Name -->
+                <div class="col-12 col-lg-6">
                     <label for="evitem_name" class="form-label">Name</label>
                     <input type="text"
                            id="evitem_name"
-                           name="evitemName"
                            th:field="*{evitemName}"
                            class="form-control"
-                           required>
+                           placeholder="Enter item name"
+                           required />
                 </div>
-            </div>
 
-            <div class="row mb-2">
-                <div class="col-12">
+                <!-- Code -->
+                <div class="col-12 col-lg-6">
                     <label for="evitem_code" class="form-label">Code</label>
                     <input type="text"
                            id="evitem_code"
-                           name="evitemCode"
                            th:field="*{evitemCode}"
                            class="form-control"
-                           required>
+                           placeholder="Enter item code"
+                           required />
                 </div>
             </div>
 
-            <div class="row mb-2">
-                <div class="col-12">
+            <div class="row g-3 mb-2">
+                <!-- Description -->
+                <div class="col-12 col-lg-6">
                     <label for="evitem_description" class="form-label">Description</label>
                     <textarea id="evitem_description"
-                              name="evitemDescription"
                               th:field="*{evitemDescription}"
                               class="form-control"
-                              rows="3"></textarea>
+                              rows="3"
+                              placeholder="Enter description"></textarea>
                 </div>
-            </div>
 
-            <div class="row mb-2">
-                <div class="col-12">
+                <!-- Criteria -->
+                <div class="col-12 col-lg-6">
                     <label for="evitem_criteria" class="form-label">Criteria</label>
                     <textarea id="evitem_criteria"
-                              name="evitemCriteria"
                               th:field="*{evitemCriteria}"
                               class="form-control"
-                              rows="2"></textarea>
+                              rows="3"
+                              placeholder="Enter criteria"></textarea>
                 </div>
             </div>
 
-            <div id="error-messages" class="text-danger"></div>
+            <div id="error-messages" class="text-danger small mt-1"></div>
         </form>
     </div>
 
     <!-- Modal Footer -->
     <div class="modal-footer">
-        <button type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-            Cancel
-        </button>
-        <button type="button"
-                class="btn btn-primary"
-                onclick="submitHtmlForm('addEventItemForm')">
-            Add Event Item
-        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitHtmlForm('addEventItemForm')">Add Event Item</button>
     </div>
 </div>
 
 <style>
-    form {
-        max-width: 100%;
-    }
+/* Match the style of designation add modal */
+#addEventItemForm { max-width: 100%; }
+.modal-dialog { max-width: 60% !important; }
+@media (max-width: 768px) {
+    .modal-dialog { max-width: 100% !important; margin: 10px; }
+}
+.modal-body { max-height: 70vh; overflow-y: auto; }
 </style>
