@@ -70,12 +70,15 @@ public interface AuthUserPrivilegeRepository extends JpaRepository<AuthUserPrivi
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM AuthUserPrivilege up WHERE up.roleId = :roleId AND up.moduleId = :moduleId " +
-           "AND (up.roleId <> :excludeRoleId OR up.appPage.appPageId <> :excludePageId)")
-    void deleteByRoleIdAndModuleIdWithExclusions(@Param("roleId") Long roleId, 
-                                                @Param("moduleId") Long moduleId,
-                                                @Param("excludeRoleId") Long excludeRoleId,
-                                                @Param("excludePageId") Long excludePageId);
+    @Query("DELETE FROM AuthUserPrivilege up " +
+           "WHERE up.roleId = :roleId " +
+           "AND up.moduleId = :moduleId " +
+           "AND (up.roleId <> :excludeRoleId OR up.moduleId NOT IN :excludedModuleIds)")
+    void deleteByRoleIdAndModuleIdWithExclusions(@Param("roleId") Long roleId,
+                                                 @Param("moduleId") Long moduleId,
+                                                 @Param("excludeRoleId") Long excludeRoleId,
+                                                 @Param("excludedModuleIds") List<Long> excludedModuleIds);
+
 
     // Get module resources (pages and operations)
     /*@Query("""

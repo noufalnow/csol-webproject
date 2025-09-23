@@ -68,6 +68,19 @@
   </div>
 </div>
 
+<style>
+#addDesignationForm {
+  max-width: 100%;
+}
+.modal-dialog { max-width: 60% !important; }
+@media (max-width: 768px) {
+  .modal-dialog { max-width: 100% !important; margin: 10px; }
+  .preview-box { width: 120px; height: 120px; }
+}
+.modal-body { max-height: 70vh; overflow-y: auto; }
+</style>
+
+
 <script>
   function updateTypeOptions() {
     const level = document.getElementById('desigLevel').value;
@@ -92,15 +105,3 @@
   updateTypeOptions();
 </script>
 
-
-<style>
-#addDesignationForm {
-  max-width: 100%;
-}
-.modal-dialog { max-width: 60% !important; }
-@media (max-width: 768px) {
-  .modal-dialog { max-width: 100% !important; margin: 10px; }
-  .preview-box { width: 120px; height: 120px; }
-}
-.modal-body { max-height: 70vh; overflow-y: auto; }
-</style>

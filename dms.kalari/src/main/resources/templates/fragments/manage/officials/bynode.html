@@ -23,7 +23,7 @@
      class="form-check form-check-inline">
     <input class="form-check-input" type="radio" name="choice"
            id="option1" value="nodes"
-           th:onchange="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
+           th:onclick="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
     <label class="form-check-label" for="option1" style="cursor: pointer;">Affiliations</label>
 </div>
 
@@ -31,7 +31,7 @@
      class="form-check form-check-inline">
     <input class="form-check-input" type="radio" name="choice"
            id="option2" value="officials" checked
-           th:onchange="|loadContent('officials_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+           th:onclick="|loadContent('officials_bynode/${parentId}', '#users_target'); clearTreeForm()|">
     <label class="form-check-label" for="option2" style="cursor: pointer;">Officials</label>
 </div>
 
@@ -39,15 +39,15 @@
      class="form-check form-check-inline">
     <input class="form-check-input" type="radio" name="choice"
            id="option3" value="members"
-           th:onchange="|loadContent('members_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+           th:onclick="|loadContent('members_bynode/${parentId}', '#users_target'); clearTreeForm()|">
     <label class="form-check-label" for="option3" style="cursor: pointer;">Participants</label>
 </div>
 
-<div th:if="${#authorization.expression('hasAuthority(''PRIV_events_bynode'')')}"
+<div th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventbynode'')')}"
      class="form-check form-check-inline">
     <input class="form-check-input" type="radio" name="choice"
            id="option4" value="events"
-           th:onchange="|loadContent('events_byhost/${parentId}', '#users_target'); clearTreeForm()|">
+           th:onclick="|loadContent('champ_eventbynode/${parentId}', '#users_target'); clearTreeForm()|">
     <label class="form-check-label" for="option4" style="cursor: pointer;">Events</label>
 </div>
 

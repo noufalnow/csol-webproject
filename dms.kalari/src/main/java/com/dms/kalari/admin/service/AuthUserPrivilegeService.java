@@ -117,7 +117,7 @@ import java.util.stream.Collectors;
     public void updatePrivileges(Long roleId, Long moduleId, List<Object[]> pageOperationPairs) {
 
         // delete existing privileges for this role and module
-        privRepo.deleteByRoleIdAndModuleIdWithExclusions(roleId, moduleId, 1L, 1L);
+        privRepo.deleteByRoleIdAndModuleIdWithExclusions(roleId, moduleId, 1L,  Arrays.asList(1L, 6L));
         
         
         System.out.println("After unmasking and Outside map - roleId: " + roleId + ", moduleId: " + moduleId);

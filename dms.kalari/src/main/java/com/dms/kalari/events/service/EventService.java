@@ -109,7 +109,10 @@ public class EventService implements BaseService<EventDTO> {
 	        dto.setJuniorEventItems(categoryItems);
 	    } else if (category == EventItemMap.Category.SENIOR) {
 	        dto.setSeniorEventItems(categoryItems);
+	    } else if (category == EventItemMap.Category.SUBJUNIOR) {
+	        dto.setSubjuniorEventItems(categoryItems);
 	    }
+	    
 
 	    return dto;
 	}

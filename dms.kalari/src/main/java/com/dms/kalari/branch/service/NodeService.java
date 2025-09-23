@@ -161,6 +161,14 @@ public class NodeService implements BaseService<NodeDTO> {
 			throw new IllegalArgumentException("Root node already exists");
 		}
 	}
+	
+	
+	
+	public List<Long> findAllowedNodeIds(Long parentId) {
+		return nodeRepository.findAllowedNodeIds(parentId);
+	}
+	
+	
 
 	public List<NodeDTO> findChildren(Long parentId) {
 		return nodeRepository.findByParentId(parentId).stream().map(nodeMapper::toDTO).collect(Collectors.toList());

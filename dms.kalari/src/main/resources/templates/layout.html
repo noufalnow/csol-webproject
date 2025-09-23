@@ -245,70 +245,45 @@
 
 
 <script>
-(function () {
-  const $modal = $('#dynamicModal');           
-  const modalContent = $modal.find('.modal-content');
-  let pendingAction = null; // 'reload' | 'leave'
-  let pendingHref = null;   // store link URL if navigation
-  let pendingForm = null;   // store form if submission
+(function() {
+	  const $modal = $('#dynamicModal');
+	  const modalContent = $modal.find('.modal-content');
 
-  // Track unsaved changes
-  let hasUnsavedChanges = false;
-  document.querySelectorAll('input, textarea, select').forEach(el => {
-    el.addEventListener('input', () => hasUnsavedChanges = true);
-  });
+	  // Show confirmation modal
+	  function showConfirmModal(message, callback) {
+	    const html = `
+	      <div class="modal-header">
+	        <h5 class="modal-title">Confirm Action</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body">${message}</div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+	        <button type="button" id="confirmBtn" class="btn btn-primary">Yes, continue</button>
+	      </div>
+	    `;
+	    modalContent.html(html);
 
-  function showConfirmModal(action, callback) {
-    pendingAction = action;
+	    const bsModal = bootstrap.Modal.getInstance($modal[0]) || new bootstrap.Modal($modal[0]);
+	    bsModal.show();
 
-    const message =
-      action === 'reload'
-        ? 'Are you sure you want to reload the application?'
-        : 'Do you really want to leave this page?';
+	    $modal.find('#confirmBtn').off('click').on('click', () => {
+	      bsModal.hide();
+	      if (callback) callback();
+	    });
+	  }
 
-    const modalBodyHtml = `
-      <div class="modal-header">
-        <h5 class="modal-title">Confirm Action</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="dynamicModalBody">
-        ${message}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="confirmBtn" class="btn btn-primary">Yes, continue</button>
-      </div>
-    `;
-
-    modalContent.html(modalBodyHtml);
-
-    const bsModal =
-      bootstrap.Modal.getInstance($modal[0]) ||
-      new bootstrap.Modal($modal[0]);
-    bsModal.show();
-
-    $modal.find('#confirmBtn').off('click').on('click', () => {
-      bsModal.hide();
-      if (callback) callback();
-    });
-  }
-
-  // Intercept page reload
-  document.addEventListener('keydown', (e) => {
-    if (
-      e.key === 'F5' ||
-      e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey)
-    ) {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        showConfirmModal('reload', () => location.reload());
-      }
-    }
-  });
+	  // Intercept page reload (F5 or Ctrl+R / Cmd+R)
+	  document.addEventListener('keydown', (e) => {
+	    if (e.key === 'F5' || (e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey))) {
+	      e.preventDefault();
+	      showConfirmModal('Are you sure you want to reload this page?', () => location.reload());
+	    }
+	  });
 
 
 
-})();
+	})();
 
 
 (function() {

@@ -1,0 +1,141 @@
+<!-- fragments/event_list.html -->
+<div th:fragment="content">
+
+	<div class="container mt-1 mb-3"
+		style="padding-left: 0px !important; margin-left: 0px;">
+		<div class="d-flex justify-content-between align-items-center">
+
+			<!-- Left: Node/Section Name -->
+			<div>
+				<h4 class="mb-0 px-3 py-2 rounded"
+					style="background-color: var(--bs-gray-200); font-size: 1.1rem; font-weight: 600; color: var(--bs-dark);">
+					<label th:text="${nodeName}">Events</label>
+				</h4>
+			</div>
+
+			<!-- Right: Radio Buttons -->
+			<div class="d-flex align-items-center gap-3">
+				<input type="hidden" id="tempSelectedId" name="tempSelectedId"
+					th:value="${parentId}" />
+
+				<div
+					th:if="${nodeType != 'KALARI' and #authorization.expression('hasAuthority(''PRIV_branch_nodelist'')')}"
+					class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="choice"
+						id="option1" value="nodes"
+						th:onclick="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
+					<label class="form-check-label" for="option1"
+						style="cursor: pointer;">Affiliations</label>
+				</div>
+
+				<div
+					th:if="${#authorization.expression('hasAuthority(''PRIV_officials_bynode'')')}"
+					class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="choice"
+						id="option2" value="officials"
+						th:onclick="|loadContent('officials_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+					<label class="form-check-label" for="option2"
+						style="cursor: pointer;">Officials</label>
+				</div>
+
+				<div
+					th:if="${nodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_members_bynode'')')}"
+					class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="choice"
+						id="option3" value="members"
+						th:onclick="|loadContent('members_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+					<label class="form-check-label" for="option3"
+						style="cursor: pointer;">Participants</label>
+				</div>
+
+				<div
+					th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventbynode'')')}"
+					class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="choice"
+						id="option4" value="events" checked
+						th:onclick="|loadContent('champ_eventbynode/${parentId}', '#users_target'); clearTreeForm()|">
+					<label class="form-check-label" for="option4"
+						style="cursor: pointer;">Events</label>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h4 class="mb-0">
+			Events(<span th:text="${#lists.size(events)}"></span>)
+		</h4>
+		<a
+			th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_champ_eventadd'')')) 
+           or (isChild and #authorization.expression('hasAuthority(''PRIV_champ_eventadd_child'')'))}"
+			class="btn btn-primary ajax-link" href="javascript:void(0);"
+			th:onclick="'loadContent(\'' + @{'/champ_eventadd/' + ${parentId}} + '\', \'modal\')'">
+			<i class="fas fa-plus"></i> Add New Event
+		</a>
+
+	</div>
+	<!-- Events Table -->
+	<div class="table-responsive">
+		<table
+			class="table table-striped table-hover table-bordered align-middle">
+			<thead class="table-light">
+				<tr>
+					<th>#</th>
+					<th>Event Name</th>
+					<th>Host Type</th>
+					<th>Date</th>
+					<th>Venue</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="event, iterStat : ${events}">
+					<th scope="row" th:text="${iterStat.count}">1</th>
+					<td th:text="${event.eventName}">Event Name</td>
+					<td th:text="${event.eventHost}">Host</td>
+					<td><span
+						th:text="${#temporals.format(event.eventPeriodStart, 'MMM dd')}">Jan
+							01</span> - <span
+						th:text="${#temporals.format(event.eventPeriodEnd, 'MMM dd, yyyy')}">Jan
+							03, 2023</span></td>
+					<td th:text="${event.eventVenue}">Venue</td>
+					<td>
+						<div class="d-flex gap-1">
+							<!-- View Participants button -->
+							<button
+								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventviews'')')}"
+								th:onclick="'loadContent(\'/events/html/champ_event_participants?eventId=' + ${event.eventId} + '\', \'modal\')'"
+								class="btn btn-sm btn-outline-primary">
+								<i class="fa-solid fa-user-group"></i> View
+							</button>
+
+							<!-- Items button -->
+							<button
+								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventitems'')')}"
+								th:onclick="'loadContent(\'/champ_eventitems?eventId=' + ${event.eventId} + '\', \'modal\')'"
+								class="btn btn-sm btn-outline-primary">
+								<i class="fa-solid fa-clipboard-check"></i> Items
+							</button>
+
+
+							<a
+								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventedit'')')}"
+								class="ajax-link btn btn-sm btn-outline-secondary"
+								href="javascript:void(0);"
+								th:onclick="'loadContent(\'/champ_eventedit/' + ${xorMaskHelper.mask(event.eventId)} + '\', \'modal\')'">
+								<i class="fas fa-edit"></i> Edit
+							</a>
+						</div>
+
+					</td>
+				</tr>
+
+				<!-- Empty state -->
+				<tr th:if="${events == null or #lists.isEmpty(events)}">
+					<td colspan="6" class="text-center text-muted py-4">No events
+						found</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

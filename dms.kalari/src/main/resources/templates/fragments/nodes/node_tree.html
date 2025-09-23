@@ -281,7 +281,7 @@ function onTreeNodeClick(event, nodeEl, ltype) {
   $('#tempSelectedId').val(id);
 
   if (selectedValue === 'events') {
-    loadContent(`/events/html/byhost/${id}`, '#users_target');
+    loadContent(`/champ_eventbynode/${id}`, '#users_target');
   } 
   else if (selectedValue === 'officials') {
 	loadContent(`/officials_bynode/${id}`, '#users_target');

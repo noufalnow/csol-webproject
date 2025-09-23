@@ -68,6 +68,7 @@ public class EventDTO extends BaseDTO {
     
     private List<EventItemDTO> seniorEventItems = new ArrayList<>();
     private List<EventItemDTO> juniorEventItems = new ArrayList<>();
+    private List<EventItemDTO> subjuniorEventItems = new ArrayList<>();
     
     // Validation for date consistency
     @AssertTrue(message = "End date must be after start date")

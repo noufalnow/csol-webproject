@@ -35,6 +35,7 @@ public class EventItemMap extends BaseEntity {
 
     public enum Category {
         SENIOR,
-        JUNIOR
+        JUNIOR,
+        SUBJUNIOR
     }
 }

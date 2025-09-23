@@ -67,7 +67,6 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("parentId", parentId);
 		model.addAttribute("pageTitle", " ");
 		model.addAttribute("pageUrl", "/nodes/html");
-		model.addAttribute("breadcrumbs", service.generateBreadcrumbs(parentId));
 
 		return "fragments/nodes/list";
 	}

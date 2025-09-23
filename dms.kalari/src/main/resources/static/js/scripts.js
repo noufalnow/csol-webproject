@@ -513,14 +513,17 @@ function displayOverlay() {
     if (!document.getElementById('overlay')) {
         const overlay = document.createElement('div');
         overlay.id = 'overlay';
-        overlay.textContent = 'Loading.....';
+        
+        const loadingText = document.createElement('div');
+        loadingText.innerHTML = 'Loading<span class="loading-dots-pulse"><span>.</span><span>.</span><span>.</span></span>';
+        
         Object.assign(overlay.style, {
             position: 'fixed',
             top: '0',
             left: '0',
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(0,0,0,0.7)',
             zIndex: '2500',
             color: '#fff',
             fontSize: '40px',
@@ -528,11 +531,44 @@ function displayOverlay() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            cursor: 'wait'
+            cursor: 'wait',
+            fontFamily: 'Arial, sans-serif'
         });
+        
+        Object.assign(loadingText.style, {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2px'
+        });
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            .loading-dots-pulse span {
+                display: inline-block;
+                animation: pulse 1.4s ease-in-out infinite both;
+            }
+            
+            .loading-dots-pulse span:nth-child(2) { animation-delay: 0.2s; }
+            .loading-dots-pulse span:nth-child(3) { animation-delay: 0.4s; }
+            
+            @keyframes pulse {
+                0%, 80%, 100% { 
+                    transform: scale(0.8);
+                    opacity: 0.5;
+                }
+                40% { 
+                    transform: scale(1.2);
+                    opacity: 1;
+                }
+            }
+        `;
+        
+        document.head.appendChild(style);
+        overlay.appendChild(loadingText);
         document.body.appendChild(overlay);
     }
 }
+
 
 function removeOverlay() {
     const overlay = document.getElementById('overlay');
