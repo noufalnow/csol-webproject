@@ -505,3 +505,38 @@ function closeNestedModalOnly() {
 	$('#nestedModal').modal('hide');
 }
 
+
+
+
+// Overlay functions
+function displayOverlay() {
+    if (!document.getElementById('overlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'overlay';
+        overlay.textContent = 'Loading.....';
+        Object.assign(overlay.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: '2500',
+            color: '#fff',
+            fontSize: '40px',
+            fontWeight: 'bold',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            cursor: 'wait'
+        });
+        document.body.appendChild(overlay);
+    }
+}
+
+function removeOverlay() {
+    const overlay = document.getElementById('overlay');
+    if (overlay) document.body.removeChild(overlay);
+}
+
+

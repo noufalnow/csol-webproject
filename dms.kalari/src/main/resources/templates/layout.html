@@ -246,35 +246,95 @@
 
 <script>
 (function () {
-  // Prompt when user presses F5 or Ctrl/⌘+R
-  document.addEventListener('keydown', function (e) {
+  const $modal = $('#dynamicModal');           
+  const modalContent = $modal.find('.modal-content');
+  let pendingAction = null; // 'reload' | 'leave'
+  let pendingHref = null;   // store link URL if navigation
+  let pendingForm = null;   // store form if submission
+
+  // Track unsaved changes
+  let hasUnsavedChanges = false;
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', () => hasUnsavedChanges = true);
+  });
+
+  function showConfirmModal(action, callback) {
+    pendingAction = action;
+
+    const message =
+      action === 'reload'
+        ? 'Are you sure you want to reload the application?'
+        : 'Do you really want to leave this page?';
+
+    const modalBodyHtml = `
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="dynamicModalBody">
+        ${message}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmBtn" class="btn btn-primary">Yes, continue</button>
+      </div>
+    `;
+
+    modalContent.html(modalBodyHtml);
+
+    const bsModal =
+      bootstrap.Modal.getInstance($modal[0]) ||
+      new bootstrap.Modal($modal[0]);
+    bsModal.show();
+
+    $modal.find('#confirmBtn').off('click').on('click', () => {
+      bsModal.hide();
+      if (callback) callback();
+    });
+  }
+
+  // Intercept page reload
+  document.addEventListener('keydown', (e) => {
     if (
       e.key === 'F5' ||
-      (e.ctrlKey && e.key.toLowerCase() === 'r') ||
-      (e.metaKey && e.key.toLowerCase() === 'r')
+      e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey)
     ) {
-      e.preventDefault();       // stop the browser's default reload
-      e.stopPropagation();
-
-      if (confirm('Are you sure you want to reload the application?')) {
-        location.reload();      // reload only if user confirmed
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        showConfirmModal('reload', () => location.reload());
       }
     }
   });
 
-  // Handle refresh/close via toolbar or tab close
-  window.addEventListener('beforeunload', function (e) {
-    // Show a confirm dialog
-    const shouldLeave = confirm('Do you really want to leave or reload?');
-    if (!shouldLeave) {
-      // Cancel the event (stay on page)
-      e.preventDefault();
-      e.returnValue = ''; // Some browsers need this line
-    }
-    // If user clicked OK, the page will reload/close normally
-  });
+
+
 })();
+
+
+(function() {
+    let open = XMLHttpRequest.prototype.open;
+    let activeRequests = 0;
+
+    XMLHttpRequest.prototype.open = function() {
+        this.addEventListener('readystatechange', function() {
+            if (this.readyState === 1) { // OPENED
+                activeRequests++;
+                displayOverlay();
+            }
+            if (this.readyState === 4) { // DONE
+                activeRequests--;
+                if (activeRequests <= 0) {
+                    removeOverlay();
+                    activeRequests = 0;
+                }
+            }
+        }, false);
+        open.apply(this, arguments);
+    };
+})();
+
 </script>
+
 
 
 
