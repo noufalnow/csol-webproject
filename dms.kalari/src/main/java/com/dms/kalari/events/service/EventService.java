@@ -291,4 +291,67 @@ public class EventService implements BaseService<EventDTO> {
 
 		return query.getResultList();
 	}
+	
+	
+	public List<Object[]> findAllEventsApplicable(Long nodeId) {
+		// return eventRepository.findEventsByMemberAndNodeHierarchy(nodeId, userId);
+
+		StringBuilder queryBuilder = new StringBuilder(
+				"""
+			WITH RECURSIVE
+			-- Upward traversal: node → all ancestors
+			up_path AS (
+			    SELECT node_id, parent_id
+			    FROM nodes
+			    WHERE node_id = :nodeId
+			    UNION ALL
+			    SELECT n.node_id, n.parent_id
+			    FROM nodes n
+			    JOIN up_path u ON n.node_id = u.parent_id     -- follow only the parent link
+			    WHERE n.deleted = false
+			),
+			
+			-- Downward traversal: node → all descendants
+			down_path AS (
+			    SELECT node_id, parent_id
+			    FROM nodes
+			    WHERE node_id = :nodeId
+			    UNION ALL
+			    SELECT n.node_id, n.parent_id
+			    FROM nodes n
+			    JOIN down_path d ON n.parent_id = d.node_id
+			    WHERE n.deleted = false
+			),
+			
+			-- Combine both directions, removing duplicates
+			full_hierarchy AS (
+			    SELECT node_id FROM up_path
+			    UNION
+			    SELECT node_id FROM down_path
+			)
+			
+			SELECT
+			    e.*,
+			    TO_CHAR(e.event_period_start, 'DD/MM/YYYY') AS dd_event_period_start,
+			    TO_CHAR(e.event_period_end,   'DD/MM/YYYY') AS dd_event_period_end,
+			    nd.node_name
+			FROM events e
+			JOIN full_hierarchy fh
+			    ON e.event_host_id = fh.node_id
+			    
+			JOIN nodes nd
+			    ON fh.node_id = nd.node_id
+			    
+			WHERE e.deleted = false;
+
+						 """);
+
+		Query query = entityManager.createNativeQuery(queryBuilder.toString(), Tuple.class);
+
+		query.setParameter("nodeId", nodeId);
+
+		return query.getResultList();
+
+	}
+	
 }

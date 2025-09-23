@@ -133,6 +133,25 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
         return "fragments/events/events";
     }
+    
+    @GetMapping("/all")
+    public String listAllEvents(Model model, Authentication authentication, HttpSession session) {
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+        long nodeId = principal.getInstId(); 
+
+        List<Object[]> eventList = service.findAllEventsApplicable(nodeId);
+        NodeDTO node = nodeService.findById(nodeId);
+        Node.Type userNodeType = principal.getNodeType();
+        model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+
+        model.addAttribute("nodeType", userNodeType.name());
+        model.addAttribute("nodeName", node.getNodeName());
+        model.addAttribute("eventList", eventList);
+
+        return "fragments/events/allevents";
+    }
+    
+    
 
     @GetMapping("/details/{id}")
     public String viewEventById(@PathVariable Long id, Model model) {
