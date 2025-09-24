@@ -63,7 +63,7 @@
 					class="form-check form-check-inline">
 					<input class="form-check-input" type="radio" name="choice"
 						id="option5" value="eventsall" checked
-						th:onclick="|loadContent('champ_eventall', '#users_target'); clearTreeForm()|">
+						th:onclick="|loadContent('champ_eventall/${parentId}', '#users_target'); clearTreeForm()|">
 					<label class="form-check-label" for="option5"
 						style="cursor: pointer;">All Events</label>
 				</div>
