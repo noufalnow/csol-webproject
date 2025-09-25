@@ -86,7 +86,7 @@ public class MemberEventService implements BaseService<MemberEventDTO> {
 
     @Transactional(readOnly = true)
     public List<MemberEventDTO> findByNode(Long nodeId) {
-        return memberEventRepository.findByNodeByNodeId(nodeId).stream()
+        return memberEventRepository.findByByNodeId(nodeId).stream()
                 .map(memberEventMapper::toDTO)
                 .collect(Collectors.toList());
     }

@@ -1,5 +1,3 @@
-// ─── 1) Entity ─────────────────────────────────────────────────────────────────
-
 package com.dms.kalari.events.entity;
 
 import com.dms.kalari.common.BaseEntity;

@@ -10,6 +10,7 @@ import com.dms.kalari.events.dto.EventItemMapDTO;
 import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
+import com.dms.kalari.events.entity.EventItemMap.Category;
 import com.dms.kalari.events.mapper.EventItemMapMapper;
 import com.dms.kalari.events.repository.EventItemMapRepository;
 import com.dms.kalari.events.repository.EventItemRepository;
@@ -154,9 +155,15 @@ public class EventItemMapService implements BaseService<EventItemMapDTO> {
 		mapRepository.deleteByEvent_EventId(eventId);
 	}
 
-	public List<EventItemMap> getEventItemMatrix(Long eventId) {
-	    return mapRepository.findByEventIdWithDetails(eventId);
+	public Map<EventItemMap.Category, List<EventItemMap>> getEventItemMatrix(Long eventId) {
+	    // fetch all items for the event
+	    List<EventItemMap> result = mapRepository.findByEventIdWithDetails(eventId);
+
+	    // group them by category
+	    return result.stream()
+	                 .collect(Collectors.groupingBy(EventItemMap::getCategory));
 	}
+
 
 
 }

@@ -110,7 +110,7 @@
 							</button>
 							<button
 							    th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participation'')')}"
-							    th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_host_id'))} + '/' + ${parentId} + '\', \'modal\')'"
+							    th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'"
 							    class="btn btn-sm btn-outline-primary">
 							    <i class="fa-solid fa-clipboard-check"></i> Participation
 							</button>

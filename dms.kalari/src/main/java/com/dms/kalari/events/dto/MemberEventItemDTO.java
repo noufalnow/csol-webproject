@@ -10,8 +10,10 @@ import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseDTO;
 import com.dms.kalari.events.entity.EventItem;
+import com.dms.kalari.events.entity.EventItemMap;
 
 @Data
 @NoArgsConstructor
@@ -19,29 +21,30 @@ import com.dms.kalari.events.entity.EventItem;
 @EqualsAndHashCode(callSuper = true)
 public class MemberEventItemDTO extends BaseDTO {
 
-    private Long meiId;                     // Matches entity primary key
+    private Long meiId;                         // Matches entity primary key
 
-    private CoreUser memberEventMember;      // Many-to-one CoreUser
+    private CoreUser memberEventMember;         // Many-to-one CoreUser
 
-    private Long memberEventId;              // ID of MemberEvent
+    private EventItem memberEventItem;          // Reference to EventItem entity
 
-    private EventItem evitem;                // Reference to EventItem entity
+    private Node memberEventNode;               // Node of the member
 
-    private Long itemKey;                    // Matches entity type (Long)
+    private Node memberEventHost;               // Node of the event host
 
-    private Short itemValue;                 // Matches entity type (Short)
+    private EventItemMap.Category memberEventCategory; // Enum category
 
-    private Integer score;
+    private CoreUser.Gender memberEventGender;  // Enum gender
+
+    private String memberEventItemName;         // Item name
+
+    private Integer memberEventScore;           // Score
+
+    private Integer memberEventGrade;           // Grade
+
+    private CoreUser scoreEntryBy;              // User who entered score
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime entryDateTime;
+    private LocalDateTime approveDateTime;      // Approval datetime
 
-    private CoreUser scoreEntryBy;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime approveDateTime;
-
-    private CoreUser approvedBy;
-
-    private String uniqueId;
+    private CoreUser approvedBy;                // User who approved
 }

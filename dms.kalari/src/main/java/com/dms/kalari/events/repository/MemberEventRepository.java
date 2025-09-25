@@ -19,7 +19,7 @@ public interface MemberEventRepository extends JpaRepository<MemberEvent, Long> 
 
     // Original method with added soft-delete check
     @Query("SELECT me FROM MemberEvent me WHERE me.node.nodeId = :nodeId AND me.deleted = false")
-    List<MemberEvent> findByNodeByNodeId(Long nodeId);
+    List<MemberEvent> findByByNodeId(Long nodeId);
 
     // Original method with added soft-delete check
     @Query("SELECT me FROM MemberEvent me WHERE me.event.eventId = :eventId AND me.deleted = false")

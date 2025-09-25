@@ -57,11 +57,15 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
     @Query("""
     	    SELECT eim
     	    FROM EventItemMap eim
-    	    JOIN eim.event ev
-    	    JOIN eim.item it
-    	    WHERE eim.deleted = false AND ev.eventId = :eventId
+    	    JOIN FETCH eim.event ev
+    	    JOIN FETCH eim.item it
+    	    WHERE eim.deleted = false
+    	      AND ev.eventId = :eventId
+    	    ORDER BY it.evitemName
     	""")
     	List<EventItemMap> findByEventIdWithDetails(@Param("eventId") Long eventId);
+
+
 
 
 

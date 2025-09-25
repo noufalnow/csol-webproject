@@ -204,35 +204,39 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	 * Senior
 	 */
 	private String computeCategory(CoreUser user) {
-		if (user.getUserDob() == null)
-			return "UNKNOWN";
-		int age = Period.between(user.getUserDob(), LocalDate.now()).getYears();
-		if (age >= 22)
-			return "SENIOR";
-		if (age >= 12 && age <= 15)
-			return "SUBJUNIOR";
-		if (age >= 5 && age <= 15)
-			return "JUNIOR";
-		return "UNKNOWN";
+	    if (user.getUserDob() == null)
+	        return "UNKNOWN";
+
+	    int age = Period.between(user.getUserDob(), LocalDate.now()).getYears();
+
+	    if (age >= 18)
+	        return "SENIOR";
+	    if (age >= 10 && age < 18)
+	        return "SUBJUNIOR";
+	    if (age < 10)
+	        return "JUNIOR";
+
+	    return "UNKNOWN";
 	}
+
 
 	/**
 	 * Build matrix: Category -> Gender -> List<CoreUser>
 	 */
 	public Map<String, Map<String, List<CoreUser>>> getMembersMatrix(Long nodeId) {
-	    List<CoreUser> members = coreUserRepository.findByUserNodeIdAndNotDeleted(nodeId);
+	    List<CoreUser> members = coreUserRepository.findByUserNodeIdAndTypeAndNotDeleted(nodeId,CoreUser.UserType.MEMBER);
 
 	    Map<String, Map<String, List<CoreUser>>> matrix = new HashMap<>();
 	    List<String> categories = List.of("JUNIOR", "SUBJUNIOR", "SENIOR");
 
 	    for (String cat : categories) {
 	        Map<String, List<CoreUser>> genderMap = new HashMap<>();
-	        genderMap.put("BOYS",
+	        genderMap.put("MALE",
 	            members.stream()
 	                   .filter(u -> u.getGender() == Gender.MALE && cat.equals(computeCategory(u)))
 	                   .collect(Collectors.toList()));
 
-	        genderMap.put("GIRLS",
+	        genderMap.put("FEMALE",
 	            members.stream()
 	                   .filter(u -> u.getGender() == Gender.FEMALE && cat.equals(computeCategory(u)))
 	                   .collect(Collectors.toList()));

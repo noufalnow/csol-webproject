@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
 
 @Data
@@ -19,47 +20,58 @@ public class MemberEventItem extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mei_id")
     private Long meiId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mei_event_id", nullable = false)
+    private Event memberEvent;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mei_member_node", nullable = false)
+    private Node memberEventNode;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mei_member_id", nullable = false)
     private CoreUser memberEventMember;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mei_memvnt_id", nullable = false)
-    private MemberEvent memberEvent;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mei_item_id", nullable = false)
-    private EventItem evitemId;
-
-    @Column(name = "mei_item_key", nullable = false)
-    private Long itemKey;
-
-    @Column(name = "mei_item_value", nullable = false)
-    private String itemValue;
-
-    @Column(name = "mei_score")
-    private Integer score;
-
-    @Column(name = "mei_entry_datetime", nullable = false)
-    private LocalDateTime entryDateTime;
-
+    private EventItem memberEventItem;
+    
+    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mei_entry_by", nullable = false)
+    @JoinColumn(name = "mei_eim_id", nullable = false)
+    private EventItemMap memberEventMap;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mei_event_host", nullable = false)
+    private Node memberEventHost;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mei_category", nullable = false)
+    private EventItemMap.Category memberEventCategory;
+    
+    @Column(name = "mei_gender")
+    @Enumerated(EnumType.STRING) 
+    private CoreUser.Gender memberEventGender;
+    
+    @Column(name = "mei_item_name")
+    private String memberEventItemName;
+    
+    @Column(name = "mei_score")
+    private Integer memberEventScore;
+    
+    @Column(name = "mei_grade")
+    private Integer memberEventGrade;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mei_entry_by", nullable = true)
     private CoreUser scoreEntryBy;
 
-    @Column(name = "mei_approve_datetime")
+    @Column(name = "mei_approve_datetime", nullable = true)
     private LocalDateTime approveDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mei_approve_by")
+    @JoinColumn(name = "mei_approve_by", nullable = true)
     private CoreUser approvedBy;
 
-    @Column(name = "mei_unique_id", unique = true)
-    private String uniqueId;
-
-    // ===== REUSING EXISTING ENUM =====
-    @Enumerated(EnumType.STRING)
-    @Column(name = "mei_category", nullable = false)
-    private EventItemMap.Category category;
 }
