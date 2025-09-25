@@ -17,7 +17,7 @@
 
 
         <!-- Right: Radio Buttons -->
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-1">
             <input type="hidden" id="tempSelectedId" name="tempSelectedId" th:value="${parentId}" />
 
 <div th:if="${nodeType != 'KALARI' and #authorization.expression('hasAuthority(''PRIV_branch_nodelist'')')}"

@@ -18,8 +18,8 @@ public class MemberEventItem extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mei_id")
-    private Long id;
-    
+    private Long meiId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mei_member_id", nullable = false)
     private CoreUser memberEventMember;
@@ -28,11 +28,15 @@ public class MemberEventItem extends BaseEntity {
     @JoinColumn(name = "mei_memvnt_id", nullable = false)
     private MemberEvent memberEvent;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mei_item_id", nullable = false)
+    private EventItem evitemId;
+
     @Column(name = "mei_item_key", nullable = false)
-    private Integer itemKey;  // Corresponds to your Map<Integer, String> key
+    private Long itemKey;
 
     @Column(name = "mei_item_value", nullable = false)
-    private String itemValue;  // The string value
+    private String itemValue;
 
     @Column(name = "mei_score")
     private Integer score;
@@ -53,4 +57,9 @@ public class MemberEventItem extends BaseEntity {
 
     @Column(name = "mei_unique_id", unique = true)
     private String uniqueId;
+
+    // ===== REUSING EXISTING ENUM =====
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mei_category", nullable = false)
+    private EventItemMap.Category category;
 }

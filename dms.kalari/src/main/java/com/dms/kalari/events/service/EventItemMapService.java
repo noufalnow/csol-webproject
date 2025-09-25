@@ -30,145 +30,133 @@ import org.springframework.stereotype.Service;
 @Service
 public class EventItemMapService implements BaseService<EventItemMapDTO> {
 
-    private final EventItemMapRepository mapRepository;
-    private final EventRepository        eventRepository;
-    private final EventItemRepository    itemRepository;
-    private final EventItemMapMapper     mapMapper;
+	private final EventItemMapRepository mapRepository;
+	private final EventRepository eventRepository;
+	private final EventItemRepository itemRepository;
+	private final EventItemMapMapper mapMapper;
 
-    @Autowired
-    public EventItemMapService(
-            EventItemMapRepository mapRepository,
-            EventRepository        eventRepository,
-            EventItemRepository    itemRepository,
-            EventItemMapMapper     mapMapper) {
+	@Autowired
+	public EventItemMapService(EventItemMapRepository mapRepository, EventRepository eventRepository,
+			EventItemRepository itemRepository, EventItemMapMapper mapMapper) {
 
-        this.mapRepository    = mapRepository;
-        this.eventRepository  = eventRepository;
-        this.itemRepository   = itemRepository;
-        this.mapMapper        = mapMapper;
-    }
+		this.mapRepository = mapRepository;
+		this.eventRepository = eventRepository;
+		this.itemRepository = itemRepository;
+		this.mapMapper = mapMapper;
+	}
 
-    public void saveMappings(Long eventId, List<Long> itemIds, EventItemMap.Category category) {
-        if (itemIds == null || itemIds.isEmpty()) {
-            return; // No items to map
-        }
+	public void saveMappings(Long eventId, List<Long> itemIds, EventItemMap.Category category) {
+		if (itemIds == null || itemIds.isEmpty()) {
+			return; // No items to map
+		}
 
-        // 1) Fetch Event once
-        Event event = eventRepository.findById(eventId)
-            .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+		// 1) Fetch Event once
+		Event event = eventRepository.findById(eventId)
+				.orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
-        // 2) Fetch all items in one query
-        List<EventItem> items = itemRepository.findAllById(itemIds);
-        
-        // Check if all items were found
-        if (items.size() != itemIds.size()) {
-            Set<Long> foundIds = items.stream()
-                .map(EventItem::getEvitemId)
-                .collect(Collectors.toSet());
-            
-            List<Long> missingIds = itemIds.stream()
-                .filter(id -> !foundIds.contains(id))
-                .collect(Collectors.toList());
-            
-            throw new ResourceNotFoundException("EventItem", missingIds);
-        }
+		// 2) Fetch all items in one query
+		List<EventItem> items = itemRepository.findAllById(itemIds);
 
-        // 3) Prepare mappings
-        LocalDateTime now = LocalDateTime.now();
-        List<EventItemMap> mappings = items.stream()
-            .map(item -> {
-                EventItemMap mapping = new EventItemMap();
-                mapping.setEvent(event);
-                mapping.setItem(item);
-                mapping.setCategory(category);
-                mapping.setTCreated(now);
-                return mapping;
-            })
-            .collect(Collectors.toList());
+		// Check if all items were found
+		if (items.size() != itemIds.size()) {
+			Set<Long> foundIds = items.stream().map(EventItem::getEvitemId).collect(Collectors.toSet());
 
-        // 4) Save all mappings in batch
-        mapRepository.saveAll(mappings);
-    }
+			List<Long> missingIds = itemIds.stream().filter(id -> !foundIds.contains(id)).collect(Collectors.toList());
 
-    @Override
-    public EventItemMapDTO update(Long id, EventItemMapDTO dto) {
-        EventItemMap existing = mapRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
+			throw new ResourceNotFoundException("EventItem", missingIds);
+		}
 
-        // If event has changed, re-fetch and set
-        if (!existing.getEvent().getEventId().equals(dto.getEventId())) {
-            Event event = eventRepository.findById(dto.getEventId())
-                .orElseThrow(() -> new ResourceNotFoundException("Event", dto.getEventId()));
-            existing.setEvent(event);
-        }
+		// 3) Prepare mappings
+		LocalDateTime now = LocalDateTime.now();
+		List<EventItemMap> mappings = items.stream().map(item -> {
+			EventItemMap mapping = new EventItemMap();
+			mapping.setEvent(event);
+			mapping.setItem(item);
+			mapping.setCategory(category);
+			mapping.setTCreated(now);
+			return mapping;
+		}).collect(Collectors.toList());
 
-        // If item has changed, re-fetch and set
-        if (!existing.getItem().getEvitemId().equals(dto.getEvitemId())) {
-            EventItem item = itemRepository.findById(dto.getEvitemId())
-                .orElseThrow(() -> new ResourceNotFoundException("EventItem", dto.getEvitemId()));
-            existing.setItem(item);
-        }
+		// 4) Save all mappings in batch
+		mapRepository.saveAll(mappings);
+	}
 
-        // Always update category
-        existing.setCategory(dto.getCategory());
-        existing.setTModified(LocalDateTime.now());
+	@Override
+	public EventItemMapDTO update(Long id, EventItemMapDTO dto) {
+		EventItemMap existing = mapRepository.findByIdAndNotDeleted(id)
+				.orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
 
-        EventItemMap updated = mapRepository.save(existing);
-        return mapMapper.toDTO(updated);
-    }
+		// If event has changed, re-fetch and set
+		if (!existing.getEvent().getEventId().equals(dto.getEventId())) {
+			Event event = eventRepository.findById(dto.getEventId())
+					.orElseThrow(() -> new ResourceNotFoundException("Event", dto.getEventId()));
+			existing.setEvent(event);
+		}
 
-    @Override
-    public List<EventItemMapDTO> findAll() {
-        return mapRepository.findAllNotDeleted(Pageable.unpaged())
-            .stream()
-            .map(mapMapper::toDTO)
-            .collect(Collectors.toList());
-    }
+		// If item has changed, re-fetch and set
+		if (!existing.getItem().getEvitemId().equals(dto.getEvitemId())) {
+			EventItem item = itemRepository.findById(dto.getEvitemId())
+					.orElseThrow(() -> new ResourceNotFoundException("EventItem", dto.getEvitemId()));
+			existing.setItem(item);
+		}
 
-    @Override
-    public EventItemMapDTO findById(Long id) {
-        return mapRepository.findByIdAndNotDeleted(id)
-            .map(mapMapper::toDTO)
-            .orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
-    }
+		// Always update category
+		existing.setCategory(dto.getCategory());
+		existing.setTModified(LocalDateTime.now());
 
-    @Override
-    public void softDeleteById(Long id) {
-        EventItemMap entity = mapRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
-        entity.setDeleted(true);
-        entity.setTDeleted(LocalDateTime.now());
-        mapRepository.save(entity);
-    }
+		EventItemMap updated = mapRepository.save(existing);
+		return mapMapper.toDTO(updated);
+	}
 
-    @Override
-    public Page<EventItemMapDTO> findAllPaginate(Pageable pageable, String search) {
-        // “search” is not used here; you can add a query filter if needed
-        return mapRepository.findAllNotDeleted(pageable)
-            .map(mapMapper::toDTO);
-    }
+	@Override
+	public List<EventItemMapDTO> findAll() {
+		return mapRepository.findAllNotDeleted(Pageable.unpaged()).stream().map(mapMapper::toDTO)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public EventItemMapDTO findById(Long id) {
+		return mapRepository.findByIdAndNotDeleted(id).map(mapMapper::toDTO)
+				.orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
+	}
+
+	@Override
+	public void softDeleteById(Long id) {
+		EventItemMap entity = mapRepository.findByIdAndNotDeleted(id)
+				.orElseThrow(() -> new ResourceNotFoundException("EventItemMap", id));
+		entity.setDeleted(true);
+		entity.setTDeleted(LocalDateTime.now());
+		mapRepository.save(entity);
+	}
+
+	@Override
+	public Page<EventItemMapDTO> findAllPaginate(Pageable pageable, String search) {
+		// “search” is not used here; you can add a query filter if needed
+		return mapRepository.findAllNotDeleted(pageable).map(mapMapper::toDTO);
+	}
 
 	@Override
 	public EventItemMapDTO save(EventItemMapDTO dto) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
-	
+
 	public Map<EventItemMap.Category, List<Long>> findItemsByEventIdGroupedByCategory(Long eventId) {
-	    List<EventItemMap> mappings = mapRepository.findByEvent_EventId(eventId);
-	    
-	    return mappings.stream()
-	        .collect(Collectors.groupingBy(
-	            EventItemMap::getCategory,
-	            Collectors.mapping(m -> m.getItem().getEvitemId(), Collectors.toList())
-	        ));
+		List<EventItemMap> mappings = mapRepository.findByEvent_EventId(eventId);
+
+		return mappings.stream().collect(Collectors.groupingBy(EventItemMap::getCategory,
+				Collectors.mapping(m -> m.getItem().getEvitemId(), Collectors.toList())));
 	}
 
 	@Modifying
-    @Transactional
+	@Transactional
 	public void deleteByEventId(Long eventId) {
-	    mapRepository.deleteByEvent_EventId(eventId);
+		mapRepository.deleteByEvent_EventId(eventId);
 	}
+
+	public List<EventItemMap> getEventItemMatrix(Long eventId) {
+	    return mapRepository.findByEventIdWithDetails(eventId);
+	}
+
+
 }

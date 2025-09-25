@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.admin.service.MemberUserService;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
@@ -47,14 +49,18 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     private final MemberEventService memberEventService;
     private final EventItemService eventItemService;
     private final EventItemMapService eventItemMapService;
+    private final MemberUserService memberUserService;
+    
 
     public EventsController(EventService eventService, NodeService nodeService,
             MemberEventService memberEventService, EventItemService eventItemService, 
+            MemberUserService memberUserService,
             EventItemMapService eventItemMapService) {
         super(eventService);
         this.nodeService = nodeService;
         this.memberEventService = memberEventService;
         this.eventItemService = eventItemService;
+        this.memberUserService = memberUserService;
         this.eventItemMapService = eventItemMapService;
     }
 
@@ -334,6 +340,66 @@ public class EventsController extends BaseController<EventDTO, EventService> {
             return updatedEvent;
         }, "Event updated successfully", additionalData);
     }
+    
+    
+    @GetMapping("/participation/{eventid}/{nodeid}")
+    public String participationForm(
+            @PathVariable("eventid") Long mEventId,
+            @PathVariable("nodeid") Long mNodeId,
+            Model model) {
+
+        Long eventId = XorMaskHelper.unmask(mEventId);
+        Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+        Map<String, Map<String, List<CoreUser>>> memberMatrix = memberUserService.getMembersMatrix(nodeId);
+        model.addAttribute("memberMatrix", memberMatrix);
+        
+        
+
+		for (String category : memberMatrix.keySet()) {
+		    System.out.println("Category: " + category);
+		    Map<String, List<CoreUser>> genderMap = memberMatrix.get(category);
+		    for (String gender : genderMap.keySet()) {
+		        System.out.println("  Gender: " + gender);
+		        List<CoreUser> users = genderMap.get(gender);
+		        for (CoreUser u : users) {
+		            System.out.println("    " + u.getUserId() + " - " + u.getUserFname());
+		        }
+		    }
+		}
+        
+        model.addAttribute("eventItems", eventItemMapService.getEventItemMatrix(eventId));
+        
+        List<EventItemMap> eventItems = eventItemMapService.getEventItemMatrix(eventId);
+
+        for (EventItemMap eim : eventItems) {
+            System.out.println("EventItemMap ID: " + eim.getEimId());
+
+            if (eim.getEvent() != null) {
+                System.out.println("  Event ID: " + eim.getEvent().getEventId());
+                System.out.println("  Event Name: " + eim.getEvent().getEventName());
+            }
+
+            if (eim.getItem() != null) {
+                System.out.println("  Item ID: " + eim.getItem().getEvitemId());
+                System.out.println("  Item Name: " + eim.getItem().getEvitemName());
+            }
+
+            System.out.println("  Category: " + eim.getCategory());
+            System.out.println("-----------");
+        }
+
+        
+
+        
+
+        model.addAttribute("eventId", mEventId);
+        model.addAttribute("memberMatrix", memberMatrix);
+
+        return "fragments/events/participation";
+    }
+
+    
 
 
 

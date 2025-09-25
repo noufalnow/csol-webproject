@@ -27,4 +27,7 @@ public class EventItemMapDTO extends BaseDTO {
 
     @NotNull(message = "Category is required")
     private EventItemMap.Category category;
+    
+    private String eimCatId;
+
 }

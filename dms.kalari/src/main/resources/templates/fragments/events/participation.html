@@ -1,0 +1,171 @@
+<div class="container-fluid">
+	<!-- Modal Header -->
+	<div class="modal-header">
+		<h5 class="modal-title" id="addEventModalLabel" th:text="${pageTitle}">Add
+			New Event</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal"
+			aria-label="Close"></button>
+	</div>
+
+
+	<div class="modal-body">
+
+
+		<div class="row">
+			<!-- Left: Tab Navigation -->
+			<div class="col-3">
+				<ul class="nav flex-column nav-pills me-3" id="eventTabs"
+					role="tablist">
+					<li class="nav-item" th:each="eventItem, iterStat : ${eventItems}">
+						<button class="nav-link text-truncate d-block" type="button"
+							th:classappend="${iterStat.index == 0} ? ' active'"
+							th:id="'tab_ev' + ${eventItem.event.eventId} + '_' + ${iterStat.index}"
+							data-bs-toggle="pill"
+							th:data-bs-target="'#content_ev' + ${eventItem.event.eventId} + '_' + ${iterStat.index}"
+							th:title="${eventItem.item.evitemName}">
+							<span th:text="${eventItem.item.evitemName}"></span>
+						</button>
+					</li>
+				</ul>
+			</div>
+
+
+			<!-- Right: Tab Content -->
+			<div class="col-9 tab-content">
+
+
+
+
+				<div class="tab-pane fade"
+					th:each="eventItem, iterStat : ${eventItems}"
+					th:classappend="${iterStat.index == 0} ? ' show active'"
+					th:id="'content_ev' + ${eventItem.event.eventId} + '_' + ${iterStat.index}">
+
+
+					<form id="participationForm"
+						th:action="@{/champ_participation/{id}(id=${hostNodeId})}"
+						method="post" th:object="${event}">
+
+						<!-- CSRF Token -->
+						<input type="hidden" th:name="${_csrf.parameterName}"
+							th:value="${_csrf.token}" /> <input type="hidden"
+							th:name="'selectedUsers[' + ${eventItem.event.eventId} + '].evitemId'"
+							th:value="${eventItem.item.evitemId}">
+
+
+						<table class="table table-bordered matrix-table text-center">
+							<thead class="table-light">
+								<tr>
+									<th style="width: 15%">Category</th>
+									<th>Boys</th>
+									<th>Girls</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="entry : ${memberMatrix.entrySet()}">
+									<td th:text="${entry.key}"></td>
+
+									<!-- Boys Column -->
+									<td>
+										<div th:each="user : ${entry.value.BOYS}" class="form-check">
+											<input class="form-check-input" type="checkbox"
+												th:id="'chk_' + ${eventItem.event.eventId} + '_' + ${user.userId} + '_b'"
+												th:name="'selectedUsers[' + ${eventItem.event.eventId} + '].boys'"
+												th:value="${user.userId}"> <label
+												class="form-check-label"
+												th:for="'chk_' + ${eventItem.event.eventId} + '_' + ${user.userId} + '_b'"
+												th:text="${user.userFname + ' ' + user.userLname}"></label>
+										</div>
+									</td>
+
+									<!-- Girls Column -->
+									<td>
+										<div th:each="user : ${entry.value.GIRLS}" class="form-check">
+											<input class="form-check-input" type="checkbox"
+												th:id="'chk_' + ${eventItem.event.eventId} + '_' + ${user.userId} + '_g'"
+												th:name="'selectedUsers[' + ${eventItem.event.eventId} + '].girls'"
+												th:value="${user.userId}"> <label
+												class="form-check-label"
+												th:for="'chk_' + ${eventItem.event.eventId} + '_' + ${user.userId} + '_g'"
+												th:text="${user.userFname + ' ' + user.userLname}"></label>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</form>
+				</div>
+
+			</div>
+
+		</div>
+
+
+
+
+		<!-- Error messages -->
+		<div id="error-messages" class="text-danger mt-2"></div>
+
+		<!-- Submit -->
+		<div class="text-end mt-3">
+			<button type="button" class="btn btn-secondary"
+				data-bs-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-primary"
+				onclick="validateAndSubmit()">Save Selections</button>
+		</div>
+
+	</div>
+
+
+	<!-- Modal Footer -->
+	<div class="modal-footer"></div>
+
+</div>
+<style>
+/* Form and Modal Styles */
+form {
+	max-width: 100%;
+}
+
+.modal-dialog {
+	max-width: 99% !important;
+}
+
+@media ( max-width : 768px) {
+	.modal-dialog {
+		max-width: 100% !important;
+		margin: 10px;
+	}
+}
+
+.modal-body {
+	max-height: 70vh;
+	overflow-y: auto;
+}
+
+/* Table Styles */
+.matrix-table th, .matrix-table td {
+	text-align: left; /* Align text to left */
+	vertical-align: middle; /* Vertically center content */
+}
+
+.matrix-table .form-check {
+	margin-bottom: 0.3rem; /* Spacing between checkboxes */
+}
+
+/* Tabs Styles */
+#eventTabs {
+	max-height: 70vh;
+	overflow-y: auto;
+}
+
+.nav-pills .nav-link {
+	white-space: nowrap; /* Prevent text wrapping in tabs */
+}
+</style>
+
+<script>
+	function validateAndSubmit() {
+		submitHtmlForm('participationForm', '#events_target');
+	}
+</script>

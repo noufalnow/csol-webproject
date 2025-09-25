@@ -11,25 +11,37 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseDTO;
+import com.dms.kalari.events.entity.EventItem;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MemberEventItemDTO extends BaseDTO {
-    private Long id;
-    
-    private CoreUser memberEventMember;
-    private Long memberEventId;   // Reference to MemberEvent
-    private Integer itemKey;     // The Integer key from your original Map
-    private String itemValue;    // The String value
+
+    private Long meiId;                     // Matches entity primary key
+
+    private CoreUser memberEventMember;      // Many-to-one CoreUser
+
+    private Long memberEventId;              // ID of MemberEvent
+
+    private EventItem evitem;                // Reference to EventItem entity
+
+    private Long itemKey;                    // Matches entity type (Long)
+
+    private Short itemValue;                 // Matches entity type (Short)
+
     private Integer score;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime entryDateTime;
-    private CoreUser scoreEntryBy; 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+
+    private CoreUser scoreEntryBy;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime approveDateTime;
-    private CoreUser approvedBy; 
+
+    private CoreUser approvedBy;
+
     private String uniqueId;
-    
 }

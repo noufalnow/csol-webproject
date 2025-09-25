@@ -3,6 +3,7 @@ package com.dms.kalari.events.repository;
 import org.springframework.stereotype.Repository;
 
 import com.dms.kalari.common.BaseRepository;
+import com.dms.kalari.events.dto.EventItemMapDTO;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 
@@ -51,5 +52,18 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
     	""")
     	List<EventItem> findItemsByEventIdAndCategory(@Param("eventId") Long eventId,
     	                                              @Param("category") EventItemMap.Category category);
+    
+    
+    @Query("""
+    	    SELECT eim
+    	    FROM EventItemMap eim
+    	    JOIN eim.event ev
+    	    JOIN eim.item it
+    	    WHERE eim.deleted = false AND ev.eventId = :eventId
+    	""")
+    	List<EventItemMap> findByEventIdWithDetails(@Param("eventId") Long eventId);
+
+
+
 
 }
