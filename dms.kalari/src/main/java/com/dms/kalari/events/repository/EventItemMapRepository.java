@@ -21,68 +21,90 @@ import java.util.Optional;
 @Repository
 public interface EventItemMapRepository extends BaseRepository<EventItemMap, Long> {
 
-    @Query("SELECT e FROM EventItemMap e WHERE e.eimId = :id AND e.deleted = false")
-    Optional<EventItemMap> findByIdAndNotDeleted(Long id);
+	@Query("SELECT e FROM EventItemMap e WHERE e.eimId = :id AND e.deleted = false")
+	Optional<EventItemMap> findByIdAndNotDeleted(Long id);
 
-    @Query("SELECT e FROM EventItemMap e WHERE e.deleted = false")
-    Page<EventItemMap> findAllNotDeleted(Pageable pageable);
-    
-    // Corrected method names with explicit property paths
-    @Query("SELECT eim FROM EventItemMap eim WHERE eim.event.eventId = :eventId AND eim.item.evitemId = :evitemId")
-    Optional<EventItemMap> findByEventIdAndEvitemId(@Param("eventId") Long eventId, @Param("evitemId") Long evitemId);
+	@Query("SELECT e FROM EventItemMap e WHERE e.deleted = false")
+	Page<EventItemMap> findAllNotDeleted(Pageable pageable);
 
+	// Corrected method names with explicit property paths
+	@Query("SELECT eim FROM EventItemMap eim WHERE eim.event.eventId = :eventId AND eim.item.evitemId = :evitemId")
+	Optional<EventItemMap> findByEventIdAndEvitemId(@Param("eventId") Long eventId, @Param("evitemId") Long evitemId);
 
-    @Query("SELECT eim FROM EventItemMap eim WHERE eim.event.eventId = :eventId")
-    List<EventItemMap> findByEventId(@Param("eventId") Long eventId);
-    
-    // Alternative naming convention that would work without @Query
-    List<EventItemMap> findByEvent_EventId(Long eventId);
-    
+	@Query("SELECT eim FROM EventItemMap eim WHERE eim.event.eventId = :eventId")
+	List<EventItemMap> findByEventId(@Param("eventId") Long eventId);
 
-    @Modifying
-    @Transactional
-    @Query("""
-        DELETE FROM EventItemMap e
-         WHERE e.event.eventId = :eventId
-           AND e.eimId NOT IN (
-                 SELECT m.memberEventMap.eimId
-                   FROM MemberEventItem m
-                   WHERE m.memberEventMap.event.eventId = :eventId
-           )
-        """)
-    void deleteByEvent_EventId(@Param("eventId") Long eventId);
-    
-    
-    
-    
-    @Modifying
-    @Query("UPDATE EventItemMap eim SET eim.deleted = true WHERE eim.event.eventId = :eventId")
-    void softDeleteByEvent_EventId(@Param("eventId") Long eventId);
-    
-    
-    @Query("""
-    	    SELECT i FROM EventItemMap m
-    	    JOIN m.item i
-    	    WHERE m.event.id = :eventId AND m.category = :category
-    	""")
-    	List<EventItem> findItemsByEventIdAndCategory(@Param("eventId") Long eventId,
-    	                                              @Param("category") EventItemMap.Category category);
-    
-    
-    @Query("""
-    	    SELECT eim
-    	    FROM EventItemMap eim
-    	    JOIN FETCH eim.event ev
-    	    JOIN FETCH eim.item it
-    	    WHERE eim.deleted = false
-    	      AND ev.eventId = :eventId
-    	    ORDER BY it.evitemName
-    	""")
-    	List<EventItemMap> findByEventIdWithDetails(@Param("eventId") Long eventId);
+	// Alternative naming convention that would work without @Query
+	List<EventItemMap> findByEvent_EventId(Long eventId);
 
+	/*
+	 * @Modifying
+	 * 
+	 * @Transactional
+	 * 
+	 * @Query(""" DELETE FROM EventItemMap e WHERE e.event.eventId = :eventId AND
+	 * e.eimId NOT IN ( SELECT m.memberEventMap.eimId FROM MemberEventItem m WHERE
+	 * m.memberEventMap.event.eventId = :eventId ) """) void
+	 * deleteByEvent_EventId1(@Param("eventId") Long eventId);
+	 */
 
+	@Modifying
+	@Transactional
+	@Query("""
+			    DELETE FROM EventItemMap e
+			     WHERE e.event.eventId = :eventId
+			       AND e.category      = :category
+			       AND e.item.evitemId NOT IN :keepItemIds
+			       AND e.eimId NOT IN (
+			            SELECT m.memberEventMap.eimId
+			              FROM MemberEventItem m
+			             WHERE m.memberEventMap.event.eventId = :eventId
+			         )
+			""")
+	void deleteUnselectedByCategory(@Param("eventId") Long eventId, @Param("category") EventItemMap.Category category,
+			@Param("keepItemIds") List<Long> keepItemIds);
 
+	@Modifying
+	@Transactional
+	@Query("""
+			    DELETE FROM EventItemMap e
+			     WHERE e.event.eventId = :eventId
+			       AND e.category      = :category
+			       AND e.eimId NOT IN (
+			            SELECT m.memberEventMap.eimId
+			              FROM MemberEventItem m
+			             WHERE m.memberEventMap.event.eventId = :eventId
+			         )
+			""")
+	void deleteAllByEventAndCategoryExcludingMembers(@Param("eventId") Long eventId,
+			@Param("category") EventItemMap.Category category);
 
+	@Modifying
+	@Query("UPDATE EventItemMap eim SET eim.deleted = true WHERE eim.event.eventId = :eventId")
+	void softDeleteByEvent_EventId(@Param("eventId") Long eventId);
 
+	@Query("""
+			    SELECT i FROM EventItemMap m
+			    JOIN m.item i
+			    WHERE m.event.id = :eventId AND m.category = :category
+			""")
+	List<EventItem> findItemsByEventIdAndCategory(@Param("eventId") Long eventId,
+			@Param("category") EventItemMap.Category category);
+
+	@Query("""
+			    SELECT eim
+			    FROM EventItemMap eim
+			    JOIN FETCH eim.event ev
+			    JOIN FETCH eim.item it
+			    WHERE eim.deleted = false
+			      AND ev.eventId = :eventId
+			    ORDER BY it.evitemName
+			""")
+	List<EventItemMap> findByEventIdWithDetails(@Param("eventId") Long eventId);
+
+	@Query("select e.item.evitemId from EventItemMap e "
+			+ "where e.event.eventId = :eventId and e.category = :category")
+	List<Long> findItemIdsByEventAndCategory(@Param("eventId") Long eventId,
+			@Param("category") EventItemMap.Category category);
 
 }

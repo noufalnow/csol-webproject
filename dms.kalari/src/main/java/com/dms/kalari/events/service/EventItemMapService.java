@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,40 +48,42 @@ public class EventItemMapService implements BaseService<EventItemMapDTO> {
 	}
 
 	public void saveMappings(Long eventId, List<Long> itemIds, EventItemMap.Category category) {
-		if (itemIds == null || itemIds.isEmpty()) {
-			return; // No items to map
-		}
+	    if (itemIds == null || itemIds.isEmpty()) return;
 
-		// 1) Fetch Event once
-		Event event = eventRepository.findById(eventId)
-				.orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+	    Event event = eventRepository.findById(eventId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
-		// 2) Fetch all items in one query
-		List<EventItem> items = itemRepository.findAllById(itemIds);
+	    List<Long> existingItemIds = mapRepository.findItemIdsByEventAndCategory(eventId, category);
+	    List<Long> newIds = itemIds.stream()
+	            .filter(id -> !existingItemIds.contains(id))
+	            .toList();
 
-		// Check if all items were found
-		if (items.size() != itemIds.size()) {
-			Set<Long> foundIds = items.stream().map(EventItem::getEvitemId).collect(Collectors.toSet());
+	    if (newIds.isEmpty()) return;
 
-			List<Long> missingIds = itemIds.stream().filter(id -> !foundIds.contains(id)).collect(Collectors.toList());
+	    List<EventItem> items = itemRepository.findAllById(newIds);
+	    if (items.size() != newIds.size()) {
+	        Set<Long> foundIds = items.stream()
+	                                  .map(EventItem::getEvitemId)
+	                                  .collect(Collectors.toSet());
+	        List<Long> missingIds = newIds.stream()
+	                                      .filter(id -> !foundIds.contains(id))
+	                                      .toList();
+	        throw new ResourceNotFoundException("EventItem", missingIds);
+	    }
 
-			throw new ResourceNotFoundException("EventItem", missingIds);
-		}
+	    LocalDateTime now = LocalDateTime.now();
+	    List<EventItemMap> mappings = items.stream().map(item -> {
+	        EventItemMap mapping = new EventItemMap();
+	        mapping.setEvent(event);
+	        mapping.setItem(item);
+	        mapping.setCategory(category);
+	        mapping.setTCreated(now);
+	        return mapping;
+	    }).toList();
 
-		// 3) Prepare mappings
-		LocalDateTime now = LocalDateTime.now();
-		List<EventItemMap> mappings = items.stream().map(item -> {
-			EventItemMap mapping = new EventItemMap();
-			mapping.setEvent(event);
-			mapping.setItem(item);
-			mapping.setCategory(category);
-			mapping.setTCreated(now);
-			return mapping;
-		}).collect(Collectors.toList());
-
-		// 4) Save all mappings in batch
-		mapRepository.saveAll(mappings);
+	    mapRepository.saveAll(mappings);
 	}
+
 
 	@Override
 	public EventItemMapDTO update(Long id, EventItemMapDTO dto) {
@@ -151,9 +154,21 @@ public class EventItemMapService implements BaseService<EventItemMapDTO> {
 
 	@Modifying
 	@Transactional
-	public void deleteByEventId(Long eventId) {
-		mapRepository.deleteByEvent_EventId(eventId);
+	public void deleteByEventIdAndCategory(
+	        Long eventId,
+	        EventItemMap.Category category,
+	        List<Long> keepItemIds) {
+
+	    if (keepItemIds == null || keepItemIds.isEmpty()) {
+	        // nothing to keep: delete all rows for this category,
+	        // still protecting those locked by MemberEventItem
+	        mapRepository.deleteAllByEventAndCategoryExcludingMembers(eventId, category);
+	    } else {
+	        mapRepository.deleteUnselectedByCategory(eventId, category, keepItemIds);
+	    }
 	}
+
+
 
 	public Map<EventItemMap.Category, List<EventItemMap>> getEventItemMatrix(Long eventId) {
 	    // fetch all items for the event

@@ -24,6 +24,7 @@ import com.dms.kalari.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,8 +82,110 @@ public class MemberEventItemService {
 		}).orElseThrow(() -> new ResourceNotFoundException("MemberEventItem not found with id: " + id, id));
 	}
 
+	
 	@Transactional
 	public void saveParticipation(Long eventId, Long nodeId, Map<String, String> requestParams) {
+		
+		Long itemId = Long.valueOf(requestParams.get("itemId"));
+
+	    Node branchNode = nodeRepository.findByIdAndNotDeleted(nodeId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Host node not found", nodeId));
+
+	    // 1) EXISTING keys from DB  (eventItemId-userId)
+	    Set<String> existingKeys = memberEventItemRepository
+	            .findKeysByEventAndNode(eventId, nodeId ,itemId); 
+	            // implement query:  SELECT CONCAT(m.member_event_map_id,'-',m.member_event_member_id)
+	            // FROM MemberEventItem m WHERE m.memberEvent.id=:eventId AND m.memberEventNode.id=:nodeId
+
+	    // 2) SUBMITTED keys + details from request
+	    class Submission {
+	        final Long eventItemId;
+	        final Long userId;
+	        final EventItemMap.Category category;
+	        final CoreUser.Gender gender;
+	        Submission(Long e, Long u, EventItemMap.Category c, CoreUser.Gender g) {
+	            this.eventItemId = e; this.userId = u; this.category = c; this.gender = g;
+	        }
+	    }
+
+	    Map<String, Submission> submitted = new HashMap<>();
+
+	    requestParams.forEach((key, value) -> {
+	    	if (!key.startsWith("selectedUsers[")) return;
+
+
+	        String[] parts = Arrays.stream(key.split("\\[|\\]"))
+	                               .filter(s -> !s.isEmpty() && !s.equals("selectedUsers"))
+	                               .toArray(String[]::new);
+
+	        Long userId = Long.valueOf(parts[0]);
+	        EventItemMap.Category category = EventItemMap.Category.valueOf(parts[1]);
+	        CoreUser.Gender gender = CoreUser.Gender.valueOf(parts[2].toUpperCase());
+	        Long eventItemId = Long.valueOf(value);
+
+	        String k = eventItemId + "-" + userId;
+	        submitted.put(k, new Submission(eventItemId, userId, category, gender));
+	    });
+
+	    // 3) Determine changes
+	    Set<String> toInsertKeys = new HashSet<>(submitted.keySet());
+	    toInsertKeys.removeAll(existingKeys);          // only new
+
+	    Set<String> toDeleteKeys = new HashSet<>(existingKeys);
+	    toDeleteKeys.removeAll(submitted.keySet());    // only removed
+
+	    // 4) Delete removed
+	    if (!toDeleteKeys.isEmpty()) {
+	        memberEventItemRepository.deleteByKeys(toDeleteKeys,itemId);
+	        // implement query using keys or (eventItemId,userId) pair
+	    }
+
+	    // 5) Insert new
+	    for (String k : toInsertKeys) {
+	        Submission s = submitted.get(k);
+
+	        CoreUser member = coreUserRepository.findById(s.userId)
+	                .orElseThrow(() -> new ResourceNotFoundException("Member not found", s.userId));
+	        EventItemMap map = eventItemMapRepository.findById(s.eventItemId)
+	                .orElseThrow(() -> new ResourceNotFoundException("EventItemMap not found", s.eventItemId));
+	        Event event = map.getEvent();
+
+	        MemberEventItem item = new MemberEventItem();
+	        item.setMemberEvent(event);
+	        item.setMemberEventMember(member);
+	        item.setMemberEventItem(map.getItem());
+	        item.setMemberEventNode(branchNode);
+	        item.setMemberEventHost(event.getHostNode());
+	        item.setMemberEventMap(map);
+	        item.setMemberEventCategory(s.category);
+	        item.setMemberEventGender(s.gender);
+	        item.setMemberEventItemName(map.getItem().getEvitemName());
+	        item.setMemberEventScore(0);
+	        memberEventItemRepository.save(item);
+	    }
+	}
+
+
+	// Helper class
+	private static class SubmittedData {
+	    Long eventItemId;
+	    Long userId;
+	    String category;
+	    String gender;
+
+	    SubmittedData(Long eventItemId, Long userId, String category, String gender) {
+	        this.eventItemId = eventItemId;
+	        this.userId = userId;
+	        this.category = category;
+	        this.gender = gender;
+	    }
+	}
+
+
+
+	
+	@Transactional
+	public void saveParticipation1(Long eventId, Long nodeId, Map<String, String> requestParams) {
 
 		// MemberEvent memberEvent = memberEventRepository.findById(eventId)
 		// .orElseThrow(() -> new ResourceNotFoundException("MemberEvent not found",

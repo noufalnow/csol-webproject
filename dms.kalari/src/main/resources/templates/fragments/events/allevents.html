@@ -94,33 +94,34 @@
 					<th scope="row" th:text="${iterStat.count}">1</th>
 					<td th:text="${event.get('event_name')}">Event Name</td>
 					<td><span th:text="${event.get('event_host')}"></span></td>
-    				<td><span th:text="${event.get('node_name')}"></span></td>		  
-    						  
+					<td><span th:text="${event.get('node_name')}"></span> <span th:text="${nodeType}"></span></td>
+
 					<td><span th:text="${event.get('dd_event_period_start')}">DD/MM/YYYY</span>
 						- <span th:text="${event.get('dd_event_period_end')}">DD/MM/YYYY</span>
 					</td>
 					<td th:text="${event.get('event_venue')}">Venue</td>
 					<td>
-						<div class="d-flex gap-1">
-							<button
-								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventviews'')')}"
-								th:onclick="'loadContent(\'/events/html/champ_event_participants?eventId=' + ${event.get('event_id')} + '\', \'modal\')'"
-								class="btn btn-sm btn-outline-primary">
-								<i class="fa-solid fa-user-group"></i> View
-							</button>
-							<div th:if="${nodeType == 'KALARI' 
-							            and #authorization.expression('hasAuthority(''PRIV_champ_participation'')')}">
 
-							</div>
-							
-														    <button
-							        th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'"
-							        class="btn btn-sm btn-outline-primary">
-							        <i class="fa-solid fa-clipboard-check"></i> Participation
-							    </button>
+<div class="d-flex gap-2">
+    <div th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}">
+        <a href="javascript:void(0);"
+           th:onclick="'window.open(\'/champ_participants/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'_blank\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'"
+           class="btn btn-sm btn-outline-primary">
+            <i class="fa-solid fa-clipboard-check"></i> List
+        </a>
+    </div>
+    
+    <div th:if="${linkNodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_champ_participation'')')}">
+        <button th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'"
+                class="btn btn-sm btn-outline-primary">
+            <i class="fa-solid fa-clipboard-check"></i> Add
+        </button>
+    </div>
+</div>
 
 
-						</div>
+
+
 					</td>
 				</tr>
 

@@ -11,8 +11,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface MemberEventItemRepository extends BaseRepository<MemberEventItem, Long> {
@@ -33,6 +35,19 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
                                               @Param("nodeId") Long nodeId);
     
     
+    @Query("""
+            SELECT CONCAT(m.memberEventMap.eimId, '-', m.memberEventMember.userId)
+            FROM MemberEventItem m
+            WHERE m.memberEvent.id = :eventId
+              AND m.memberEventNode.id = :nodeId
+              AND m.memberEventItem.evitemId = :itemId
+              AND m.deleted = false
+        """)
+        Set<String> findKeysByEventAndNode(@Param("eventId") Long eventId,
+                                           @Param("nodeId") Long nodeId,
+                                           @Param("itemId") Long itemId);
+    
+    
     @Modifying
     @Transactional
     @Query("""
@@ -48,6 +63,19 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
                                                  @Param("userId") Long userId,
                                                  @Param("eventId") Long eventId,
                                                  @Param("nodeId") Long nodeId);
+    
+    
+    @Modifying
+    @Transactional
+    @Query("""
+        DELETE FROM MemberEventItem m
+         WHERE CONCAT(m.memberEventMap.id, '-', m.memberEventMember.id) IN :keys
+           AND (m.memberEventScore IS NULL OR m.memberEventScore = 0)
+           AND (m.memberEventGrade IS NULL OR m.memberEventGrade = 0)
+           AND  m.memberEventItem.evitemId = :itemId
+    """)
+    int deleteByKeys(@Param("keys") Collection<String> keys, @Param("itemId") Long itemId);
+
     
     
     @Query("""

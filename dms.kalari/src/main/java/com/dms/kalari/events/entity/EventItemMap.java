@@ -8,7 +8,13 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "event_item_map")
+@Table(
+	    name = "event_item_map",
+	    uniqueConstraints = @UniqueConstraint(
+	        name = "uq_event_item_map_event_cat_item",
+	        columnNames = {"eim_event_id", "eim_cat_id", "eim_item_id"}
+	    )
+	)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

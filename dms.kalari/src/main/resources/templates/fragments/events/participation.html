@@ -12,38 +12,43 @@
 
 
 		<!-- Single form wrapping everything -->
-		<form
-			th:action="@{/champ_participation/{eventId}/{nodeId}(eventId=${eventId}, nodeId=${nodeId})}"
-			method="post" id="participationForm">
-			<input type="hidden" th:name="${_csrf.parameterName}"
-				th:value="${_csrf.token}" />
 
 
-			<div class="row">
-				<!-- Left: Item Tabs - Show unique items -->
-				<div class="col-3">
-					<ul class="nav flex-column nav-pills me-3" id="eventTabs"
-						role="tablist">
-						<li class="nav-item"
-							th:each="uniqueItem, iterStat : ${uniqueEventItems}">
-							<button class="nav-link text-truncate d-block" type="button"
-								th:classappend="${iterStat.index == 0} ? ' active'"
-								th:id="'tab_' + ${uniqueItem.evitemId}" data-bs-toggle="pill"
-								th:data-bs-target="'#content_' + ${uniqueItem.evitemId}"
-								th:title="${uniqueItem.evitemName}">
-								<span th:text="${uniqueItem.evitemName}"></span>
-							</button>
-						</li>
-					</ul>
-				</div>
 
-				<!-- Right: Tab Content -->
-				<div class="col-9 tab-content">
-					<div class="tab-pane fade"
-						th:each="uniqueItem, iterStat : ${uniqueEventItems}"
-						th:classappend="${iterStat.index == 0} ? ' show active'"
-						th:id="'content_' + ${uniqueItem.evitemId}" role="tabpanel"
-						th:aria-labelledby="'tab_' + ${uniqueItem.evitemId}">
+		<div class="row">
+			<!-- Left: Item Tabs - Show unique items -->
+			<div class="col-3">
+				<ul class="nav flex-column nav-pills me-3" id="eventTabs"
+					role="tablist">
+					<li class="nav-item"
+						th:each="uniqueItem, iterStat : ${uniqueEventItems}">
+						<button class="nav-link text-truncate d-block" type="button"
+							th:classappend="${iterStat.index == 0} ? ' active'"
+							th:id="'tab_' + ${uniqueItem.evitemId}" data-bs-toggle="pill"
+							th:data-bs-target="'#content_' + ${uniqueItem.evitemId}"
+							th:title="${uniqueItem.evitemName}">
+							<span th:text="${uniqueItem.evitemName}"></span>
+						</button>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Right: Tab Content -->
+			<div class="col-9 tab-content">
+
+				<div class="tab-pane fade"
+					th:each="uniqueItem, iterStat : ${uniqueEventItems}"
+					th:classappend="${iterStat.index == 0} ? ' show active'"
+					th:id="'content_' + ${uniqueItem.evitemId}" role="tabpanel"
+					th:aria-labelledby="'tab_' + ${uniqueItem.evitemId}">
+					<form
+						th:action="@{/champ_participation/{eventId}/{nodeId}(eventId=${eventId}, nodeId=${nodeId})}"
+						method="post"
+						th:id="'participationForm_' + ${uniqueItem.evitemId}">
+						<input type="hidden" th:name="${_csrf.parameterName}"
+							th:value="${_csrf.token}" />
+							
+					    <input type="hidden" name = "itemId"  th:value="${uniqueItem.evitemId}">		
 
 						<table class="table table-bordered matrix-table text-center">
 							<thead class="table-light">
@@ -53,9 +58,7 @@
 									<th>Girls</th>
 								</tr>
 							</thead>
-
 							<tbody>
-
 								<th:block th:if="${itemCategoryMap[uniqueItem.evitemId]}">
 									<th:block
 										th:each="catEntry : ${itemCategoryMap[uniqueItem.evitemId].entrySet()}">
@@ -101,59 +104,24 @@
 							</tbody>
 
 						</table>
-					</div>
-				</div>
-			</div>
-			<div id="error-messages" class="text-danger mt-2"></div>
-			<div class="text-end mt-3">
-				<button type="button" class="btn btn-secondary"
-					data-bs-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-primary"
-					onclick="validateAndSubmit()">Save Selections</button>
-			</div>
-		</form>
 
 
-		<div class="container mt-4">
-			<h2 class="mb-4">Competition Participation</h2>
-
-			<div th:each="itemEntry : ${matrix}">
-				<div class="item-heading">
-					Item: <span th:text="${itemEntry.key}"></span>
-				</div>
-
-				<div th:each="genderEntry : ${itemEntry.value}">
-					<div class="gender-heading" th:text="${genderEntry.key}"></div>
-
-					<div th:each="catEntry : ${genderEntry.value}">
-						<div class="category-heading">
-							Category: <span th:text="${catEntry.key}"></span>
+						<div class="text-end mt-3">
+							<button type="button" class="btn btn-secondary"
+								data-bs-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-primary"
+								th:onclick="'validateAndSubmit(\'participationForm_' + ${uniqueItem.evitemId} + '\')'">
+								Save Selections</button>
 						</div>
+					</form>
 
-						<table class="table table-bordered">
-							<thead class="table-light">
-								<tr>
-									<th>Participant</th>
-									<th>Branch / Node</th>
-									<th>Score</th>
-									<th>Grade</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr th:each="mei : ${catEntry.value}">
-									<td th:text="${mei.memberEventMember.userFname}"></td>
-									<td th:text="${mei.memberEventNode.nodeName}"></td>
-									<td
-										th:text="${mei.memberEventScore != null ? mei.memberEventScore : 0}"></td>
-									<td
-										th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
 				</div>
+
+
+
 			</div>
 		</div>
+		<div id="error-messages" class="text-danger mt-2"></div>
 
 
 
@@ -213,8 +181,8 @@ form {
 </style>
 
 <script>
-	function validateAndSubmit() {
-		submitHtmlForm('participationForm', '#events_target');
+	function validateAndSubmit(formId) {
+		submitHtmlForm(formId, '#events_target');
 	}
 </script>
 

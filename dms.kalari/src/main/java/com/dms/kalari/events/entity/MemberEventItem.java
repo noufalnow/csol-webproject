@@ -13,7 +13,13 @@ import com.dms.kalari.common.BaseEntity;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "member_events_items")
+@Table(
+	    name = "member_events_items",
+	    uniqueConstraints = @UniqueConstraint(
+	        name = "uq_member_events_items_event_member_item",
+	        columnNames = {"mei_event_id", "mei_member_id", "mei_item_id"}
+	    )
+	)
 public class MemberEventItem extends BaseEntity {
 
     @Id

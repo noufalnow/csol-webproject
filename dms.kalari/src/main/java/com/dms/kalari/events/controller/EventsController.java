@@ -47,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @RequestMapping("/champ/events")
@@ -163,6 +164,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
 
 		model.addAttribute("nodeType", userNodeType.name());
+		model.addAttribute("linkNodeType", node.getNodeType().name());
 		model.addAttribute("nodeName", node.getNodeName());
 		model.addAttribute("eventList", eventList);
 
@@ -324,18 +326,25 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 			EventDTO updatedEvent = service.update(eventId, eventDTO);
 
 			// First delete all existing mappings for this event
-			eventItemMapService.deleteByEventId(eventId);
+			//eventItemMapService.deleteByEventId(eventId);
+			
+			eventItemMapService.deleteByEventIdAndCategory(eventId,
+			        EventItemMap.Category.SENIOR, seniorItemIds);
+			eventItemMapService.deleteByEventIdAndCategory(eventId,
+			        EventItemMap.Category.JUNIOR, juniorItemIds);
+			eventItemMapService.deleteByEventIdAndCategory(eventId,
+			        EventItemMap.Category.SUBJUNIOR, subjuniorItemIds);
 
-			// Then save the new mappings
 			if (seniorItemIds != null && !seniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, seniorItemIds, EventItemMap.Category.SENIOR);
+			    eventItemMapService.saveMappings(eventId, seniorItemIds, EventItemMap.Category.SENIOR);
 			}
 			if (juniorItemIds != null && !juniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, juniorItemIds, EventItemMap.Category.JUNIOR);
+			    eventItemMapService.saveMappings(eventId, juniorItemIds, EventItemMap.Category.JUNIOR);
 			}
 			if (subjuniorItemIds != null && !subjuniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, subjuniorItemIds, EventItemMap.Category.SUBJUNIOR);
+			    eventItemMapService.saveMappings(eventId, subjuniorItemIds, EventItemMap.Category.SUBJUNIOR);
 			}
+
 
 			return updatedEvent;
 		}, "Event updated successfully", additionalData);
@@ -402,14 +411,31 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    model.addAttribute("nodeId", mNodeId);
 	    model.addAttribute("pageTitle", "Add Event Participants");
 	    
+	    return "fragments/events/participation";
+	}
+	
+	
+	@GetMapping("/participants/{eventid}/{nodeid}")
+	public String Listparticipants(@PathVariable("eventid") Long mEventId,
+	                                @PathVariable("nodeid") Long mNodeId,
+	                                Model model) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+	    Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	    model.addAttribute("eventId", mEventId);
+	    model.addAttribute("nodeId", mNodeId);
+	    model.addAttribute("pageTitle", "Add Event Participants");
+	    
 	    
         Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService.getParticipationMatrix(eventId);
         model.addAttribute("matrix", matrix);
         
         
 
-	    return "fragments/events/participation";
+	    return "events/participants";
 	}
+	
 
 	
 	
@@ -420,6 +446,23 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	        @PathVariable("nodeId") Long mNodeId,
 	        @RequestParam Map<String, String> requestParams,
 	        @RequestParam(name = "pageParams", required = false) String pageParams) {
+		
+		
+		
+	   System.out.println("=== ALL REQUEST PARAMETERS ===");
+	    requestParams.forEach((key, value) -> {
+	        System.out.println("KEY: '" + key + "' = VALUE: '" + value + "'");
+	    });
+	    System.out.println("=== END PARAMETERS ===");
+	    
+	    // Also print the raw query string if available
+	    // This helps see the actual parameter order and duplicates
+	    
+	    // Count selectedUsers parameters
+	    long selectedUsersCount = requestParams.keySet().stream()
+	            .filter(key -> key.startsWith("selectedUsers["))
+	            .count();
+	    System.out.println("Total selectedUsers parameters: " + selectedUsersCount);
 		
 		
 		Long eventId = XorMaskHelper.unmask(mEventId);
