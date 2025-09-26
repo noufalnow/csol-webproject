@@ -7,6 +7,8 @@ import com.dms.kalari.events.dto.EventItemMapDTO;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Page;
@@ -36,9 +38,22 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
     // Alternative naming convention that would work without @Query
     List<EventItemMap> findByEvent_EventId(Long eventId);
     
+
     @Modifying
-    @Query("DELETE FROM EventItemMap eim WHERE eim.event.eventId = :eventId")
+    @Transactional
+    @Query("""
+        DELETE FROM EventItemMap e
+         WHERE e.event.eventId = :eventId
+           AND e.eimId NOT IN (
+                 SELECT m.memberEventMap.eimId
+                   FROM MemberEventItem m
+                   WHERE m.memberEventMap.event.eventId = :eventId
+           )
+        """)
     void deleteByEvent_EventId(@Param("eventId") Long eventId);
+    
+    
+    
     
     @Modifying
     @Query("UPDATE EventItemMap eim SET eim.deleted = true WHERE eim.event.eventId = :eventId")

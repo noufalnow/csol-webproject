@@ -22,7 +22,10 @@ import com.dms.kalari.events.repository.MemberEventRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,13 +95,13 @@ public class MemberEventItemService {
 
 		Set<String> selectedKeys = this.getSelectedKeys(eventId, nodeId);
 
+		Set<String> submittedKeys = new HashSet<>();
+
 		requestParams.forEach((key, value) -> {
 			if (!key.startsWith("selectedUsers[")) {
 				return; // skip _csrf, pageParams, etc.
 			}
 			
-			
-
 			// Split and filter empty strings
 			String[] parts = Arrays.stream(key.split("\\[|\\]")).filter(s -> !s.isEmpty() && !s.equals("selectedUsers"))
 					.toArray(String[]::new);
@@ -113,6 +116,7 @@ public class MemberEventItemService {
 			
 			
 			String keyStr = eventItemId + "-" + userId;
+			submittedKeys.add(keyStr);
 
 			// Skip if already exists
 			if (selectedKeys.contains(keyStr)) {
@@ -153,6 +157,50 @@ public class MemberEventItemService {
 			memberEventItemRepository.save(item);
 
 		});
+		
+
+		// selectedKeys = from DB
+		// submittedKeys = from UI (can be null/empty)
+		Set<String> toDelete = new HashSet<>();
+		if (selectedKeys != null && !selectedKeys.isEmpty()) {
+		    if (submittedKeys == null) {
+		        // nothing submitted → delete everything that exists
+		        toDelete.addAll(selectedKeys);
+		    } else {
+		        // delete only those that were previously selected but not re-submitted
+		        toDelete.addAll(selectedKeys);
+		        toDelete.removeAll(submittedKeys);
+		    }
+		}
+
+		// nothing to delete → exit early
+		if (toDelete.isEmpty()) {
+		    return;
+		}
+
+		// remove each record, skip any malformed key
+		for (String keyStr : toDelete) {
+		    if (keyStr == null || keyStr.isBlank() || !keyStr.contains("-")) {
+		        continue; // ignore bad data instead of throwing
+		    }
+		    try {
+		        String[] parts = keyStr.split("-");
+		        if (parts.length != 2) continue;
+
+		        Long eventItemId = Long.parseLong(parts[0]);
+		        Long userId      = Long.parseLong(parts[1]);
+
+		        memberEventItemRepository.deleteByEventItemAndUserAndEventAndNode(
+		                eventItemId, userId, eventId, nodeId);
+		    } catch (NumberFormatException ex) {
+		        // log and skip bad key
+		        // logger.warn("Invalid key: {}", keyStr, ex);
+		    }
+		}
+
+		
+		
+		
 	}
 
 	private void debug(String message) {
@@ -171,5 +219,27 @@ public class MemberEventItemService {
 
 		return selectedKeys;
 	}
+	
+	
+	
+	public Map<String, Map<String, Map<String, List<MemberEventItem>>>> getParticipationMatrix(Long eventId) {
+        List<MemberEventItem> items = memberEventItemRepository.findByEventId(eventId);
+
+        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = new LinkedHashMap<>();
+
+        for (MemberEventItem mei : items) {
+            String itemName = mei.getMemberEventItem().getEvitemName();
+            String gender = mei.getMemberEventGender().name();
+            String category = mei.getMemberEventCategory().name();
+
+            matrix
+                .computeIfAbsent(itemName, k -> new LinkedHashMap<>())
+                .computeIfAbsent(gender, k -> new LinkedHashMap<>())
+                .computeIfAbsent(category, k -> new ArrayList<>())
+                .add(mei);
+        }
+
+        return matrix;
+    }
 
 }

@@ -24,6 +24,7 @@ import com.dms.kalari.events.dto.MemberEventDTO;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.EventItemMap.Category;
+import com.dms.kalari.events.entity.MemberEventItem;
 import com.dms.kalari.events.service.EventItemMapService;
 import com.dms.kalari.events.service.EventItemService;
 import com.dms.kalari.events.service.EventService;
@@ -399,6 +400,13 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    model.addAttribute("eventItemsByCategory", eventItemsByCategory);    
 	    model.addAttribute("eventId", mEventId);
 	    model.addAttribute("nodeId", mNodeId);
+	    model.addAttribute("pageTitle", "Add Event Participants");
+	    
+	    
+        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService.getParticipationMatrix(eventId);
+        model.addAttribute("matrix", matrix);
+        
+        
 
 	    return "fragments/events/participation";
 	}
