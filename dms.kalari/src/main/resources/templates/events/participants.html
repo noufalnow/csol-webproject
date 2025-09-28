@@ -8,148 +8,124 @@
 <style>
 /* ================= Screen styles ================= */
 .item-heading {
-    font-weight: bold;
-    font-size: 16pt;
-    margin-top: 20px;
+	font-weight: bold;
+	font-size: 18pt;
+	margin-top: 0;
+	padding-bottom: 8px;
+	border-bottom: 2px solid #444;
+	color: #222;
 }
 
 .gender-heading {
-    font-weight: bold;
-    font-size: 14pt;
-    margin-top: 10px;
+	font-weight: bold;
+	font-size: 14.5pt;
+	margin-top: 12px;
+	color: #333;
 }
 
 .category-heading {
-    font-weight: bold;
-    font-size: 12pt;
-    margin-top: 5px;
+	font-weight: bold;
+	font-size: 12.5pt;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	color: #444;
 }
 
-@media screen {
-    .print-only {
-        display: none;
-    }
+.container {
+	width: 100%;
+	max-width: 100%;
+	padding: 20px;
+	margin: 0;
+}
 
-    .container {
-        padding: 20px;
-    }
+h2 {
+	font-size: 20pt;
+	margin-bottom: 15px;
+	text-align: center;
+}
+
+.print-only {
+	display: none;
+}
+
+/* Tables */
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 15px;
+	font-size: 10.5pt;
+}
+
+th, td {
+	border: 1px solid #444;
+	padding: 8px 12px;
+	text-align: left;
+}
+
+th {
+	background-color: #eaeaea;
+	font-weight: bold;
+	color: #222;
+}
+
+thead {
+	display: table-header-group;
+}
+
+tbody {
+	page-break-inside: avoid;
+}
+
+tr {
+	page-break-inside: avoid;
+	page-break-after: auto;
+}
+
+tr td {
+	border-top: 1px solid #444;
+}
+
+tr:last-child td {
+	border-bottom: 1px solid #444;
+}
+
+.category-section {
+	page-break-inside: avoid;
 }
 
 /* ================= Print-friendly styles ================= */
 @media print {
-    @page {
-        margin: 0.5in;
-        size: letter;
-        @bottom-center {
-            content: "Page " counter(page);
-            font-size: 10pt;
-            color: #555;
-        }
-    }
-
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 11pt;
-        line-height: 1.4;
-        margin: 0;
-        padding: 0;
-        color: #000;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 100%;
-        padding: 0;
-        margin: 0;
-    }
-
-    h2 {
-        font-size: 20pt;
-        margin-bottom: 15px;
-        text-align: center;
-    }
-
-    /* Hide screen-only elements */
-    .no-print {
+	@page {
+		margin: 0.5in;
+		size: letter;
+	}
+	body {
+		font-family: Arial, sans-serif;
+		font-size: 10pt;
+		line-height: 1.4;
+		color: #555;
+		margin: 0;
+		padding: 0;
+	}
+	.container {
+		padding: 0;
+	}
+	.no-print {
+		display: none !important;
+	}
+	.item-container {
+		page-break-inside: avoid;
+		page-break-before: auto;
+		page-break-after: always;
+		margin-top: 0;
+	}
+	.item-container:last-child {
+		page-break-after: auto;
+	}
+	
+	   #filter_section {
         display: none !important;
     }
-
-    /* Item containers */
-    .item-container {
-        page-break-inside: avoid;
-        page-break-before: auto;   /* avoids blank first page */
-        page-break-after: always;  /* break after each item */
-        margin-top: 0;
-    }
-
-    .item-container:last-child {
-        page-break-after: auto;
-    }
-
-    .item-heading {
-        font-weight: bold;
-        font-size: 18pt;
-        margin-top: 0;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #444;
-        color: #222;
-    }
-
-    .gender-heading {
-        font-weight: bold;
-        font-size: 14.5pt;
-        margin-top: 12px;
-        color: #333;
-    }
-
-    .category-heading {
-        font-weight: bold;
-        font-size: 12.5pt;
-        margin-top: 10px;
-        margin-bottom: 5px;
-        color: #444;
-    }
-
-    /* Tables */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 15px;
-        font-size: 10.5pt;
-    }
-
-    th, td {
-        border: 1px solid #444;
-        padding: 8px 12px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #eaeaea;
-        font-weight: bold;
-        color: #222;
-    }
-
-    thead { display: table-header-group; }
-    tbody { page-break-inside: avoid; }
-    tr { page-break-inside: avoid; page-break-after: auto; }
-    
-    
-    td, th {
-    border-left: 1px solid #444;
-    border-right: 1px solid #444;
-}
-
-tr td {
-    border-top: 1px solid #444;
-}
-
-tr:last-child td {
-    border-bottom: 1px solid #444;
-}
-    
-
-    .category-section { page-break-inside: avoid; }
 }
 </style>
 
@@ -158,11 +134,68 @@ tr:last-child td {
 <body>
 	<div class="container mt-4">
 		<h2 class="mb-4">Competition Participation</h2>
-        
-        <!-- Print button for screen view -->
-        <div class="no-print mb-3">
-            <button class="btn btn-primary" onclick="window.print()">Print Report</button>
-        </div>
+
+
+		<div class="card shadow-sm border-0 mb-3" id="filter_section">
+			<div class="card-body p-3">
+				<form id="search-form" method="GET" class="row g-2">
+
+					<!-- Item filter -->
+					<div class="col-12 col-sm-6 col-md-3 mb-2">
+						<select name="itemId" class="form-select form-select-sm">
+							<option value="">-- Item --</option>
+							<option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+								th:text="${entry.value}"
+								th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+
+						</select>
+					</div>
+
+					<!-- Gender filter -->
+					<div class="col-12 col-sm-6 col-md-3 mb-2">
+						<select name="gender" class="form-select form-select-sm">
+							<option value="">-- Gender --</option>
+							<option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+								th:selected="${paramx['gender']} == ${g.name()}"></option>
+						</select>
+					</div>
+
+					<!-- Category filter -->
+					<div class="col-12 col-sm-6 col-md-3 mb-2">
+						<select name="category" class="form-select form-select-sm">
+							<option value="">-- Category --</option>
+							<option th:each="c : ${categories}" th:value="${c}"
+								th:text="${c}"
+								th:selected="${paramx['category']} == ${c.name()}"></option>
+						</select>
+					</div>
+
+					<!-- Action buttons -->
+					<div class="col-12">
+						<div
+							class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+							<button type="submit"
+								class="btn btn-primary btn-sm flex-fill flex-sm-grow-0 px-3">
+								<i class="fas fa-search me-1"></i> Search
+							</button>
+							<button type="button"
+								class="btn btn-secondary btn-sm flex-fill flex-sm-grow-0 px-3"
+								onclick="showAll()">
+								<i class="fas fa-list me-1"></i> All
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+
+
+		<!-- Print button for screen view -->
+		<div class="no-print mb-3">
+			<button class="btn btn-primary" onclick="window.print()">Print
+				Report</button>
+		</div>
 
 		<div th:each="itemEntry, itemStat : ${matrix}" class="item-container">
 			<div class="item-heading">
@@ -172,7 +205,8 @@ tr:last-child td {
 			<div th:each="genderEntry : ${itemEntry.value}">
 				<div class="gender-heading" th:text="${genderEntry.key}"></div>
 
-				<div th:each="catEntry : ${genderEntry.value}" class="category-section">
+				<div th:each="catEntry : ${genderEntry.value}"
+					class="category-section">
 					<div class="category-heading">
 						Category: <span th:text="${catEntry.key}"></span>
 					</div>
@@ -190,30 +224,49 @@ tr:last-child td {
 							<tr th:each="mei : ${catEntry.value}">
 								<td th:text="${mei.memberEventMember.userFname}"></td>
 								<td th:text="${mei.memberEventNode.nodeName}"></td>
-							    <td th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : ''}">0</td>
-							    <td th:text="${mei.memberEventGrade} ?: ''"></td>
+								<td
+									th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : ''}">0</td>
+								<td th:text="${mei.memberEventGrade} ?: ''"></td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
 			</div>
 		</div>
-        
-        <!-- Print footer -->
-        <div class="print-only" style="margin-top: 20px; text-align: center; font-size: 10pt;">
-            Report generated on <span th:text="${#dates.format(#dates.createNow(), 'dd MMMM yyyy')}"></span>
-        </div>
+
+		<!-- Print footer -->
+		<div class="print-only"
+			style="margin-top: 20px; text-align: center; font-size: 10pt;">
+			Report generated on <span
+				th:text="${#dates.format(#dates.createNow(), 'dd MMMM yyyy')}"></span>
+		</div>
 	</div>
 
-    <script>
-    // Add page break handling for better print experience
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add a class to the first item container to prevent page break
-        const firstItem = document.querySelector('.item-container');
-        if (firstItem) {
-            firstItem.classList.add('first-item');
-        }
-    });
-    </script>
+	<script>
+		// Add page break handling for better print experience
+		document.addEventListener('DOMContentLoaded', function() {
+			// Add a class to the first item container to prevent page break
+			const firstItem = document.querySelector('.item-container');
+			if (firstItem) {
+				firstItem.classList.add('first-item');
+			}
+		});
+		
+		
+		function showAll() {
+		    const form = document.getElementById('search-form');
+
+		    // Reset all input/select fields
+		    form.querySelectorAll('input, select').forEach(el => el.value = '');
+
+		    // Submit the form
+		    form.submit();
+		}
+		
+	</script>
+
+
+
+
 </body>
 </html>

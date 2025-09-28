@@ -1,6 +1,8 @@
 package com.dms.kalari.events.repository;
 
+import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.common.BaseRepository;
+import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
 
 import jakarta.transaction.Transactional;
@@ -85,6 +87,9 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
     	    JOIN FETCH mei.memberEventMember cu
     	    JOIN FETCH mei.memberEventNode n
     	    WHERE mei.memberEvent.eventId = :eventId
+    	      AND (:itemId IS NULL OR ei.evitemId = :itemId)
+    	      AND (:gender IS NULL OR mei.memberEventGender = :gender)
+    	      AND (:category IS NULL OR mei.memberEventCategory = :category)
     	    ORDER BY
     	        ei.evitemName ASC,
     	        mei.memberEventGender ASC,
@@ -92,7 +97,12 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
     	        n.nodeName ASC,
     	        cu.userFname ASC
     	""")
-    	List<MemberEventItem> findByEventId(@Param("eventId") Long eventId);
+    	List<MemberEventItem> findByEventIdWithFilters(
+    	        @Param("eventId") Long eventId,
+    	        @Param("itemId") Long itemId,
+    	        @Param("gender") CoreUser.Gender gender,
+    	        @Param("category") EventItemMap.Category category);
+
 
 
 

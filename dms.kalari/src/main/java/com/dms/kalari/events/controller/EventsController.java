@@ -418,6 +418,9 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	@GetMapping("/participants/{eventid}/{nodeid}")
 	public String Listparticipants(@PathVariable("eventid") Long mEventId,
 	                                @PathVariable("nodeid") Long mNodeId,
+	                                @RequestParam(required = false) Long itemId,
+	                                @RequestParam(required = false) CoreUser.Gender gender,
+	                                @RequestParam(required = false) EventItemMap.Category category,
 	                                Model model) {
 
 	    Long eventId = XorMaskHelper.unmask(mEventId);
@@ -428,8 +431,22 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    model.addAttribute("pageTitle", "Add Event Participants");
 	    
 	    
-        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService.getParticipationMatrix(eventId);
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
+	            memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category);
+
         model.addAttribute("matrix", matrix);
+        
+        
+        
+        Map<String,String> paramx = new HashMap<>();
+        paramx.put("itemId", itemId != null ? itemId.toString() : "");
+        paramx.put("gender", gender != null ? gender.name() : "");
+        paramx.put("category", category != null ? category.name() : "");
+        model.addAttribute("paramx", paramx);
+        
+        model.addAttribute("itemsMap", eventItemService.getIdNameMap());   // Map<Long,String>
+        model.addAttribute("genders", CoreUser.Gender.values());           // enum constants
+        model.addAttribute("categories", EventItemMap.Category.values());
         
         
 
