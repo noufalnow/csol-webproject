@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Competition Participation</title>
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<style>
+/* ================= Screen styles ================= */
+.item-heading {
+	font-weight: bold;
+	font-size: 18pt;
+	margin-top: 0;
+	padding-bottom: 8px;
+	border-bottom: 2px solid #444;
+	color: #222;
+}
+
+.gender-heading {
+	font-weight: bold;
+	font-size: 14.5pt;
+	margin-top: 12px;
+	color: #333;
+}
+
+.category-heading {
+	font-weight: bold;
+	font-size: 12.5pt;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	color: #444;
+}
+
+.container {
+	width: 100%;
+	max-width: 100%;
+	padding: 15px;
+	margin: 0;
+}
+
+h2 {
+	font-size: 20pt;
+	margin-bottom: 15px;
+	text-align: center;
+}
+
+.print-only {
+	display: none;
+}
+
+/* ================= Participant card/grid ================= */
+.participant-card {
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 10px;
+	margin-bottom: 10px;
+	background: #f9f9f9;
+}
+
+.participant-card .row > div {
+	margin-bottom: 5px;
+}
+
+/* ================= Print-friendly styles ================= */
+@media print {
+	@page {
+		margin: 0.5in;
+		size: letter;
+	}
+	body {
+		font-family: Arial, sans-serif;
+		font-size: 10pt;
+		line-height: 1.4;
+		color: #555;
+		margin: 0;
+		padding: 0;
+	}
+	.container {
+		padding: 0;
+	}
+	.no-print {
+		display: none !important;
+	}
+	.item-container {
+		page-break-inside: avoid;
+		page-break-before: auto;
+		page-break-after: always;
+		margin-top: 0;
+	}
+	.item-container:last-child {
+		page-break-after: auto;
+	}
+	#filter_section {
+		display: none !important;
+	}
+}
+
+/* ================= Mobile adjustments ================= */
+@media (max-width: 767px) {
+	#search-form .form-select,
+	#search-form .form-control {
+		width: 100% !important;
+	}
+	#search-form .d-flex {
+		flex-direction: column !important;
+	}
+	#search-form .d-flex button {
+		width: 100%;
+	}
+}
+</style>
+</head>
+<body>
+<div class="container mt-4">
+	<h2 class="mb-4">Competition Participation</h2>
+
+	<!-- Filter Section -->
+	<div class="card shadow-sm border-0 mb-3" id="filter_section">
+		<div class="card-body p-3">
+			<form id="search-form" method="GET" class="row g-2">
+
+				<!-- Item filter -->
+				<div class="col-12 col-md-3 mb-2">
+					<select name="itemId" class="form-select form-select-sm">
+						<option value="">-- Item --</option>
+						<option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+							th:text="${entry.value}"
+							th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+					</select>
+				</div>
+
+				<!-- Gender filter -->
+				<div class="col-12 col-md-3 mb-2">
+					<select name="gender" class="form-select form-select-sm">
+						<option value="">-- Gender --</option>
+						<option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+							th:selected="${paramx['gender']} == ${g.name()}"></option>
+					</select>
+				</div>
+
+				<!-- Category filter -->
+				<div class="col-12 col-md-3 mb-2">
+					<select name="category" class="form-select form-select-sm">
+						<option value="">-- Category --</option>
+						<option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+							th:selected="${paramx['category']} == ${c.name()}"></option>
+					</select>
+				</div>
+
+				<!-- Action buttons -->
+				<div class="col-12">
+					<div class="d-flex flex-column flex-md-row gap-2 justify-content-end">
+						<button type="submit" class="btn btn-primary btn-sm flex-fill flex-md-grow-0 px-3">
+							<i class="fas fa-search me-1"></i> Search
+						</button>
+						<button type="button" class="btn btn-secondary btn-sm flex-fill flex-md-grow-0 px-3" onclick="showAll()">
+							<i class="fas fa-list me-1"></i> All
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Print button -->
+	<div class="no-print mb-3">
+		<button class="btn btn-primary" onclick="window.print()">Print Report</button>
+	</div>
+
+	<!-- Participant List -->
+	<div th:each="itemEntry : ${matrix}" class="item-container">
+		<div class="item-heading">
+			Item: <span th:text="${itemEntry.key}"></span>
+		</div>
+
+		<div th:each="genderEntry : ${itemEntry.value}">
+			<div class="gender-heading" th:text="${genderEntry.key}"></div>
+
+			<div th:each="catEntry : ${genderEntry.value}" class="category-section">
+				<div class="category-heading">
+					Category: <span th:text="${catEntry.key}"></span>
+				</div>
+
+				<!-- Participant Cards -->
+				<div th:each="mei : ${catEntry.value}" class="participant-card">
+					<div class="row align-items-center">
+						<div class="col-12 col-sm-3">
+							<label class="form-label fw-bold">Participant</label>
+							<div th:text="${mei.memberEventMember.userFname}"></div>
+						</div>
+						<div class="col-12 col-sm-3">
+							<label class="form-label fw-bold">Kalari</label>
+							<div th:text="${mei.memberEventNode.nodeName}"></div>
+						</div>
+						<div class="col-12 col-sm-3">
+							<label class="form-label fw-bold">Score</label>
+							<div th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : ''}"></div>
+						</div>
+						<div class="col-12 col-sm-3">
+							<label class="form-label fw-bold">Grade</label>
+							<div th:text="${mei.memberEventGrade} ?: ''"></div>
+						</div>
+					</div>
+				</div>
+				<!-- End Participant Cards -->
+
+			</div>
+		</div>
+	</div>
+
+	<!-- Print Footer -->
+	<div class="print-only text-center mt-3" style="font-size: 10pt;">
+		Report generated on <span th:text="${#dates.format(#dates.createNow(), 'dd MMMM yyyy')}"></span>
+	</div>
+</div>
+
+<script>
+function showAll() {
+	const form = document.getElementById('search-form');
+	form.querySelectorAll('input, select').forEach(el => el.value = '');
+	form.submit();
+}
+</script>
+</body>
+</html>

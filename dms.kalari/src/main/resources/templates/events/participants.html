@@ -34,7 +34,7 @@
 .container {
 	width: 100%;
 	max-width: 100%;
-	padding: 20px;
+	padding: 15px;
 	margin: 0;
 }
 
@@ -58,7 +58,7 @@ table {
 
 th, td {
 	border: 1px solid #444;
-	padding: 8px 12px;
+	padding: 6px 10px;
 	text-align: left;
 }
 
@@ -122,37 +122,50 @@ tr:last-child td {
 	.item-container:last-child {
 		page-break-after: auto;
 	}
-	
-	   #filter_section {
-        display: none !important;
-    }
+	#filter_section {
+		display: none !important;
+	}
+}
+
+/* ================= Mobile-friendly adjustments ================= */
+@media (max-width: 767px) {
+	/* Make all form controls full width */
+	#search-form .form-select,
+	#search-form .form-control {
+		width: 100% !important;
+	}
+
+	/* Stack action buttons */
+	#search-form .d-flex {
+		flex-direction: column !important;
+	}
+
+	#search-form .d-flex button {
+		width: 100%;
+	}
 }
 </style>
-
-
 </head>
 <body>
 	<div class="container mt-4">
 		<h2 class="mb-4">Competition Participation</h2>
-
 
 		<div class="card shadow-sm border-0 mb-3" id="filter_section">
 			<div class="card-body p-3">
 				<form id="search-form" method="GET" class="row g-2">
 
 					<!-- Item filter -->
-					<div class="col-12 col-sm-6 col-md-3 mb-2">
+					<div class="col-12 col-md-3 mb-2">
 						<select name="itemId" class="form-select form-select-sm">
 							<option value="">-- Item --</option>
 							<option th:each="entry : ${itemsMap}" th:value="${entry.key}"
 								th:text="${entry.value}"
 								th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
-
 						</select>
 					</div>
 
 					<!-- Gender filter -->
-					<div class="col-12 col-sm-6 col-md-3 mb-2">
+					<div class="col-12 col-md-3 mb-2">
 						<select name="gender" class="form-select form-select-sm">
 							<option value="">-- Gender --</option>
 							<option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
@@ -161,25 +174,23 @@ tr:last-child td {
 					</div>
 
 					<!-- Category filter -->
-					<div class="col-12 col-sm-6 col-md-3 mb-2">
+					<div class="col-12 col-md-3 mb-2">
 						<select name="category" class="form-select form-select-sm">
 							<option value="">-- Category --</option>
-							<option th:each="c : ${categories}" th:value="${c}"
-								th:text="${c}"
+							<option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
 								th:selected="${paramx['category']} == ${c.name()}"></option>
 						</select>
 					</div>
 
 					<!-- Action buttons -->
 					<div class="col-12">
-						<div
-							class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+						<div class="d-flex flex-column flex-md-row gap-2 justify-content-end">
 							<button type="submit"
-								class="btn btn-primary btn-sm flex-fill flex-sm-grow-0 px-3">
+								class="btn btn-primary btn-sm flex-fill flex-md-grow-0 px-3">
 								<i class="fas fa-search me-1"></i> Search
 							</button>
 							<button type="button"
-								class="btn btn-secondary btn-sm flex-fill flex-sm-grow-0 px-3"
+								class="btn btn-secondary btn-sm flex-fill flex-md-grow-0 px-3"
 								onclick="showAll()">
 								<i class="fas fa-list me-1"></i> All
 							</button>

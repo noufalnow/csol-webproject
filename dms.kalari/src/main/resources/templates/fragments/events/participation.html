@@ -15,32 +15,31 @@
 
 
 
-		<div class="row">
-			<!-- Left: Item Tabs - Show unique items -->
-			<div class="col-3">
-				<ul class="nav flex-column nav-pills me-3" id="eventTabs"
-					role="tablist">
-					<li class="nav-item"
-						th:each="uniqueItem, iterStat : ${uniqueEventItems}">
-						<button class="nav-link text-truncate d-block" type="button"
-							th:classappend="${iterStat.index == 0} ? ' active'"
-							th:id="'tab_' + ${uniqueItem.evitemId}" data-bs-toggle="pill"
-							th:data-bs-target="'#content_' + ${uniqueItem.evitemId}"
-							th:title="${uniqueItem.evitemName}">
-							<span th:text="${uniqueItem.evitemName}"></span>
-						</button>
-					</li>
-				</ul>
-			</div>
+<div class="row flex-column flex-lg-row">
+    <!-- Tabs -->
+<div class="col-12 col-lg-3 mb-2 mb-lg-0">
+    <ul class="nav flex-column nav-pills overflow-auto" 
+        id="eventTabs" role="tablist" style="max-height:45vh;">
+        <li class="nav-item" th:each="uniqueItem, iterStat : ${uniqueEventItems}">
+            <button class="nav-link text-truncate d-block" type="button"
+                th:classappend="${iterStat.index == 0} ? ' active'"
+                th:id="'tab_' + ${uniqueItem.evitemId}" data-bs-toggle="pill"
+                th:data-bs-target="'#content_' + ${uniqueItem.evitemId}"
+                th:title="${uniqueItem.evitemName}">
+                <span th:text="${uniqueItem.evitemName}"></span>
+            </button>
+        </li>
+    </ul>
+</div>
 
-			<!-- Right: Tab Content -->
-			<div class="col-9 tab-content">
 
-				<div class="tab-pane fade"
-					th:each="uniqueItem, iterStat : ${uniqueEventItems}"
-					th:classappend="${iterStat.index == 0} ? ' show active'"
-					th:id="'content_' + ${uniqueItem.evitemId}" role="tabpanel"
-					th:aria-labelledby="'tab_' + ${uniqueItem.evitemId}">
+    <!-- Tab Content -->
+    <div class="col-12 col-lg-9 tab-content" style="max-height:50vh; overflow-y:auto;">
+        <div class="tab-pane fade" 
+             th:each="uniqueItem, iterStat : ${uniqueEventItems}" 
+             th:classappend="${iterStat.index == 0} ? ' show active'"
+             th:id="'content_' + ${uniqueItem.evitemId}" role="tabpanel"
+             th:aria-labelledby="'tab_' + ${uniqueItem.evitemId}">
 					<form
 						th:action="@{/champ_participation/{eventId}/{nodeId}(eventId=${eventId}, nodeId=${nodeId})}"
 						method="post"
@@ -137,48 +136,114 @@
 	<button id="closeDialog">OK</button>
 	</dialog>
 </div>
+
+
 <style>
-/* Form and Modal Styles */
-form {
-	max-width: 100%;
-}
-
+/* Modal and Form Styles */
 .modal-dialog {
-	max-width: 99% !important;
-}
-
-@media ( max-width : 768px) {
-	.modal-dialog {
-		max-width: 100% !important;
-		margin: 10px;
-	}
+    max-width: 95% !important;
+    margin: 10px auto;
 }
 
 .modal-body {
-	max-height: 70vh;
-	overflow-y: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0.5rem 1rem;
 }
 
-/* Table Styles */
-.matrix-table th, .matrix-table td {
-	text-align: left; /* Align text to left */
-	vertical-align: middle; /* Vertically center content */
-}
-
-.matrix-table .form-check {
-	margin-bottom: 0.3rem; /* Spacing between checkboxes */
+form {
+    width: 100%;
+    padding: 4px;
 }
 
 /* Tabs Styles */
 #eventTabs {
-	max-height: 70vh;
-	overflow-y: auto;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .nav-pills .nav-link {
-	white-space: nowrap; /* Prevent text wrapping in tabs */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+
+/* Table Styles */
+.matrix-table th,
+.matrix-table td {
+    text-align: left;
+    vertical-align: middle;
+    font-size: 0.85rem;
+}
+
+.matrix-table .form-check {
+    margin-bottom: 0.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .row {
+        flex-direction: column;
+    }
+
+    .col-3, .col-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Tabs on top for small screens */
+    #eventTabs {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+
+    #eventTabs .nav-link {
+        flex: 0 0 auto;
+        margin-right: 0.3rem;
+    }
+
+    /* Table scroll horizontally if needed */
+    .matrix-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .matrix-table th, .matrix-table td {
+        white-space: nowrap;
+    }
+}
+
+/* Optional: smaller modal for very small screens */
+@media (max-width: 576px) {
+    .modal-body {
+        max-height: 60vh;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .nav-link {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .matrix-table th, .matrix-table td {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .text-end button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
 }
 </style>
+
+
 
 <script>
 	function validateAndSubmit(formId) {

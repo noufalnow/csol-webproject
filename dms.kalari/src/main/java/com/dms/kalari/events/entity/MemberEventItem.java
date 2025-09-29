@@ -67,7 +67,17 @@ public class MemberEventItem extends BaseEntity {
     private Integer memberEventScore;
     
     @Column(name = "mei_grade")
-    private Integer memberEventGrade;
+    @Enumerated(EnumType.STRING)     // store the enum name in DB
+    private Grade memberEventGrade;
+
+    
+    
+    public enum Grade {
+        GOLD,
+        SILVER,
+        BRONZ,
+        PARTICIPATION
+    }
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mei_entry_by", nullable = true)

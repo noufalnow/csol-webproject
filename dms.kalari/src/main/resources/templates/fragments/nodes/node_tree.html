@@ -167,11 +167,10 @@ ul.collapsed {
 
 
 
-
-<div class="d-flex overflow-hidden mb-3 border-secondary">
+<div class="row mb-3 border-secondary">
 	<!-- Left column -->
 	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}"
-		class="tree-column me-2 flex-shrink-0" style="width: 25%;">
+		class="tree-column col-12 col-md-3" style="overflow: scroll;">
 		<div>
 			<!-- templates/fragments/node_tree.html -->
 			<!-- Main content fragment -->
@@ -218,13 +217,11 @@ ul.collapsed {
 						</span> <span th:if="${!hasChildren}" class="empty-toggle"></span>
 
 						<!-- Node label -->
-<span class="aspan" 
-      th:text="${nodeName}"
-      th:data-node-type="${nodeType}"
-      th:data-node-id="${nodeId != null ? xorMaskHelper.mask(nodeId) : ''}"
-      th:onclick="${nodeId != null} ? 'onTreeNodeClick(event, this, this.dataset.nodeType)' : null">
-    Node Name
-</span>
+						<span class="aspan" th:text="${nodeName}"
+							th:data-node-type="${nodeType}"
+							th:data-node-id="${nodeId != null ? xorMaskHelper.mask(nodeId) : ''}"
+							th:onclick="${nodeId != null} ? 'onTreeNodeClick(event, this, this.dataset.nodeType)' : null">
+							Node Name </span>
 
 					</div>
 
@@ -248,18 +245,18 @@ ul.collapsed {
 
 			</div>
 		</div>
-</div>
-		<!-- Right column -->
-		<div class="content-column flex-grow-1">
-			<div id="users_target"></div>
-		</div>
-	
+	</div>
+	<!-- Right column -->
+	<div class="col-12 col-md-9">
+		<div id="users_target" class="content-column"></div>
+	</div>
+
 
 	<div id="tree_form_target"></div>
-	</div>
-	
+</div>
 
-	<script>
+
+<script>
   function clearTreeForm() {
     $('#tree_form_target').html('');
   }
@@ -390,7 +387,7 @@ function toggleTreeNode(event, nodeElement) {
 </script>
 
 
-	<script th:inline="javascript">
+<script th:inline="javascript">
     var nodeType = /*[[${nodeType}]]*/ "KALARI";  // fallback string for IDE
 
     if (nodeType !== 'KALARI') {

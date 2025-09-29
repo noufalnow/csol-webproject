@@ -14,6 +14,7 @@ import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseDTO;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
+import com.dms.kalari.events.entity.MemberEventItem.Grade;
 
 @Data
 @NoArgsConstructor
@@ -39,7 +40,7 @@ public class MemberEventItemDTO extends BaseDTO {
 
     private Integer memberEventScore;           // Score
 
-    private Integer memberEventGrade;           // Grade
+    private Grade memberEventGrade;          // Grade
 
     private CoreUser scoreEntryBy;              // User who entered score
 
