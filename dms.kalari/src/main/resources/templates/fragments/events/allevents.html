@@ -1,76 +1,88 @@
 <!-- fragments/event_list.html -->
 <div th:fragment="content">
 
-<div class="container mt-1 mb-3 px-0">
-    <div class="row align-items-center">
+	<div class="container mt-1 mb-3 px-0">
+		<div class="row align-items-center">
 
-        <!-- Left: Node/Section Name (4 cols) -->
-        <div class="col-12 col-md-5 mb-2 mb-md-0">
-            <h4 class="mb-0 px-3 py-2 rounded"
-                style="background-color: var(--bs-gray-200); font-size: 1.1rem; font-weight: 600; color: var(--bs-dark);">
-                <label>All Events <br> Indian Kalaripayattu Federation</label>
-            </h4>
-        </div>
+			<!-- Left: Node/Section Name (4 cols) -->
+			<div class="col-12 col-md-5 mb-2 mb-md-0">
+				<h4 class="mb-0 px-3 py-2 rounded"
+					style="background-color: var(--bs-gray-200); font-size: 1.1rem; font-weight: 600; color: var(--bs-dark);">
+					<label>All Events <br> Indian Kalaripayattu Federation
+					</label>
+				</h4>
+			</div>
 
-        <!-- Right: Radio Buttons (8 cols) -->
-        <div class="col-12 col-md-7">
-            <div class="row">
-                <input type="hidden" id="tempSelectedId" name="tempSelectedId" th:value="${parentId}" />
+			<!-- Right: Radio Buttons (8 cols) -->
+			<div class="col-12 col-md-7">
+				<div class="row" style="padding-left: .75rem;">
+					<input type="hidden" id="tempSelectedId" name="tempSelectedId"
+						th:value="${parentId}" />
 
-                <div th:if="${nodeType != 'KALARI' and #authorization.expression('hasAuthority(''PRIV_branch_nodelist'')')}"
-                     class="col-6 col-md-3 mb-2 mb-md-0">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choice"
-                               id="option1" value="nodes"
-                               th:onclick="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
-                        <label class="form-check-label" for="option1" style="cursor: pointer;">Affiliations</label>
-                    </div>
-                </div>
+					<div
+						th:if="${nodeType != 'KALARI' and #authorization.expression('hasAuthority(''PRIV_branch_nodelist'')')}"
+						class="col-6 col-md-3 mb-2 mb-md-0">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="choice"
+								id="option1" value="nodes"
+								th:onclick="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
+							<label class="form-check-label" for="option1"
+								style="cursor: pointer;">Affiliations</label>
+						</div>
+					</div>
 
-                <div th:if="${#authorization.expression('hasAuthority(''PRIV_officials_bynode'')')}"
-                     class="col-6 col-md-3 mb-2 mb-md-0">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choice"
-                               id="option2" value="officials"
-                               th:onclick="|loadContent('officials_bynode/${parentId}', '#users_target'); clearTreeForm()|">
-                        <label class="form-check-label" for="option2" style="cursor: pointer;">Officials</label>
-                    </div>
-                </div>
+					<div
+						th:if="${#authorization.expression('hasAuthority(''PRIV_officials_bynode'')')}"
+						class="col-6 col-md-3 mb-2 mb-md-0">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="choice"
+								id="option2" value="officials"
+								th:onclick="|loadContent('officials_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+							<label class="form-check-label" for="option2"
+								style="cursor: pointer;">Officials</label>
+						</div>
+					</div>
 
-                <div th:if="${nodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_members_bynode'')')}"
-                     class="col-6 col-md-2 mb-2 mb-md-0">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choice"
-                               id="option3" value="members"
-                               th:onclick="|loadContent('members_bynode/${parentId}', '#users_target'); clearTreeForm()|">
-                        <label class="form-check-label" for="option3" style="cursor: pointer;">Participants</label>
-                    </div>
-                </div>
+					<div
+						th:if="${nodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_members_bynode'')')}"
+						class="col-6 col-md-2 mb-2 mb-md-0">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="choice"
+								id="option3" value="members"
+								th:onclick="|loadContent('members_bynode/${parentId}', '#users_target'); clearTreeForm()|">
+							<label class="form-check-label" for="option3"
+								style="cursor: pointer;">Participants</label>
+						</div>
+					</div>
 
-                <div th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventbynode'')')}"
-                     class="col-6 col-md-2 mb-2 mb-md-0">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choice"
-                               id="option4" value="events"
-                               th:onclick="|loadContent('champ_eventbynode/${parentId}', '#users_target'); clearTreeForm()|">
-                        <label class="form-check-label" for="option4" style="cursor: pointer;">Events</label>
-                    </div>
-                </div>
+					<div
+						th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventbynode'')')}"
+						class="col-6 col-md-2 mb-2 mb-md-0">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="choice"
+								id="option4" value="events"
+								th:onclick="|loadContent('champ_eventbynode/${parentId}', '#users_target'); clearTreeForm()|">
+							<label class="form-check-label" for="option4"
+								style="cursor: pointer;">Events</label>
+						</div>
+					</div>
 
-                <div th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventall'')')}"
-                     class="col-6 col-md-3 mb-2 mb-md-0">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choice"
-                               id="option5" value="eventsall" checked
-                               th:onclick="|loadContent('champ_eventall/${parentId}', '#users_target'); clearTreeForm()|">
-                        <label class="form-check-label" for="option5" style="cursor: pointer;">All Events</label>
-                    </div>
-                </div>
+					<div
+						th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventall'')')}"
+						class="col-6 col-md-3 mb-2 mb-md-0">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="choice"
+								id="option5" value="eventsall" checked
+								th:onclick="|loadContent('champ_eventall/${parentId}', '#users_target'); clearTreeForm()|">
+							<label class="form-check-label" for="option5"
+								style="cursor: pointer;">All Events</label>
+						</div>
+					</div>
 
-            </div>
-        </div>
-    </div>
-</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 
 	<!-- Events Table -->
@@ -96,29 +108,27 @@
 					<td><span th:text="${event.get('node_name')}"></span> <span
 						th:text="${nodeType}"></span></td>
 
-					<td><span th:text="${event.get('dd_event_period_start')}">DD/MM/YYYY</span>
-						- <span th:text="${event.get('dd_event_period_end')}">DD/MM/YYYY</span>
-					</td>
+					<td><span th:text="${event.get('period_range')}"></span></td>
 					<td th:text="${event.get('event_venue')}">Venue</td>
 					<td>
 
-						<div class="d-flex gap-2">
+						<div class="d-flex flex-column gap-2">
 							<div
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}">
 								<a href="javascript:void(0);"
 									th:onclick="'window.open(\'/champ_participants/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'"
-									class="btn btn-sm btn-outline-primary"> <i
-									class="fa-solid fa-clipboard-check"></i> List
+									class="list-link"> <i class="fas fa-eye"></i>
+									View
 								</a>
+
 							</div>
 
 							<div
 								th:if="${linkNodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_champ_participation'')')}">
-								<button
+								<a href="javascript:void(0);"
 									th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'"
-									class="btn btn-sm btn-outline-primary">
-									<i class="fa-solid fa-clipboard-check"></i> Add
-								</button>
+									class="list-link"> <i class="fa-solid fa-clipboard-check"></i> Add
+								</a>
 							</div>
 						</div>
 

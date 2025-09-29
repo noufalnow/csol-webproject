@@ -163,6 +163,22 @@
 ul.collapsed {
 	display: none;
 }
+
+
+@media (max-width: 768px) {
+
+.col-12.col-md-9 {
+  padding-right: 1px;
+  padding-left: 1px;
+}
+
+.content-column {
+  padding: 0.25rem;
+}
+ 
+
+
+  }
 </style>
 
 
@@ -170,7 +186,7 @@ ul.collapsed {
 <div class="row mb-3 border-secondary">
 	<!-- Left column -->
 	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}"
-		class="tree-column col-12 col-md-3" style="overflow: scroll;">
+		class="tree-column col-12 col-md-3 mb-2" style="overflow: scroll;">
 		<div>
 			<!-- templates/fragments/node_tree.html -->
 			<!-- Main content fragment -->
@@ -251,8 +267,6 @@ ul.collapsed {
 		<div id="users_target" class="content-column"></div>
 	</div>
 
-
-	<div id="tree_form_target"></div>
 </div>
 
 

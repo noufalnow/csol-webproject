@@ -1,454 +1,156 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Competition Participation</title>
-    <!-- Essential viewport tag for mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<title>Competition Participation</title>
+<!-- Essential viewport tag for mobile -->
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+<style>
 
-    <style>
-        /* ================= Base Styles ================= */
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.5;
-            color: #333;
-            background-color: #fff;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 100%;
-            padding: 15px;
-            margin: 0 auto;
-        }
-
-        h2 {
-            font-size: clamp(1.5rem, 4vw, 1.8rem);
-            margin-bottom: 1rem;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        /* ================= Card & Layout Styles ================= */
-        .card {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .card-body {
-            padding: 1rem;
-        }
-
-        .item-heading {
-            font-weight: bold;
-            font-size: clamp(1.1rem, 3vw, 1.3rem);
-            margin: 1.5rem 0 0.5rem 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #444;
-            color: #222;
-            background: #f8f9fa;
-            padding: 0.75rem;
-            border-radius: 5px;
-        }
-
-        .gender-heading {
-            font-weight: bold;
-            font-size: clamp(1rem, 2.5vw, 1.1rem);
-            margin: 1rem 0 0.5rem 0;
-            color: #333;
-            padding-left: 0.5rem;
-            border-left: 4px solid #007bff;
-        }
-
-        .category-heading {
-            font-weight: 600;
-            font-size: clamp(0.9rem, 2vw, 1rem);
-            margin: 0.75rem 0 0.5rem 0;
-            color: #444;
-            background: #e9ecef;
-            padding: 0.5rem;
-            border-radius: 4px;
-        }
-
-        /* ================= Form Styles ================= */
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            font-size: 0.85rem;
-            color: #495057;
-        }
-
-        .form-control, .form-select {
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-            padding: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-
-        /* ================= Participant Cards ================= */
-        .participant-card {
-            background: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: box-shadow 0.2s ease;
-        }
-
-        .participant-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        /* ================= Button Styles ================= */
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            min-height: 48px; /* Touch-friendly size */
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            min-height: 44px;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            border: none;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-            border: none;
-        }
-
-        /* ================= Mobile-First Responsive Design ================= */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .card-body {
-                padding: 0.75rem;
-            }
-            
-            .participant-card {
-                padding: 0.75rem;
-                margin-bottom: 0.75rem;
-                padding-left: 1.5rem;
-            }
-            
-            /* Stack form elements vertically on mobile */
-            .row.g-2 {
-                margin: 0;
-            }
-            
-            .row.g-2 > [class*="col-"] {
-                padding: 0.25rem 0;
-            }
-            
-            /* Make sure all columns take full width on mobile */
-            .col-12 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-            
-            /* Improve filter section for mobile */
-            #filter_section .col-12 {
-                margin-bottom: 0.5rem;
-            }
-            
-            /* Better spacing for mobile */
-            .mb-2 {
-                margin-bottom: 0.5rem !important;
-            }
-            
-            .mt-4 {
-                margin-top: 1rem !important;
-            }
-            
-            /* Adjust font sizes for mobile */
-            .item-heading {
-                font-size: 1.2rem;
-                margin: 1rem 0 0.5rem 0;
-            }
-            
-            .gender-heading {
-                font-size: 1.1rem;
-            }
-            
-            .category-heading {
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .container {
-                padding: 8px;
-            }
-            
-            h2 {
-                font-size: 1.4rem;
-            }
-            
-            .btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-            
-            /* Stack filter dropdowns vertically */
-            #search-form .row {
-                flex-direction: column;
-            }
-            
-            #search-form .col-12 {
-                margin-bottom: 0.75rem;
-            }
-            
-            /* Make action buttons full width and stacked */
-            #search-form .d-flex {
-                flex-direction: column;
-                gap: 0.5rem !important;
-            }
-            
-            #search-form .d-flex button {
-                width: 100%;
-            }
-            
-            /* Participant info stacking */
-            .participant-card .row {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-            
-            .participant-card .col-12 {
-                padding: 0;
-            }
-            
-            /* Add visual separation between participant cards */
-            .participant-card {
-                border-left: 4px solid #007bff;
-            }
-        }
-
-        /* ================= Very Small Screens ================= */
-        @media (max-width: 360px) {
-            .container {
-                padding: 5px;
-            }
-            
-            .participant-card {
-                padding: 0.5rem;
-            }
-            
-            .form-control, .form-select {
-                padding: 0.6rem;
-            }
-            
-            h2 {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* ================= Print Styles ================= */
-        @media print {
-            @page {
-                margin: 0.5in;
-                size: letter;
-            }
-            
-            .no-print {
-                display: none !important;
-            }
-            
-            .container {
-                padding: 0;
-            }
-            
-            .btn {
-                display: none !important;
-            }
-        }
-
-        /* ================= Utility Classes ================= */
-        .text-truncate-mobile {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 576px) {
-            .text-truncate-mobile {
-                white-space: normal;
-                overflow: visible;
-                text-overflow: unset;
-            }
-        }
-
-        /* Loading state */
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        /* Success state */
-        .is-valid {
-            border-color: #28a745 !important;
-        }
-
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
-    </style>
+</style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h2 class="mb-4">Competition Participation</h2>
+	<div class="container mt-4">
+		<h2 class="mb-4">Competition Participation</h2>
 
-        <!-- Filter Section -->
-        <div class="card shadow-sm border-0 mb-4 no-print" id="filter_section">
-            <div class="card-body p-3">
-                <form id="search-form" method="GET">
-                    <div class="row g-3 align-items-end">
-                        <!-- Item filter -->
-                        <div class="col-12 col-md-4">
-                            <label class="form-label">Item</label>
-                            <select name="itemId" class="form-select">
-                                <option value="">-- Select Item --</option>
-                                <option th:each="entry : ${itemsMap}" th:value="${entry.key}"
-                                    th:text="${entry.value}"
-                                    th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
-                            </select>
-                        </div>
+		<!-- Filter Section -->
+		<div class="card shadow-sm border-0 mb-4 no-print" id="filter_section">
+			<div class="card-body p-3">
+				<form id="search-form" method="GET">
+					<div class="row g-3 align-items-end">
+						<!-- Item filter -->
+						<div class="col-12 col-md-4">
+							<label class="form-label">Item</label> <select name="itemId"
+								class="form-select">
+								<option value="">-- Select Item --</option>
+								<option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+									th:text="${entry.value}"
+									th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+							</select>
+						</div>
 
-                        <!-- Gender filter -->
-                        <div class="col-12 col-md-4">
-                            <label class="form-label">Gender</label>
-                            <select name="gender" class="form-select">
-                                <option value="">-- Select Gender --</option>
-                                <option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
-                                    th:selected="${paramx['gender']} == ${g.name()}"></option>
-                            </select>
-                        </div>
+						<!-- Gender filter -->
+						<div class="col-12 col-md-4">
+							<label class="form-label">Gender</label> <select name="gender"
+								class="form-select">
+								<option value="">-- Select Gender --</option>
+								<option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+									th:selected="${paramx['gender']} == ${g.name()}"></option>
+							</select>
+						</div>
 
-                        <!-- Category filter -->
-                        <div class="col-12 col-md-4">
-                            <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
-                                <option value="">-- Select Category --</option>
-                                <option th:each="c : ${categories}" th:value="${c}"
-                                    th:text="${c}"
-                                    th:selected="${paramx['category']} == ${c.name()}"></option>
-                            </select>
-                        </div>
+						<!-- Category filter -->
+						<div class="col-12 col-md-4">
+							<label class="form-label">Category</label> <select
+								name="category" class="form-select">
+								<option value="">-- Select Category --</option>
+								<option th:each="c : ${categories}" th:value="${c}"
+									th:text="${c}"
+									th:selected="${paramx['category']} == ${c.name()}"></option>
+							</select>
+						</div>
 
-                        <!-- Action buttons -->
-                        <div class="col-12">
-                            <div class="d-flex flex-column flex-md-row gap-2 justify-content-end">
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-search me-1"></i> Search
-                                </button>
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                    onclick="showAll()">
-                                    <i class="fas fa-list me-1"></i> Show All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+						<!-- Action buttons -->
+						<div class="col-12">
+							<div
+								class="d-flex flex-column flex-md-row gap-2 justify-content-end">
+								<button type="submit" class="btn btn-primary btn-sm">
+									<i class="fas fa-search me-1"></i> Search
+								</button>
+								<button type="button" class="btn btn-secondary btn-sm"
+									onclick="showAll()">
+									<i class="fas fa-list me-1"></i> Show All
+								</button>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
 
-        <!-- Main Content -->
-        <form th:action="@{/participants/update}" method="post" id="main-form">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+		<!-- Main Content -->
+		<form th:action="@{/participants/update}" method="post" id="main-form">
+			<input type="hidden" th:name="${_csrf.parameterName}"
+				th:value="${_csrf.token}" />
 
-            <div th:each="itemEntry : ${matrix}">
-                <div class="item-heading">
-                    <i class="fas fa-trophy me-2"></i>Item: <span th:text="${itemEntry.key}"></span>
-                </div>
+			<div th:each="itemEntry : ${matrix}">
+				<div class="item-heading">
+					<i class="fas fa-trophy me-2"></i>Item: <span
+						th:text="${itemEntry.key}"></span>
+				</div>
 
-                <div th:each="genderEntry : ${itemEntry.value}">
-                    <div class="gender-heading" th:text="${genderEntry.key}"></div>
+				<div th:each="genderEntry : ${itemEntry.value}">
+					<div class="gender-heading" th:text="${genderEntry.key}"></div>
 
-                    <div th:each="catEntry : ${genderEntry.value}" class="category-section">
-                        <div class="category-heading">
-                            <i class="fas fa-tag me-2"></i>Category: <span th:text="${catEntry.key}"></span>
-                        </div>
+					<div th:each="catEntry : ${genderEntry.value}"
+						class="category-section">
+						<div class="category-heading">
+							<i class="fas fa-tag me-2"></i>Category: <span
+								th:text="${catEntry.key}"></span>
+						</div>
 
-                        <div th:each="mei : ${catEntry.value}" class="participant-card">
-                            <div class="row g-3 align-items-center">
-                                <!-- Participant Name -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label">Participant</label>
-                                    <div class="fw-bold text-primary" th:text="${mei.memberEventMember.userFname}"></div>
-                                </div>
+						<div th:each="mei : ${catEntry.value}" class="participant-card">
+							<div class="row g-3 align-items-center">
+								<!-- Participant Name -->
+								<div class="col-12 col-sm-6 col-md-3">
+									<label class="form-label">Participant</label>
+									<div class="fw-bold text-primary"
+										th:text="${mei.memberEventMember.userFname}"></div>
+								</div>
 
-                                <!-- Kalari -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label">Kalari</label>
-                                    <div th:text="${mei.memberEventNode.nodeName}"></div>
-                                </div>
+								<!-- Kalari -->
+								<div class="col-12 col-sm-6 col-md-3">
+									<label class="form-label">Kalari</label>
+									<div th:text="${mei.memberEventNode.nodeName}"></div>
+								</div>
 
-                                <!-- Score Input -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label">Score</label>
-                                    <input type="text" class="form-control"
-                                        th:name="${'scores[' + mei.meiId + ']'}"
-                                        th:value="${mei.memberEventScore}" 
-                                        pattern="^\d*\.?\d*$"
-                                        inputmode="decimal" 
-                                        placeholder="0.00"
-                                        oninput="validateScore(this)">
-                                </div>
+								<!-- Score Input -->
+								<div class="col-12 col-sm-6 col-md-3" style="padding-left: 1rem;">
+									<label class="form-label d-block mb-1">Score & Grade</label>
 
-                                <!-- Grade Select -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label">Grade</label>
-                                    <select class="form-select"
-                                        th:name="${'grades[' + mei.meiId + ']'}">
-                                        <option value="">-- Select Grade --</option>
-                                        <option
-                                            th:each="g : ${T(com.dms.kalari.events.entity.MemberEventItem.Grade).values()}"
-                                            th:value="${g.name()}" th:text="${g.name()}"
-                                            th:selected="${(mei.memberEventGrade != null and mei.memberEventGrade.name() == g.name()) 
-                                         or (mei.memberEventGrade == null and g.name() == 'PARTICIPATION')}">
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+									<div class="d-flex align-items-center gap-2">
+										<!-- Score -->
+										<input type="text" class="form-control"
+											th:name="${'scores[' + mei.meiId + ']'}"
+											th:value="${mei.memberEventScore}" pattern="^\d*\.?\d*$"
+											inputmode="decimal" placeholder="0.00"
+											oninput="validateScore(this)" style="max-width: 90px;" />
 
-            <!-- Save Button -->
-            <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-success btn-lg px-5">
-                    <i class="fas fa-save me-2"></i> Save Scores & Grades
-                </button>
-            </div>
-        </form>
-    </div>
+										<!-- Grade -->
+										<select class="form-select flex-fill"
+											th:name="${'grades[' + mei.meiId + ']'}"
+											style="max-width: 180px; padding-left: 1rem;">
+											<option value="">-- Select Grade --</option>
+											<option
+												th:each="g : ${T(com.dms.kalari.events.entity.MemberEventItem.Grade).values()}"
+												th:value="${g.name()}" th:text="${g.name()}"
+												th:selected="${(mei.memberEventGrade != null and mei.memberEventGrade.name() == g.name())}">
+											</option>
+										</select>
+									</div>
+								</div>
 
-    <script>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Save Button -->
+			<div class="mt-4 text-center">
+				<button type="submit" class="btn btn-success btn-lg px-5">
+					<i class="fas fa-save me-2"></i> Save Scores & Grades
+				</button>
+			</div>
+		</form>
+	</div>
+
+	<script>
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Mobile responsive competition page loaded');

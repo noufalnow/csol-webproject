@@ -334,6 +334,8 @@ public class EventService implements BaseService<EventDTO> {
 			    e.*,
 			    TO_CHAR(e.event_period_start, 'DD/MM/YYYY') AS dd_event_period_start,
 			    TO_CHAR(e.event_period_end,   'DD/MM/YYYY') AS dd_event_period_end,
+				to_char(event_period_start, 'Mon DD') || ' - ' ||
+				    to_char(event_period_end,   'Mon DD, YYYY') AS period_range,
 			    nd.node_name
 			FROM events e
 			JOIN full_hierarchy fh

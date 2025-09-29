@@ -494,9 +494,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    Map<String,Object> body = new HashMap<>();
 	    body.put("message", "Participation saved successfully");
 	    body.put("status", "success");
+	    //body.put("loadnext", "champ_participation/" + mEventId + "/" + mNodeId +
+	            //(pageParams != null ? "?" + pageParams : ""));
+	    
 	    body.put("loadnext", "champ_participation/" + mEventId + "/" + mNodeId +
 	            (pageParams != null ? "?" + pageParams : ""));
-	    body.put("target", "events_target");
+	    body.put("target", "modal");
 	    return ResponseEntity.ok(body);
 	}
 	
