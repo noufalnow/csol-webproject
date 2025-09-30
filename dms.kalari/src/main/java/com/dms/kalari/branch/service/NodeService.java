@@ -191,8 +191,8 @@ public class NodeService implements BaseService<NodeDTO> {
 		Node parent = nodeRepository.findById(parentId).orElseThrow();
 		switch (parent.getNodeType()) {
 		case ROOT:
-			return List.of(Node.Type.COUNTRY);
-		case COUNTRY:
+			return List.of(Node.Type.NATIONAL);
+		case NATIONAL:
 			return List.of(Node.Type.STATE);
 		case STATE:
 			return List.of(Node.Type.DISTRICT);
@@ -210,8 +210,8 @@ public class NodeService implements BaseService<NodeDTO> {
 		Node parent = nodeRepository.findById(parentId).orElseThrow();
 		switch (parent.getNodeType()) {
 		case ROOT:
-			return Node.Type.COUNTRY;
-		case COUNTRY:
+			return Node.Type.NATIONAL;
+		case NATIONAL:
 			return Node.Type.STATE;
 		case STATE:
 			return Node.Type.DISTRICT;

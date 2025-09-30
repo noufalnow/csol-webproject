@@ -284,7 +284,7 @@ function getEntities() {
         }
     });
 
-    return params.toString(); // returns like: "page=0&sortField=desigId&sortDir=asc&level=COUNTRY"
+    return params.toString(); // returns like: "page=0&sortField=desigId&sortDir=asc&level=NATIONAL"
 }
 
 

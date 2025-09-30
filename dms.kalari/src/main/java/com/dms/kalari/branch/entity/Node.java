@@ -24,7 +24,7 @@ import com.dms.kalari.common.BaseEntity;
 public class Node extends BaseEntity {
 
     public enum Type {
-        ROOT(0), COUNTRY(1), STATE(2), DISTRICT(3), KALARI(4);
+        ROOT(0), NATIONAL(1), STATE(2), DISTRICT(3), KALARI(4);
 
         private final int level;
         Type(int level) { this.level = level; }

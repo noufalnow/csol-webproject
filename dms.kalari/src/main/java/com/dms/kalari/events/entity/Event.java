@@ -51,7 +51,7 @@ public class Event extends BaseEntity {
 	private String eventOfficialPhone;
 
 	public enum Type {
-		ROOT, COUNTRY, STATE, DISTRICT, KALARI
+		ROOT, NATIONAL, STATE, DISTRICT, KALARI
 	}
 
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
