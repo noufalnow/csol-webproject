@@ -19,6 +19,17 @@ public class HomeController {
     public HomeController(EventService eventService) {
         this.eventService = eventService;
     }
+    
+    
+    @GetMapping("/")
+    public String rootRedirect(Authentication authentication) {
+        // If user is authenticated, redirect to /home, else /login
+        if (authentication != null && authentication.isAuthenticated()) {
+            return "redirect:/home";
+        }
+        return "redirect:/login";
+    }
+    
 
     @GetMapping("/home")
     public String home(Authentication authentication, Model model) {
