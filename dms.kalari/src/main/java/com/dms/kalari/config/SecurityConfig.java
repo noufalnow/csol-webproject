@@ -52,6 +52,11 @@ public class SecurityConfig {
                 .passwordParameter("password")
                 .permitAll()
             )
+            .rememberMe(rememberMe -> rememberMe
+                    .key("uniqueAndSecretKey")
+                    .tokenValiditySeconds(24 * 60 * 60)
+                    .alwaysRemember(true) // automatically remember every login
+                )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
