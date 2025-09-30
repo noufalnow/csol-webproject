@@ -160,13 +160,15 @@
     
     
 
-    <main id="content" class="container-fluid mt-3">
+    <main id="content" class="container-fluid mt-3 mb-1">
         <div th:replace="${content}"></div>
     </main>
 
-    <footer class="bg-light text-center py-3 mt-4 fixed-bottom">
-        <p class="mb-0">&copy; 2024 My Application</p>
-    </footer>
+	<footer class="bg-light text-center fixed-bottom" 
+	        style="height: 0; line-height: 0; padding: 0; margin: 0; overflow: hidden;">
+	    <p class="mb-0" style="margin: 0; padding: 0; line-height: 0;">&copy; www.creativeboard.net</p>
+	</footer>
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
