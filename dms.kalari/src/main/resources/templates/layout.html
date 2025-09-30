@@ -20,6 +20,8 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="manifest" href="/manifest.json">
+    
     
     <style>.navbar {
     /*border-bottom: 3px solid #00b4d8;*/
@@ -308,6 +310,16 @@
         open.apply(this, arguments);
     };
 })();
+
+
+//service-worker.js
+self.addEventListener('install', event => {
+  console.log('Service Worker installed');
+});
+self.addEventListener('fetch', event => {
+  // Optional caching
+});
+
 
 </script>
 
