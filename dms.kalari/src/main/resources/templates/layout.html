@@ -24,6 +24,8 @@
     <style>.navbar {
     /*border-bottom: 3px solid #00b4d8;*/
 }</style>
+
+<script type="text/javascript">const SCREEN_WIDTH = window.innerWidth;</script>
     
 </head>
 <body>
@@ -313,7 +315,33 @@
 
 
 
+function collapseAllNodes() {
+	  let count = 0;
 
+	  document.querySelectorAll('.tree-node').forEach(node => {
+	    const toggleBtn = node.querySelector('.toggle-btn');
+	    if (!toggleBtn) return;
+
+	    const childrenUl = node.parentElement.querySelector('ul.tree-children');
+	    if (!childrenUl) return;
+
+	    childrenUl.classList.remove('expanded');
+	    childrenUl.classList.add('collapsed');
+
+	    toggleBtn.classList.remove('open');
+	    toggleBtn.classList.add('closed');
+
+	    const icon = toggleBtn.querySelector('i');
+	    if (icon) {
+	      icon.classList.remove('fa-folder-open');
+	      icon.classList.add('fa-folder');
+	    }
+
+	    count++;
+	  });
+
+	  return `Collapsed ${count} nodes`;
+}
 
 </script>
 

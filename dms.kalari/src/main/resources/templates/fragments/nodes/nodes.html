@@ -92,7 +92,8 @@
 
 	<div class="d-flex justify-content-between align-items-center mb-3">
 		<h4 class="mb-0">
-			Affiliation(<span th:text="${#lists.size(nodeList)}"></span>)
+			AFFILIATION [<span th:text="${nextNodeType}"></span>-<span
+				th:text="${#lists.size(nodeList)}"></span>]
 		</h4>
 
 		<!-- Search Form 
@@ -104,7 +105,8 @@
 		<a
 			th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeadd'')')) 
            or (isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeadd_child'')'))}"
-			class="btn btn-sm btn-outline-primary me-1 ajax-link" href="javascript:void(0);"
+			class="btn btn-sm btn-outline-primary me-1 ajax-link"
+			href="javascript:void(0);"
 			th:onclick="'loadContent(\'' + @{'/branch_nodeadd/' + ${parentId}} + '\', \'modal\')'">
 			<i class="fas fa-plus"></i> Add New Affiliation
 		</a>
@@ -123,9 +125,6 @@
 					</th>
 					<th scope="col"><a href="#" class="" data-field="nodeName">Name</a>
 					</th>
-					<th scope="col"><a href="#" class="" data-field="nodeType">Type</a>
-					</th>
-					<th scope="col">Status</th>
 					<th scope="col">Actions</th>
 				</tr>
 			</thead>
@@ -133,25 +132,31 @@
 				<tr th:each="node, iterStat : ${nodeList}">
 					<th scope="row" th:text="${iterStat.count}">1</th>
 					<td th:text="${node.nodeName}">Node Name</td>
-					<td th:text="${node.nodeType}">Type</td>
-					<td><span
-						th:classappend="${node.nodeStatus == 1} ? 'badge bg-success' : 'badge bg-secondary'"
-						th:text="${node.nodeStatus == 1} ? 'Active' : 'Inactive'">Status</span>
-					</td>
 					<td>
-					<div class="d-flex flex-column gap-2">
-					
-					<a class="ajax-link list-link" href="javascript:void(0);"
-						th:onclick="'loadContent(\'/branch_nodeview/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'modal\')'">
-							<i class="fas fa-eye"></i> View
-					</a> <a class="ajax-link list-link"
-						th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit'')')) 
-           				 or (isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit_child'')'))}"
-						href="javascript:void(0);"
-						th:onclick="'loadContent(\'/branch_nodeedit/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'modal\')'">
-							<i class="fas fa-edit"></i> Edit
-					</a>
-					</div></td>
+						<div
+							class="d-flex flex-column flex-lg-row gap-2 align-items-center">
+							<!-- Status Badge -->
+								
+							<span
+								th:class="${node.nodeStatus == 1} ? 'badge-dot bg-success me-2' : 'badge-dot bg-danger me-2'"></span>								
+
+							<!-- View -->
+							<a class="ajax-link list-link" href="javascript:void(0);"
+								th:onclick="'loadContent(\'/branch_nodeview/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'modal\')'">
+								<i class="fas fa-eye"></i> View
+							</a>
+
+							<!-- Edit -->
+							<a class="ajax-link list-link ms-lg-3"
+								th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit'')')) 
+                     or (isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit_child'')'))}"
+								href="javascript:void(0);"
+								th:onclick="'loadContent(\'/branch_nodeedit/' + ${xorMaskHelper.mask(node.nodeId)} + '\', \'modal\')'">
+								<i class="fas fa-edit"></i> Edit
+							</a>
+						</div>
+					</td>
+
 				</tr>
 
 				<!-- Empty state -->

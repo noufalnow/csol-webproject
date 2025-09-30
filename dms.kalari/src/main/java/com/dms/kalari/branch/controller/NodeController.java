@@ -92,6 +92,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 	    model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
 	    model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
+	    model.addAttribute("nextNodeType", service.getNextNodeType(nodeId));
 
 		List<NodeDTO> nodeList = service.findByParentId(nodeId);
 

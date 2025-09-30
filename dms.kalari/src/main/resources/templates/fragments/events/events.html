@@ -86,7 +86,7 @@
 
 	<div class="d-flex justify-content-between align-items-center mb-3">
 		<h4 class="mb-0">
-			Events(<span th:text="${#lists.size(events)}"></span>)
+			EVENTS [<span th:text="${#lists.size(events)}"></span>]
 		</h4>
 		<a
 			th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_champ_eventadd'')')) 
@@ -124,7 +124,8 @@
 							03, 2023</span></td>
 					<td th:text="${event.eventVenue}">Venue</td>
 					<td>
-						<div class="d-flex flex-column gap-2">
+						<div
+							class="d-flex flex-column flex-lg-row gap-2 align-items-center">
 							<!-- View Participants -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventviews'')')}"
@@ -132,10 +133,11 @@
 								th:onclick="'loadContent(\'/events/html/champ_event_participants?eventId=' + ${event.eventId} + '\', \'modal\')'">
 								<i class="fa-solid fa-user-group"></i> View
 							</a>
+
 							<!-- Edit -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventedit'')')}"
-								class="ajax-link list-link" href="javascript:void(0);"
+								class="ajax-link list-link ms-lg-3" href="javascript:void(0);"
 								th:onclick="'loadContent(\'/champ_eventedit/' + ${xorMaskHelper.mask(event.eventId)} + '\', \'modal\')'">
 								<i class="fas fa-edit"></i> Edit
 							</a>
@@ -143,17 +145,16 @@
 							<!-- Score -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants_score'')')}"
-								class="ajax-link list-link" href="javascript:void(0);"
+								class="ajax-link list-link ms-lg-3" href="javascript:void(0);"
 								th:onclick="'window.open(\'/champ_participants_score/' 
-				                   + ${xorMaskHelper.mask(event.eventId)} 
-				                   + '/' + ${parentId} 
-				                   + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'">
+                      + ${xorMaskHelper.mask(event.eventId)} 
+                      + '/' + ${parentId} 
+                      + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'">
 								<i class="fa-solid fa-clipboard-check"></i> Score
 							</a>
 						</div>
-
-
 					</td>
+
 				</tr>
 
 				<!-- Empty state -->

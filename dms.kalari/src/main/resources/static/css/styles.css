@@ -38,6 +38,13 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+
+html,body {
+  overscroll-behavior-y: contain;
+  overflow-y: scroll; /* ensure scroll works normally */
+}
+
+
 .container {
   width: 100%;
   max-width: 100%;
@@ -496,3 +503,11 @@ footer {
 
 .btn {
     width: fit-content;}
+    
+    
+    .badge-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}

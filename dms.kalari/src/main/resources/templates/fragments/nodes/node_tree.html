@@ -409,4 +409,13 @@ function toggleTreeNode(event, nodeElement) {
     } else {
         loadContent('/members_bynode/', '#users_target');
     }
+    
+    
+    $(document).ready(function() {
+        if (SCREEN_WIDTH < 380) {
+            collapseAllNodes();
+        }
+    });
+
+
 </script>
