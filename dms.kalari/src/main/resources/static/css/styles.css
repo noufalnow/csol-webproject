@@ -511,3 +511,16 @@ footer {
     height: 10px;
     border-radius: 50%;
 }
+
+
+
+.modal-header, .modal-footer {
+  padding-top: .10rem;
+  padding-bottom: .10rem;
+  margin-bottom: .10rem;
+  margin-top: .10rem;
+}
+
+.modal-body {
+  padding-bottom: .10rem;
+}

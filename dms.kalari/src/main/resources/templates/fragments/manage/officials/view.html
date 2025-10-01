@@ -1,4 +1,3 @@
-<!-- fragments/user_detail_modal.html -->
 <div th:fragment="content">
     <!-- Modal Header -->
     <div class="modal-header">
@@ -6,147 +5,162 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     
-<div class="modal-body">
-    <div class="container-fluid">
-        
-        <!-- --------------------------- First Row: Left details + Right photo ------------ -->      
-        <div class="row mb-3 align-items-center">
-            <!-- Left side details -->
-            <div class="col-md-8">
-                <div class="row mb-2">
-                    <div class="col-md-6">
-                        <p class="fw-bold mb-1">Name:</p>
-                        <p th:text="${user.userFname + ' ' + user.userLname}"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="fw-bold mb-1">Email:</p>
-                        <p th:text="${user.userEmail}"></p>
+    <div class="modal-body">
+        <div class="container-fluid">
+            <!-- Main Profile Card -->
+            <div class="dms-card mb-4">
+                <div class="dms-card-header">
+                    <i class="fas fa-id-card me-2"></i>OFFICIAL PROFILE
+                </div>
+                <div class="dms-card-body">
+                    <div class="row align-items-center">
+                        <!-- Left Column - Name & Details -->
+                        <div class="col-md-8">
+                            <h2 class="mb-2" th:text="${user.userFname + ' ' + user.userLname}">Full Name</h2>
+                            <h5 class="mb-2 fw-bold" th:text="${user.designationName}">Designation</h5>
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-user-tag me-1"></i> <span th:text="${user.userType}">User Type</span>
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+                                <span class="badge-dms">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    <span th:text="${user.userEmail}">Email</span>
+                                </span>
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-tint me-1"></i>
+                                    <span th:text="${user.bloodGroup}">Blood Group</span>
+                                </span>
+                            </div>
+
+                            <div class="detail-row">
+                                <div class="detail-label">Date of Birth:</div>
+                                <div class="detail-value" th:text="${user.userDob}">--/--/----</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Gender:</div>
+                                <div class="detail-value" th:text="${user.gender}">--</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Aadhaar Number:</div>
+                                <div class="detail-value" th:text="${user.aadhaarNumber}">XXXX-XXXX-XXXX</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Photo -->
+                        <div class="col-md-4 text-center">
+                            <div class="profile-photo-container mx-auto mb-3">
+                                <img th:if="${user.photoFile != null}"
+                                    th:src="@{/files/view/{id}(id=${user.photoFile})}"
+                                    alt="Official Photo" class="profile-photo">
+                                <img th:if="${user.photoFile == null}"
+                                    src="/images/default-user.png" alt="Default Photo"
+                                    class="profile-photo">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-md-6">
-                        <p class="fw-bold mb-1">Designation:</p>
-                        <p th:text="${user.designationName}"></p>
+            </div>
+
+            <div class="row">
+                <!-- Contact Information Column -->
+                <div class="col-lg-6">
+                    <div class="dms-card">
+                        <div class="dms-card-header">
+                            <i class="fas fa-address-book me-2"></i>CONTACT INFORMATION
+                        </div>
+                        <div class="dms-card-body">
+                            <div class="info-group">
+                                <div class="info-label">MOBILE NUMBER</div>
+                                <div class="info-value">
+                                    <i class="fas fa-phone me-2"></i>
+                                    <span th:text="${user.mobileNumber}">--</span>
+                                </div>
+                            </div>
+                            <div class="info-group">
+                                <div class="info-label">EMAIL ADDRESS</div>
+                                <div class="info-value">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    <span th:text="${user.userEmail}">--</span>
+                                </div>
+                            </div>
+                            <div class="info-group">
+                                <div class="info-label">EMERGENCY CONTACT</div>
+                                <div class="info-value">
+                                    <i class="fas fa-phone-alt me-2"></i>
+                                    <span th:text="${user.emergencyContact}">--</span>
+                                </div>
+                            </div>
+                            <div class="info-group">
+                                <div class="info-label">BLOOD GROUP</div>
+                                <div class="info-value">
+                                    <i class="fas fa-tint me-2"></i>
+                                    <span th:text="${user.bloodGroup}">--</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <p class="fw-bold mb-1">Date of Birth:</p>
-                        <p th:text="${user.userDob}"></p>
+                </div>
+
+                <!-- Status & Address Column -->
+                <div class="col-lg-6">
+                    <div class="dms-card">
+                        <div class="dms-card-header">
+                            <i class="fas fa-map-marker-alt me-2"></i>ADDRESS & STATUS
+                        </div>
+                        <div class="dms-card-body">
+                            <div class="info-group">
+                                <div class="info-label">OFFICIAL STATUS</div>
+                                <div class="info-value">
+                                    <span th:if="${user.userStatus == 1}" class="status-badge status-student">
+                                        <i class="fas fa-check-circle me-1"></i> ACTIVE
+                                    </span>
+                                    <span th:if="${user.userStatus == 2}" class="status-badge status-inactive">
+                                        <i class="fas fa-times-circle me-1"></i> INACTIVE
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-group">
+                                <div class="info-label">ADDRESS</div>
+                                <div class="info-value">
+                                    <span th:text="${user.addressLine1}"></span><br>
+                                    <span th:text="${user.addressLine2}"></span><br>
+                                    <span th:text="${user.addressLine3}"></span>, 
+                                    <span th:text="${user.addressState}"></span> - 
+                                    <span th:text="${user.addressPin}"></span>
+                                </div>
+                            </div>
+                            <div class="info-group">
+                                <div class="info-label">STATE & PIN CODE</div>
+                                <div class="info-value">
+                                    <span th:text="${user.addressState}"></span>, 
+                                    <span th:text="${user.addressPin}"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right side profile photo -->
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Profile Photo:</p>
-                <div th:if="${user.photoFile != null}">
-                    <img th:src="@{/files/view/{id}(id=${user.photoFile})}"
-                         alt="Profile Photo"
-                         class="img-thumbnail shadow-sm"
-                         style="max-height:150px;">
+            <!-- Additional Information Card -->
+            <div class="dms-card mt-4">
+                <div class="dms-card-header">
+                    <i class="fas fa-file-alt me-2"></i>BACKGROUND & ACHIEVEMENTS
+                </div>
+                <div class="dms-card-body">
+                    <div class="info-group">
+                        <div class="info-label">KALARIPPAYATTU PROFILE / BACKGROUND / ACHIEVEMENTS</div>
+                        <div class="info-value" th:text="${user.officialDescription}">
+                            No information provided.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- --------------------------- Second Row: Gender, Mobile, Blood Group ------------ -->     
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Gender:</p>
-                <p th:text="${user.gender}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Mobile Number:</p>
-                <p th:text="${user.mobileNumber}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Blood Group:</p>
-                <p th:text="${user.bloodGroup}"></p>
-            </div>
-        </div>
-
-        <!-- --------------------------- Third Row: Aadhaar, Emergency Contact, Status ------------ -->
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Aadhaar Number:</p>
-                <p th:text="${user.aadhaarNumber}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Emergency Contact:</p>
-                <p th:text="${user.emergencyContact}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Status:</p>
-                <p th:text="${user.userStatus == 1 ? 'Active' : 'Inactive'}"></p>
-            </div>
-        </div>
-
-        <!-- --------------------------- Fourth Row: Address Line 1, 2, Village ------------ -->
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Address Line 1:</p>
-                <p th:text="${user.addressLine1}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Address Line 2:</p>
-                <p th:text="${user.addressLine2}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">Village/Thaluk/District:</p>
-                <p th:text="${user.addressLine3}"></p>
-            </div>
-        </div>
-
-        <!-- --------------------------- Fifth Row: State, PIN, User Type ------------ -->
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">State:</p>
-                <p th:text="${user.addressState}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">PIN Code:</p>
-                <p th:text="${user.addressPin}"></p>
-            </div>
-            <div class="col-md-4">
-                <p class="fw-bold mb-1">User Type:</p>
-                <p th:text="${user.userType}"></p>
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-9">
-                <p class="fw-bold mb-1">Kalarippayattu Profile / Background / Achievements:</p>
-                <p th:text="${user.officialDescription}"></p>
-            </div>
-        </div>
-        
-        
     </div>
-</div>
 
-    
     <!-- Modal Footer -->
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
 </div>
-
-
-<style>
-    .modal-body p {
-        margin-bottom: 0.5rem;
-    }
-    .fw-bold {
-        font-weight: 600;
-        color: #495057;
-    }
-    .img-thumbnail {
-        max-height: 150px;
-    }
-.modal-body {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.modal-dialog {
-  max-width: 90% !important; /* wider on desktops */
-}
-</style>

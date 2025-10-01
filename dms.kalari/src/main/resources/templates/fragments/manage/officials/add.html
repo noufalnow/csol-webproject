@@ -128,10 +128,7 @@
               <label for="addressLine3" class="form-label">Village/ Thaluk / District</label>
               <input type="text" id="addressLine3" th:field="*{addressLine3}" class="form-control">
             </div>
-            <div class="col-12 col-lg-4">
-              <label for="addressState" class="form-label">State</label>
-              <input type="text" id="addressState" th:field="*{addressState}" class="form-control">
-            </div>
+            <div class="col-12 col-lg-4"><div th:replace="fragments/common/states :: stateSelect('addressState', 'State')"></div></div>
             <div class="col-12 col-lg-4">
               <label for="addressPin" class="form-label">PIN Code</label>
               <input type="text" id="addressPin" th:field="*{addressPin}" class="form-control" maxlength="6" placeholder="6-digit PIN">
