@@ -350,5 +350,25 @@ public class MemberEventItemService {
 
         return matrix;
     }
+	
+	
+	@Transactional
+	public void updateScores(Map<Long, Integer> scores,
+	                         Map<Long, MemberEventItem.Grade> grades) {
+
+	    scores.forEach((meiId, score) -> {
+	        MemberEventItem mei = memberEventItemRepository.findById(meiId)
+	                .orElseThrow(() -> new RuntimeException("MemberEventItem not found for id " + meiId));
+
+	        mei.setMemberEventScore(score);
+
+	        if (grades.containsKey(meiId)) {
+	            mei.setMemberEventGrade(grades.get(meiId));
+	        }
+
+	        memberEventItemRepository.save(mei);
+	    });
+	}
+
 
 }

@@ -110,8 +110,16 @@ $(document).ready(function() {
 	            if (response.status === 'error') {
 	                handleFormErrors(response);
 	            } else if (response.status === 'success') {
-	                $('#dynamicModal').modal('hide');
-	                $('#nestedModal').modal('hide');
+
+					
+					
+					let dynamicModal = bootstrap.Modal.getInstance(document.getElementById('dynamicModal'));
+					if (dynamicModal) dynamicModal.hide();
+
+					let nestedModal = bootstrap.Modal.getInstance(document.getElementById('nestedModal'));
+					if (nestedModal) nestedModal.hide();
+
+					
 	                Swal.fire({
 	                    title: 'Success',
 	                    html: response.message,
@@ -345,16 +353,19 @@ function sortEntities(sortField) {
 
 
 
-function loadContent(url, targetSelector) {
+function loadContent(url, targetSelector,form) {
 
 	console.log(targetSelector);
 
 	const $target = $(targetSelector);
 	const isModal = $target.is('.modal') || targetSelector === 'modal' || $target.is('.modal2') || targetSelector === 'modal2';
+	
+	var query = $(form).serialize();
 
 	$.ajax({
 		url: encodeURI(url),
 		method: 'GET',
+		data: query,
 
 		success(data) {
 
@@ -396,11 +407,19 @@ function loadContent(url, targetSelector) {
 				
 				var targetEl = $target instanceof jQuery ? $target[0] : $target;
 
-				var modal =
-				  targetSelector === 'modal'
-				    ? (targetEl && targetEl.classList.contains('modal') ? targetEl : document.getElementById('dynamicModal'))
-				    : document.getElementById('nestedModal');
-				$modal = $(modal);					
+
+				/*var modal = document.getElementById(
+				    (targetSelector === 'modal' && targetEl instanceof HTMLElement && targetEl.classList.contains('modal'))
+				        ? targetEl.id
+				        : (targetSelector === 'modal' ? 'dynamicModal' : 'nestedModal')
+				);
+
+				var $modal = $(modal);*/
+				
+				var modal = targetSelector === 'modal' ? (targetEl && targetEl.classList.contains('modal') ? targetEl : document.getElementById('dynamicModal')) : document.getElementById('nestedModal'); $modal = $(modal);
+
+				
+								
 
 				//const $modal = $target.is('.modal') ? $target : $('#dynamicModal');
 				if (!$modal.length) {

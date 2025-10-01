@@ -531,3 +531,9 @@ footer {
   min-width: 4.8rem;
 }
 
+
+button.btn-secondary, button.btn-primary {
+  padding: 0.25rem 1.5rem;
+  min-height: 38px;
+}
+
