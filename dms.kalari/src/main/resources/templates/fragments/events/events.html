@@ -126,34 +126,37 @@
 					<td>
 						<div
 							class="d-flex flex-column flex-lg-row gap-2 align-items-center">
+
 							<!-- View Participants -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventviews'')')}"
-								class="ajax-link list-link" href="javascript:void(0);"
+								class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
 								th:onclick="'loadContent(\'/events/html/champ_event_participants?eventId=' + ${event.eventId} + '\', \'modal\')'">
-								<i class="fa-solid fa-user-group"></i> View
+								<i class="fa-solid fa-user-group"></i> <span class="ms-1">View</span>
 							</a>
 
 							<!-- Edit -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventedit'')')}"
-								class="ajax-link list-link ms-lg-3" href="javascript:void(0);"
+								class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
 								th:onclick="'loadContent(\'/champ_eventedit/' + ${xorMaskHelper.mask(event.eventId)} + '\', \'modal\')'">
-								<i class="fas fa-edit"></i> Edit
+								<i class="fas fa-edit"></i> <span class="ms-1">Edit</span>
 							</a>
 
 							<!-- Score -->
 							<a
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants_score'')')}"
-								class="ajax-link list-link ms-lg-3" href="javascript:void(0);"
+								class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
 								th:onclick="'window.open(\'/champ_participants_score/' 
                       + ${xorMaskHelper.mask(event.eventId)} 
                       + '/' + ${parentId} 
                       + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'">
-								<i class="fa-solid fa-clipboard-check"></i> Score
+								<i class="fa-solid fa-clipboard-check"></i> <span class="ms-1">Score</span>
 							</a>
+
 						</div>
 					</td>
+
 
 				</tr>
 

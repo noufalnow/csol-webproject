@@ -111,28 +111,31 @@
 					<td><span th:text="${event.get('period_range')}"></span></td>
 					<td th:text="${event.get('event_venue')}">Venue</td>
 					<td>
-
 						<div class="d-flex flex-column gap-2">
+
+							<!-- View Participants -->
 							<div
 								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}">
 								<a href="javascript:void(0);"
-									th:onclick="'window.open(\'/champ_participants/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'"
-									class="list-link"> <i class="fas fa-eye"></i>
-									View
+									class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
+									th:onclick="'window.open(\'/champ_participants/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'scoreWindow\', \'width=800,height=600,scrollbars=yes,resizable=yes\')'">
+									<i class="fas fa-eye"></i> <span class="ms-1">View</span>
 								</a>
-
 							</div>
 
+							<!-- Add Participation -->
 							<div
 								th:if="${linkNodeType == 'KALARI' and #authorization.expression('hasAuthority(''PRIV_champ_participation'')')}">
 								<a href="javascript:void(0);"
-									th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'"
-									class="list-link"> <i class="fa-solid fa-clipboard-check"></i> Add
+									class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
+									th:onclick="'loadContent(\'/champ_participation/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'">
+									<i class="fa-solid fa-clipboard-check"></i> <span class="ms-1">Add</span>
 								</a>
 							</div>
-						</div>
 
+						</div>
 					</td>
+
 				</tr>
 
 				<tr th:if="${eventList == null or #lists.isEmpty(eventList)}">

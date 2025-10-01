@@ -524,3 +524,10 @@ footer {
 .modal-body {
   padding-bottom: .10rem;
 }
+
+
+.btn.btn-sm.btn-outline-primary {
+  min-height: .25rem;
+  min-width: 4.8rem;
+}
+
