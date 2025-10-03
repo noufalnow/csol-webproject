@@ -346,19 +346,25 @@ function collapseAllNodes() {
 
 
 if (window.matchMedia('(display-mode: standalone)').matches) {
-	  history.pushState(null, '', location.href);
+	  // Always keep a dummy state
+	  if (!history.state || !history.state.isPWA) {
+	    history.replaceState({ isPWA: true }, '');
+	  }
 
-	  window.addEventListener('popstate', function () {
-	    const exit = confirm("Do you really want to exit the app?");
-	    if (exit) {
-	      // Let Android close the PWA naturally
-	      history.go(-1); 
-	    } else {
-	      // Stay inside app by pushing state again
-	      history.pushState(null, '', location.href);
+	  window.addEventListener('popstate', function (event) {
+	    if (event.state && event.state.isPWA) {
+	      const shouldExit = confirm("Do you really want to exit the app?");
+	      if (shouldExit) {
+	        // Let Android handle the natural exit
+	        history.go(-1);
+	      } else {
+	        // Stay inside by restoring the dummy state
+	        history.replaceState({ isPWA: true }, '');
+	      }
 	    }
 	  });
 	}
+
 
 
 
