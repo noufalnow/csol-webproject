@@ -345,24 +345,21 @@ function collapseAllNodes() {
 
 
 
-const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+if (window.matchMedia('(display-mode: standalone)').matches) {
+	  history.pushState(null, '', location.href);
 
-if (isPWA) {
-	  // Push initial dummy state
-	  history.pushState({ page: 1 }, '', '');
-
-	  window.addEventListener('popstate', function (event) {
-	    // Show exit confirmation
+	  window.addEventListener('popstate', function () {
 	    const exit = confirm("Do you really want to exit the app?");
 	    if (exit) {
-	      // Allow closing
-	      window.history.back(); // or just let it close naturally
+	      // Let Android close the PWA naturally
+	      history.go(-1); 
 	    } else {
-	      // Prevent closing by pushing state again
-	      history.pushState({ page: 1 }, '', '');
+	      // Stay inside app by pushing state again
+	      history.pushState(null, '', location.href);
 	    }
 	  });
 	}
+
 
 
 
