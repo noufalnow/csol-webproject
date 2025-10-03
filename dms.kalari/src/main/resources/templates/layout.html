@@ -343,6 +343,29 @@ function collapseAllNodes() {
 	  return `Collapsed ${count} nodes`;
 }
 
+
+
+const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+
+if (isPWA) {
+	  // Push initial dummy state
+	  history.pushState({ page: 1 }, '', '');
+
+	  window.addEventListener('popstate', function (event) {
+	    // Show exit confirmation
+	    const exit = confirm("Do you really want to exit the app?");
+	    if (exit) {
+	      // Allow closing
+	      window.history.back(); // or just let it close naturally
+	    } else {
+	      // Prevent closing by pushing state again
+	      history.pushState({ page: 1 }, '', '');
+	    }
+	  });
+	}
+
+
+
 </script>
 
 

@@ -537,3 +537,10 @@ button.btn-secondary, button.btn-primary {
   min-height: 38px;
 }
 
+body.modal-open {
+    overflow: hidden;
+    touch-action: none;
+    position: fixed; /* optional for iOS */
+    width: 100%;
+}
+
