@@ -345,39 +345,25 @@ function collapseAllNodes() {
 
 
 
-if (window.matchMedia('(display-mode: standalone)').matches) {
-	  console.log('PWA detected - enabling back button trap');
-	  
-	  // Seed with a dummy state
-	  history.replaceState({ isPWA: true }, '');
+const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
-	  // Always push a new state after AJAX navigation
-	  function pushAppState() {
-	    history.pushState({ isPWA: true, timestamp: Date.now() }, '');
-	    console.log('Pushed app state');
-	  }
+if (isPWA) {
+  // Push a dummy state once
+  history.pushState({ page: 'pwa-root' }, '');
 
-	  // Example: call this after your AJAX loads a new page
-	  window.pushAppState = pushAppState;
-
-	  // Handle Android back button (popstate)
-	  window.addEventListener('popstate', function (event) {
-	    console.log('popstate triggered', event.state);
-
-	    const shouldExit = confirm("Do you really want to exit the app?");
-	    if (shouldExit) {
-	      // Let OS exit
-	      console.log('Exiting...');
-	    } else {
-	      // Stay in app → immediately push state again
-	      console.log('Staying in app');
-	      history.pushState({ isPWA: true, timestamp: Date.now() }, '');
-	    }
-	  });
-	}
-
-
-
+  window.addEventListener('popstate', function (event) {
+    // Always show exit confirmation
+    const exit = confirm("Do you really want to exit the app?");
+    if (exit) {
+      // ⚠️ Nothing you do in JS can *force* Android to exit the PWA
+      // The only option is to clear history and let the system close
+      history.go(-history.length); 
+    } else {
+      // Restore dummy state so back won't exit
+      history.pushState({ page: 'pwa-root' }, '');
+    }
+  });
+}
 
 
 
