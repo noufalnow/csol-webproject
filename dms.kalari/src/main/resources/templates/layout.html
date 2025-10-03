@@ -346,24 +346,36 @@ function collapseAllNodes() {
 
 
 if (window.matchMedia('(display-mode: standalone)').matches) {
-	  // Always keep a dummy state
-	  if (!history.state || !history.state.isPWA) {
-	    history.replaceState({ isPWA: true }, '');
+	  console.log('PWA detected - enabling back button trap');
+	  
+	  // Seed with a dummy state
+	  history.replaceState({ isPWA: true }, '');
+
+	  // Always push a new state after AJAX navigation
+	  function pushAppState() {
+	    history.pushState({ isPWA: true, timestamp: Date.now() }, '');
+	    console.log('Pushed app state');
 	  }
 
+	  // Example: call this after your AJAX loads a new page
+	  window.pushAppState = pushAppState;
+
+	  // Handle Android back button (popstate)
 	  window.addEventListener('popstate', function (event) {
-	    if (event.state && event.state.isPWA) {
-	      const shouldExit = confirm("Do you really want to exit the app?");
-	      if (shouldExit) {
-	        // Let Android handle the natural exit
-	        history.go(-1);
-	      } else {
-	        // Stay inside by restoring the dummy state
-	        history.replaceState({ isPWA: true }, '');
-	      }
+	    console.log('popstate triggered', event.state);
+
+	    const shouldExit = confirm("Do you really want to exit the app?");
+	    if (shouldExit) {
+	      // Let OS exit
+	      console.log('Exiting...');
+	    } else {
+	      // Stay in app → immediately push state again
+	      console.log('Staying in app');
+	      history.pushState({ isPWA: true, timestamp: Date.now() }, '');
 	    }
 	  });
 	}
+
 
 
 
