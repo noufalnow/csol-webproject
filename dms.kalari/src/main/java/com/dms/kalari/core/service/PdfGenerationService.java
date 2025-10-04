@@ -53,6 +53,36 @@ public class PdfGenerationService {
         this.templateEngine = templateEngine;
         this.resourceLoader = resourceLoader;
     }
+    
+    
+    public byte[] generateSingleCertificate(Map<String, Object> data) throws Exception {
+        Long meiId = (Long) data.get("meiId");
+
+        String verificationUrl = "https://kalari.creativeboard.net/verify?id=" + meiId;
+        String base64 = generateQrCodeBase64(verificationUrl);
+
+        data.put("verificationIdMasked", "jsb-" + meiId);
+        data.put("qrImage", "data:image/png;base64," + base64);
+
+        Context context = new Context();
+        context.setVariables(data);
+
+        String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
+        String htmlContent = templateEngine.process("fragments/events/certificate-single", context);
+
+        ITextRenderer renderer = new ITextRenderer();
+        renderer.getSharedContext().setBaseURL(baseUrl);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        renderer.setDocumentFromString(htmlContent, baseUrl);
+        renderer.layout();
+        renderer.createPDF(outputStream);
+        renderer.finishPDF();
+
+        return outputStream.toByteArray();
+    }
+
+    
 
     public byte[] generateMultiPageCertificate(Map<String, Object> data) throws Exception {
 

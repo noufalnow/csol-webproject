@@ -75,7 +75,7 @@ public class MemberEventItem extends BaseEntity {
     public enum Grade {
         GOLD,
         SILVER,
-        BRONZ,
+        BRONZE,
         PARTICIPATION
     }
     

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<style>
+@page {
+    size: A4 landscape;
+    margin: 0;
+}
+
+body {
+    font-family: 'Times New Roman', serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f3e0;
+}
+
+.certificate-page {
+    width: 297mm;
+    height: 210mm;
+    margin: 0 auto;
+    background-color: #fff9e6;
+    border: 15px double #2c3e50;
+    position: relative;
+    box-sizing: border-box;
+    padding: 20mm;
+    text-align: center;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5mm;
+}
+
+.verification {
+    font-size: 10pt;
+    font-style: italic;
+    color: gray;
+    flex-grow: 1;
+    text-align: right;
+}
+
+.qr-container img {
+    width: 80px;
+    height: 80px;
+}
+
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5mm;
+    position: relative;
+}
+
+.medal-image {
+    height: 30mm;
+    position: absolute;
+    left: 20mm;
+}
+
+.logo {
+    height: 30mm;
+    position: absolute;
+    right: 20mm;
+}
+
+.organization {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.title {
+    font-size: 36pt;
+    font-weight: bold;
+    color: #8b0000;
+    margin: 10mm 0 15mm 0;
+    text-decoration: underline;
+}
+
+.recipient {
+    font-size: 28pt;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 10mm 0;
+}
+
+.event {
+    font-size: 20pt;
+    color: #2c3e50;
+    margin-bottom: 10mm;
+    font-style: italic;
+}
+
+.achievement {
+    font-size: 18pt;
+    color: #2c3e50;
+    margin: 15mm auto;
+    width: 80%;
+    text-align: center;
+}
+
+.medal-title {
+    font-weight: bold;
+    margin-bottom: 10mm;
+}
+
+.gold { color: #FFD700; }
+.silver { color: #C0C0C0; }
+.bronze { color: #CD7F32; }
+
+.footer {
+    position: absolute;
+    bottom: 20mm;
+    width: calc(100% - 40mm);
+    display: flex;
+    justify-content: space-between;
+}
+
+.date, .signature {
+    font-size: 14pt;
+    color: #2c3e50;
+}
+
+.signature {
+    width: 50mm;
+    border-top: 1px solid #2c3e50;
+    padding-top: 5mm;
+    text-align: center;
+}
+
+.seal {
+    position: absolute;
+    right: 30mm;
+    bottom: 30mm;
+    opacity: 0.7;
+    width: 40mm;
+}
+</style>
+</head>
+<body>
+
+<div class="certificate-page">
+
+    <div class="top-bar">
+        <div class="verification">
+            <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+        </div>
+        <div class="qr-container">
+            <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
+        </div>
+    </div>
+
+	<div class="header">
+	    <img class="medal-image" th:src="${medalImage}" th:alt="${medalType} + ' Medal'" />
+	    <img class="logo" th:src="@{classpath:/static/images/logo.png}" alt="Organization Logo" />
+	    <div class="organization" th:text="${hostName}">Organization Name</div>
+	</div>
+
+
+    <div class="title">Certificate of Achievement</div>
+    <div class="recipient" th:text="${participantName}"></div>
+    <div class="event" th:text="'in ' + ${eventName}"></div>
+
+    <div class="achievement">
+        <div class="medal-title" th:text="${medalType} + ' Achievement'"></div>
+        <div th:text="${itemName}"></div>
+    </div>
+
+    <div class="footer">
+        <div class="date" th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}"></div>
+        <div class="signature">Authorized Signature</div>
+    </div>
+
+    <img class="seal" th:src="@{classpath:/static/images/seal.png}" alt="Official Seal" />
+
+</div>
+
+
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ResourceUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
+import com.dms.kalari.core.service.PdfGenerationService;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
@@ -33,9 +35,14 @@ import com.dms.kalari.events.service.MemberEventService;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,10 +66,11 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	private final EventItemMapService eventItemMapService;
 	private final MemberUserService memberUserService;
 	private final MemberEventItemService memberEventItemService;
+	private final PdfGenerationService pdfGenerationService;
 
 	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 			EventItemService eventItemService, MemberUserService memberUserService,
-			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService) {
+			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService, PdfGenerationService pdfGenerationService) {
 		super(eventService);
 		this.nodeService = nodeService;
 		this.memberEventService = memberEventService;
@@ -70,6 +78,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		this.memberUserService = memberUserService;
 		this.eventItemMapService = eventItemMapService;
 		this.memberEventItemService = memberEventItemService;
+		this.pdfGenerationService = pdfGenerationService;
 	}
 
 	@GetMapping("/")
@@ -548,6 +557,49 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		return ResponseEntity.ok(body);
 
 	}
+	
+	
+	@GetMapping("/participants_certificate/{mMeiId}")
+	public ResponseEntity<byte[]> generateCertificate(@PathVariable Long mMeiId) throws Exception {
+		
+		Long meiId = XorMaskHelper.unmask(mMeiId);
+		
+	    MemberEventItem mei = memberEventItemService.findById(meiId)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+
+	    Map<String, Object> data = new HashMap<>();
+	    data.put("meiId", mei.getMeiId());
+	    data.put("participantName", mei.getMemberEventMember().getUserFname());  // or getMemberName()
+	    data.put("eventName", mei.getMemberEvent().getEventName());
+	    data.put("hostName", mei.getMemberEventHost().getNodeName());
+	    data.put("resultDate", mei.getApproveDateTime());
+	    data.put("medalType", mei.getMemberEventGrade().name());   // GOLD, SILVER, BRONZ, PARTICIPATION
+	    data.put("itemName", mei.getMemberEventItemName());
+	    
+	    
+	    ClassPathResource medalResource = new ClassPathResource("static/images/" + mei.getMemberEventGrade().name() + ".png");
+	    String medalImagePath = medalResource.getURL().toString(); // returns a URL
+	    data.put("medalImage", medalImagePath);
+
+
+	    // add QR + verification ID
+	    String verificationUrl = "https://kalari.creativeboard.net/verify?id=" + mei.getMeiId();
+	    String base64 = pdfGenerationService.generateQrCodeBase64(verificationUrl);
+	    data.put("verificationIdMasked", "jsb-" + mei.getMeiId());
+	    data.put("qrImage", "data:image/png;base64," + base64);
+
+	    byte[] pdfBytes = pdfGenerationService.generateSingleCertificate(data);
+
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_PDF);
+	    headers.setContentDispositionFormData("filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+
+	    return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+	}
+
+	
+	
+	
 
 	@GetMapping("/html/listparticipants")
 	public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
