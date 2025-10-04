@@ -140,6 +140,30 @@ body {
     opacity: 0.7;
     width: 40mm;
 }
+
+.ribbon-container {
+    position: relative;
+    width: 250px; /* adjust width */
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ribbon {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.signature {
+    position: absolute;
+    top: 10px;  /* adjust so text sits nicely on the ribbon */
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #fff; /* if ribbon is dark */
+}
+
+
 </style>
 </head>
 <body>
@@ -171,14 +195,23 @@ body {
         <div th:text="${itemName}"></div>
     </div>
 
-    <div class="footer">
-        <div class="date" th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}"></div>
-        <div class="signature">Authorized Signature</div>
-    </div>
+	<div class="footer">
+	    <div class="ribbon-container">
+	        <img th:src="@{classpath:/static/images/blue-ribbon.png}" 
+	             alt="Blue Ribbon" class="ribbon" />
+	        <div class="signature">Digitally Signed</div>
+	    </div>
+	    <div class="date" th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}"></div>
+	</div>
+
 
     <img class="seal" th:src="@{classpath:/static/images/seal.png}" alt="Official Seal" />
+    
+    
 
 </div>
+
+
 
 
 </body>

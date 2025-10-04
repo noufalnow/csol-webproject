@@ -35,6 +35,7 @@ import com.dms.kalari.events.service.MemberEventService;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +45,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.Certificate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -55,6 +61,40 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.itextpdf.signatures.*;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.geom.Rectangle;
+
+
+import java.io.ByteArrayInputStream;
+import com.itextpdf.signatures.BouncyCastleDigest;
+import com.itextpdf.signatures.DigestAlgorithms;
+import com.itextpdf.signatures.IExternalDigest;
+import com.itextpdf.signatures.IExternalSignature;
+import com.itextpdf.signatures.PdfSigner;
+import com.itextpdf.signatures.PdfSignatureAppearance;
+import com.itextpdf.signatures.PrivateKeySignature;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.signatures.BouncyCastleDigest;
+import com.itextpdf.signatures.DigestAlgorithms;
+import com.itextpdf.signatures.IExternalDigest;
+import com.itextpdf.signatures.IExternalSignature;
+import com.itextpdf.signatures.PdfSigner;
+import com.itextpdf.signatures.PdfSignatureAppearance;
+import com.itextpdf.signatures.PrivateKeySignature;
+
+
 
 @Controller
 @RequestMapping("/champ/events")
@@ -560,45 +600,77 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	
 	
 	@GetMapping("/participants_certificate/{mMeiId}")
-	public ResponseEntity<byte[]> generateCertificate(@PathVariable Long mMeiId) throws Exception {
-		
-		Long meiId = XorMaskHelper.unmask(mMeiId);
-		
-	    MemberEventItem mei = memberEventItemService.findById(meiId)
-	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+    public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
 
-	    Map<String, Object> data = new HashMap<>();
-	    data.put("meiId", mei.getMeiId());
-	    data.put("participantName", mei.getMemberEventMember().getUserFname());  // or getMemberName()
-	    data.put("eventName", mei.getMemberEvent().getEventName());
-	    data.put("hostName", mei.getMemberEventHost().getNodeName());
-	    data.put("resultDate", mei.getApproveDateTime());
-	    data.put("medalType", mei.getMemberEventGrade().name());   // GOLD, SILVER, BRONZ, PARTICIPATION
-	    data.put("itemName", mei.getMemberEventItemName());
-	    
-	    
-	    ClassPathResource medalResource = new ClassPathResource("static/images/" + mei.getMemberEventGrade().name() + ".png");
-	    String medalImagePath = medalResource.getURL().toString(); // returns a URL
-	    data.put("medalImage", medalImagePath);
+        // Register BC provider
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        // Unmask ID
+        Long meiId = XorMaskHelper.unmask(mMeiId);
+
+        MemberEventItem mei = memberEventItemService.findById(meiId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+
+        // Prepare PDF data
+        Map<String, Object> data = new HashMap<>();
+        data.put("meiId", mei.getMeiId());
+        data.put("participantName", mei.getMemberEventMember().getUserFname());
+        data.put("eventName", mei.getMemberEvent().getEventName());
+        data.put("hostName", mei.getMemberEventHost().getNodeName());
+        data.put("resultDate", mei.getApproveDateTime());
+        data.put("medalType", mei.getMemberEventGrade().name());
+        data.put("itemName", mei.getMemberEventItemName());
+
+        // Generate unsigned PDF
+        byte[] unsignedPdf = pdfGenerationService.generateSingleCertificate(data);
+
+        // Load PKCS12 keystore (convert your cert + key to .p12 if needed)
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        try (FileInputStream fis = new FileInputStream("/etc/ssl/indiankalaripayattufederation/indiankalari.p12")) {
+            ks.load(fis, "changeit".toCharArray());
+        }
+        String alias = ks.aliases().nextElement();
+        PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "changeit".toCharArray());
+        Certificate[] chain = ks.getCertificateChain(alias);
+
+        // Sign PDF
+        byte[] signedPdf = signPdf(unsignedPdf, privateKey, chain);
+
+        // Return PDF response
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData(
+                "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+
+        return ResponseEntity.ok().headers(headers).body(signedPdf);
+    }
+    
+    public byte[] signPdf(byte[] pdfBytes, PrivateKey privateKey, Certificate[] chain) throws Exception {
+        ByteArrayOutputStream signedOut = new ByteArrayOutputStream();
+
+        PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfBytes));
+        PdfSigner signer = new PdfSigner(reader, signedOut, new StampingProperties());
+
+        // Signature appearance (visible on page 1)
+        PdfSignatureAppearance appearance = signer.getSignatureAppearance()
+                .setReason("Certificate verification")
+                .setLocation("India")
+                .setReuseAppearance(false);
+        Rectangle rect = new Rectangle(450, 20, 120, 50); // bottom-right
+        appearance.setPageRect(rect).setPageNumber(1);
+        signer.setFieldName("sig");
+
+        IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
+        IExternalDigest digest = new BouncyCastleDigest();
+
+        signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
+
+        return signedOut.toByteArray();
+    }
 
 
-	    // add QR + verification ID
-	    String verificationUrl = "https://kalari.creativeboard.net/verify?id=" + mei.getMeiId();
-	    String base64 = pdfGenerationService.generateQrCodeBase64(verificationUrl);
-	    data.put("verificationIdMasked", "jsb-" + mei.getMeiId());
-	    data.put("qrImage", "data:image/png;base64," + base64);
-
-	    byte[] pdfBytes = pdfGenerationService.generateSingleCertificate(data);
-
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_PDF);
-	    headers.setContentDispositionFormData("filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
-
-	    return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-	}
-
-	
-	
 	
 
 	@GetMapping("/html/listparticipants")

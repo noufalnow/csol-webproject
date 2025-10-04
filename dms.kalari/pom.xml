@@ -202,20 +202,61 @@
 		</dependency>
 		
 		
-		<dependency>
-    <groupId>com.itextpdf</groupId>
-    <artifactId>itext7-core</artifactId>
-    <version>7.2.5</version>
-</dependency>
+		<!-- iText 7 Core -->
 <dependency>
     <groupId>com.itextpdf</groupId>
-    <artifactId>itext7-sign</artifactId>
+    <artifactId>kernel</artifactId>
     <version>7.2.5</version>
 </dependency>
+
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>layout</artifactId>
+    <version>7.2.5</version>
+</dependency>
+
+<!-- iText Signatures -->
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>sign</artifactId>
+    <version>7.2.5</version>
+</dependency>
+
+<!-- BouncyCastle (required for signing) -->
 <dependency>
     <groupId>org.bouncycastle</groupId>
     <artifactId>bcprov-jdk15on</artifactId>
     <version>1.70</version>
+</dependency>
+
+
+
+
+<dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcprov-jdk15on</artifactId>
+    <version>1.70</version>
+</dependency>
+
+<!-- Core PDF library -->
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>kernel</artifactId>
+    <version>7.2.5</version>
+</dependency>
+
+<!-- Layout module (for HTML to PDF if needed) -->
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>layout</artifactId>
+    <version>7.2.5</version>
+</dependency>
+
+<!-- Signatures module (for digital signing) -->
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>sign</artifactId>
+    <version>7.2.5</version>
 </dependency>
 
 		

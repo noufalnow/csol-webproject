@@ -7,16 +7,30 @@ import org.springframework.util.ResourceUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
+
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.util.Map;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.signatures.BouncyCastleDigest;
+import com.itextpdf.signatures.DigestAlgorithms;
+import com.itextpdf.signatures.IExternalDigest;
+import com.itextpdf.signatures.IExternalSignature;
+import com.itextpdf.signatures.PdfSignatureAppearance;
+import com.itextpdf.signatures.PdfSigner;
+import com.itextpdf.signatures.PrivateKeySignature;
 
 import java.util.Base64;
 
@@ -68,7 +82,7 @@ public class PdfGenerationService {
         context.setVariables(data);
 
         String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
-        String htmlContent = templateEngine.process("fragments/events/certificate-single", context);
+        String htmlContent = templateEngine.process("fragments/events/certificate-demo", context);
 
         ITextRenderer renderer = new ITextRenderer();
         renderer.getSharedContext().setBaseURL(baseUrl);
@@ -81,8 +95,8 @@ public class PdfGenerationService {
 
         return outputStream.toByteArray();
     }
-
     
+   
 
     public byte[] generateMultiPageCertificate(Map<String, Object> data) throws Exception {
 
