@@ -46,12 +46,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,8 +67,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.itextpdf.signatures.*;
+import com.itextpdf.kernel.pdf.CompressionConstants;
+import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.Rectangle;
 
@@ -86,6 +93,7 @@ import java.security.cert.Certificate;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.kernel.pdf.WriterProperties;
 import com.itextpdf.signatures.BouncyCastleDigest;
 import com.itextpdf.signatures.DigestAlgorithms;
 import com.itextpdf.signatures.IExternalDigest;
@@ -600,75 +608,187 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	
 	
 	@GetMapping("/participants_certificate/{mMeiId}")
-    public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
+	public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
 
-        // Register BC provider
-        if (Security.getProvider("BC") == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+	    // Register BC provider (only once)
+	    if (Security.getProvider("BC") == null) {
+	        Security.addProvider(new BouncyCastleProvider());
+	    }
 
-        // Unmask ID
-        Long meiId = XorMaskHelper.unmask(mMeiId);
+	    // Unmask ID
+	    Long meiId = XorMaskHelper.unmask(mMeiId);
 
-        MemberEventItem mei = memberEventItemService.findById(meiId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+	    MemberEventItem mei = memberEventItemService.findById(meiId)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
 
-        // Prepare PDF data
-        Map<String, Object> data = new HashMap<>();
-        data.put("meiId", mei.getMeiId());
-        data.put("participantName", mei.getMemberEventMember().getUserFname());
-        data.put("eventName", mei.getMemberEvent().getEventName());
-        data.put("hostName", mei.getMemberEventHost().getNodeName());
-        data.put("resultDate", mei.getApproveDateTime());
-        data.put("medalType", mei.getMemberEventGrade().name());
-        data.put("itemName", mei.getMemberEventItemName());
+	    // Choose timestamp: use tModified if not null, else tCreated
+	    LocalDateTime timestamp = mei.getTModified() != null ? mei.getTModified() : mei.getTCreated();
 
-        // Generate unsigned PDF
-        byte[] unsignedPdf = pdfGenerationService.generateSingleCertificate(data);
+	    // Convert timestamp to file-safe format (e.g. 20250927110912984481)
+	    String formattedTimestamp = timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS"));
 
-        // Load PKCS12 keystore (convert your cert + key to .p12 if needed)
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fis = new FileInputStream("/etc/ssl/indiankalaripayattufederation/indiankalari.p12")) {
-            ks.load(fis, "changeit".toCharArray());
-        }
-        String alias = ks.aliases().nextElement();
-        PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "changeit".toCharArray());
-        Certificate[] chain = ks.getCertificateChain(alias);
+	    // Build storage path: uploads/certificates/YEAR/HOSTID/EVENTID/MEID/
+	    Path storagePath = Paths.get(
+	            "uploads",
+	            "certificates",
+	            String.valueOf(mei.getMemberEvent().getEventYear()),
+	            String.valueOf(mei.getMemberEventHost().getNodeId()),
+	            String.valueOf(mei.getMemberEvent().getEventId()),
+	            String.valueOf(meiId)
+	    );
 
-        // Sign PDF
-        byte[] signedPdf = signPdf(unsignedPdf, privateKey, chain);
+	    // Ensure directory exists (optional but safe before read)
+	    Files.createDirectories(storagePath);
 
-        // Return PDF response
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData(
-                "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+	    // Expected file name and path
+	    String fileName = formattedTimestamp + ".pdf";
+	    Path filePath = storagePath.resolve(fileName);
 
-        return ResponseEntity.ok().headers(headers).body(signedPdf);
-    }
+	    // ✅ 1️⃣ If file already exists, return it directly
+	    if (Files.exists(filePath)) {
+	        System.out.println("Existing certificate found at: " + filePath.toAbsolutePath());
+	        byte[] existingPdf = Files.readAllBytes(filePath);
+
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.APPLICATION_PDF);
+	        headers.setContentDispositionFormData(
+	                "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+
+	        return ResponseEntity.ok().headers(headers).body(existingPdf);
+	    }
+
+	    // ✅ 2️⃣ File not found → Generate new one
+
+	    // Prepare PDF data
+	    Map<String, Object> data = new HashMap<>();
+	    data.put("meiId", mei.getMeiId());
+	    data.put("participantName", mei.getMemberEventMember().getUserFname());
+	    data.put("eventName", mei.getMemberEvent().getEventName());
+	    data.put("hostName", mei.getMemberEventHost().getNodeName());
+	    data.put("resultDate", mei.getApproveDateTime());
+	    data.put("medalType", mei.getMemberEventGrade().name());
+	    data.put("itemName", mei.getMemberEventItemName());
+
+	    String medalPath = "/static/images/" + mei.getMemberEventGrade().name().toLowerCase() + ".png";
+	    data.put("medalImage", medalPath);
+
+	    // Generate unsigned PDF
+	    byte[] unsignedPdf = pdfGenerationService.generateSingleCertificate(data);
+
+	    // Load PKCS12 keystore
+	    KeyStore ks = KeyStore.getInstance("PKCS12");
+	    try (FileInputStream fis = new FileInputStream("/etc/ssl/indiankalaripayattufederation/indiankalari.p12")) {
+	        ks.load(fis, "changeit".toCharArray());
+	    }
+	    String alias = ks.aliases().nextElement();
+	    PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "changeit".toCharArray());
+	    Certificate[] chain = ks.getCertificateChain(alias);
+
+	    // Sign PDF
+	    
+	    //byte[] compressedPdf = compressPdf(unsignedPdf);
+
+	    byte[] signedPdf = signPdf(unsignedPdf, privateKey, chain);
+
+	    // Save new file
+	    Files.write(filePath, signedPdf);
+	    System.out.println("New certificate stored at: " + filePath.toAbsolutePath());
+
+	    // Return to browser
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_PDF);
+	    headers.setContentDispositionFormData(
+	            "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+
+	    return ResponseEntity.ok().headers(headers).body(signedPdf);
+	}
+
     
-    public byte[] signPdf(byte[] pdfBytes, PrivateKey privateKey, Certificate[] chain) throws Exception {
-        ByteArrayOutputStream signedOut = new ByteArrayOutputStream();
+     
+	private byte[] signPdf(byte[] unsignedPdf, PrivateKey privateKey, Certificate[] chain) throws Exception {
+	    ByteArrayOutputStream signedPdf = new ByteArrayOutputStream();
 
-        PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfBytes));
-        PdfSigner signer = new PdfSigner(reader, signedOut, new StampingProperties());
+	    PdfReader reader = new PdfReader(new ByteArrayInputStream(unsignedPdf));
+	    PdfSigner signer = new PdfSigner(reader, signedPdf, new StampingProperties());
 
-        // Signature appearance (visible on page 1)
-        PdfSignatureAppearance appearance = signer.getSignatureAppearance()
-                .setReason("Certificate verification")
-                .setLocation("India")
-                .setReuseAppearance(false);
-        Rectangle rect = new Rectangle(450, 20, 120, 50); // bottom-right
-        appearance.setPageRect(rect).setPageNumber(1);
-        signer.setFieldName("sig");
+	    // Place signature exactly over the seal
+	    float sealWidth = 120f;   // same as 35mm
+	    float sealHeight = 50f;  // adjust to match seal height visually
+	    float x = 710f;          // A4 landscape width - margin - seal width
+	    float y = 13f;           // bottom margin
 
-        IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
-        IExternalDigest digest = new BouncyCastleDigest();
+	    Rectangle rect = new Rectangle(x, y, sealWidth, sealHeight);
 
-        signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
+	    PdfSignatureAppearance appearance = signer.getSignatureAppearance();
+	    appearance
+	            .setReason("Official Certificate Verification")
+	            .setLocation("Indian Kalarippayattu Federation")
+	            .setLocationCaption("Authority: ")
+	            .setPageRect(rect)
+	            .setPageNumber(1)
+	            .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION); // Shows text
 
-        return signedOut.toByteArray();
-    }
+	    signer.setFieldName("DigitalSignature");
+
+	    // Sign
+	    IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
+	    IExternalDigest digest = new BouncyCastleDigest();
+
+	    signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
+
+	    return signedPdf.toByteArray();
+	}
+	
+	
+	private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
+	    try {
+	        try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
+	             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	             PdfReader reader = new PdfReader(bais);
+	             PdfWriter writer = new PdfWriter(baos, new WriterProperties().setFullCompressionMode(true))) {
+
+	            writer.setCompressionLevel(CompressionConstants.BEST_COMPRESSION);
+	            PdfDocument pdfDoc = new PdfDocument(reader, writer);
+	            pdfDoc.close();
+
+	            return baos.toByteArray();
+	        }
+	    } catch (IOException e) {
+	        throw new RuntimeException("Failed to compress PDF", e);
+	    }
+	}
+
+
+
+	
+	
+	//@GetMapping("/participants_certificate/{mMeiId}")
+	@ResponseBody  // ✅ Add this
+	public String generateSignedHtmlCertificate(@PathVariable Long mMeiId) throws Exception {
+	    if (Security.getProvider("BC") == null) {
+	        Security.addProvider(new BouncyCastleProvider());
+	    }
+
+	    Long meiId = XorMaskHelper.unmask(mMeiId);
+	    MemberEventItem mei = memberEventItemService.findById(meiId)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+
+	    Map<String, Object> data = new HashMap<>();
+	    data.put("meiId", mei.getMeiId());
+	    data.put("participantName", mei.getMemberEventMember().getUserFname());
+	    data.put("eventName", mei.getMemberEvent().getEventName());
+	    data.put("hostName", mei.getMemberEventHost().getNodeName());
+	    data.put("resultDate", mei.getApproveDateTime());
+	    data.put("medalType", mei.getMemberEventGrade().name());
+	    data.put("itemName", mei.getMemberEventItemName());
+
+	    String medalPath = "/static/images/" + mei.getMemberEventGrade().name().toLowerCase() + ".png";
+	    data.put("medalImage", medalPath);
+
+	    // ✅ This will return the rendered HTML directly
+	    return pdfGenerationService.generateSingleHTMLCertificate(data);
+	}
+
 
 
 	

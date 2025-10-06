@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Map;
+
+import com.dms.kalari.util.QrCodeUtil;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -72,6 +74,52 @@ public class PdfGenerationService {
     public byte[] generateSingleCertificate(Map<String, Object> data) throws Exception {
         Long meiId = (Long) data.get("meiId");
 
+        // Generate PDF-friendly QR bytes (100x100 px PNG)
+        byte[] qrBytes = QrCodeUtil.generateQrCodeBytes(
+                "https://app.indiankalaripayattufederation.com/verify?id=" + meiId
+        );
+
+        // Use a temporary file for the QR to pass to Thymeleaf/ITextRenderer
+        // This avoids Base64 inline in HTML
+        Path tempQrFile = Files.createTempFile("qr-" + meiId, ".png");
+        Files.write(tempQrFile, qrBytes);
+
+        // Put variables for Thymeleaf template
+        data.put("verificationIdMasked", "jsb-" + meiId);
+
+        // Instead of Base64, pass the path to temp file
+        // In Thymeleaf: <img th:src="@{${qrImagePath}}" />
+        data.put("qrImagePath", tempQrFile.toUri().toString());
+
+        // Prepare Thymeleaf context
+        Context context = new Context();
+        context.setVariables(data);
+
+        // Load HTML template
+        String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
+        String htmlContent = templateEngine.process("fragments/events/certificate-single", context);
+
+        // Render PDF
+        ITextRenderer renderer = new ITextRenderer();
+        renderer.getSharedContext().setBaseURL(baseUrl);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        renderer.setDocumentFromString(htmlContent, baseUrl);
+        renderer.layout();
+        renderer.createPDF(outputStream);
+        renderer.finishPDF();
+
+        // Delete temporary QR file
+        Files.deleteIfExists(tempQrFile);
+
+        return outputStream.toByteArray();
+    }
+
+    
+    
+    public String generateSingleHTMLCertificate(Map<String, Object> data) throws Exception {
+        Long meiId = (Long) data.get("meiId");
+
         String verificationUrl = "https://kalari.creativeboard.net/verify?id=" + meiId;
         String base64 = generateQrCodeBase64(verificationUrl);
 
@@ -82,18 +130,8 @@ public class PdfGenerationService {
         context.setVariables(data);
 
         String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
-        String htmlContent = templateEngine.process("fragments/events/certificate-demo", context);
+        return templateEngine.process("fragments/events/certificate-demo", context);
 
-        ITextRenderer renderer = new ITextRenderer();
-        renderer.getSharedContext().setBaseURL(baseUrl);
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        renderer.setDocumentFromString(htmlContent, baseUrl);
-        renderer.layout();
-        renderer.createPDF(outputStream);
-        renderer.finishPDF();
-
-        return outputStream.toByteArray();
     }
     
    

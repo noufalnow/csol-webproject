@@ -4,215 +4,297 @@
 <meta charset="UTF-8" />
 <style>
 @page {
-    size: A4 landscape;
-    margin: 0;
+	size: A4 landscape;
+	margin: 1mm;
 }
 
 body {
-    font-family: 'Times New Roman', serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f3e0;
+	font-family: 'Times New Roman', serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f9f3e0;
 }
 
 .certificate-page {
-    width: 297mm;
-    height: 210mm;
-    margin: 0 auto;
-    background-color: #fff9e6;
-    border: 15px double #2c3e50;
-    position: relative;
-    box-sizing: border-box;
-    padding: 20mm;
-    text-align: center;
+	width: 100%;
+	height: 100%;
+	background-color: #fff;
+	border: 12px double #d0b152;
+	box-sizing: border-box;
+	padding: 4mm;
 }
 
+/* === TOP BAR === */
 .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5mm;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+	margin-bottom: 10mm;
+}
+
+.verification, .affiliation-top, .qr-container {
+	display: table-cell;
+	vertical-align: top;
+	padding: 0 5mm;
 }
 
 .verification {
-    font-size: 10pt;
-    font-style: italic;
-    color: gray;
-    flex-grow: 1;
-    text-align: right;
+	font-size: 9pt;
+	font-style: italic;
+	color: gray;
+	width: 10%;
+}
+
+.affiliation-top {
+	text-align: center;
+	color: #2c3e50;
+	width: 80%;
+}
+
+.affiliation-top .federation-row {
+	display: table;
+	margin: 0 auto 2mm;
+	width: auto;
+	padding-top: 5mm;
+}
+
+.affiliation-top .federation-row>div, .affiliation-top .federation-row>img
+	{
+	display: table-cell;
+	vertical-align: middle;
+	padding: 0 5mm;
+}
+
+.affiliation-top .federation-text {
+	font-size: 25pt;
+	font-weight: bold;
+}
+
+.affiliation-top .logo-small {
+	height: 25mm;
+}
+
+.affiliation-top .affiliation-text {
+	font-size: 11pt;
+	font-style: italic;
+	line-height: 1.4;
+}
+
+.qr-container {
+	text-align: right;
+	width: 10%;
 }
 
 .qr-container img {
-    width: 80px;
-    height: 80px;
+	width: 70px;
+	height: 70px;
 }
 
-.header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 5mm;
-    position: relative;
+/* === TITLE + MEDAL === */
+.title-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10mm;
+	margin-top: 25mm;
+	margin-bottom: 2mm;
 }
 
-.medal-image {
-    height: 30mm;
-    position: absolute;
-    left: 20mm;
+.title-container .medal-image {
+	height: 25mm;
+	margin-left: 10mm;
+	margin-top: 10mm;
+	flex-shrink: 0;
 }
 
-.logo {
-    height: 30mm;
-    position: absolute;
-    right: 20mm;
-}
-
-.organization {
-    font-size: 24pt;
-    font-weight: bold;
-    color: #2c3e50;
-    text-align: center;
+.title-container .title {
+	font-size: 22pt;
+	font-weight: bold;
+	color: #8b0000;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	text-align: center;
 }
 
 .title {
-    font-size: 36pt;
-    font-weight: bold;
-    color: #8b0000;
-    margin: 10mm 0 15mm 0;
-    text-decoration: underline;
+	
+}
+
+.subtitle {
+	margin-top: -25mm;
+	font-size: 18pt;
+	font-weight: bold;
+	color: #2c3e50;
+	margin-bottom: 8mm;
+	text-align: center;
 }
 
 .recipient {
-    font-size: 28pt;
-    font-weight: bold;
-    color: #2c3e50;
-    margin: 10mm 0;
+	font-size: 18pt;
+	font-weight: bold;
+	color: #2c3e50;
+	margin: 3mm 0;
+	text-align: center;
 }
 
-.event {
-    font-size: 20pt;
-    color: #2c3e50;
-    margin-bottom: 10mm;
-    font-style: italic;
+.event-description {
+	font-size: 14pt;
+	color: #2c3e50;
+	margin-bottom: 8mm;
+	width: 85%;
+	margin-left: auto;
+	margin-right: auto;
+	line-height: 1.4;
+	text-align: center;
 }
 
-.achievement {
-    font-size: 18pt;
-    color: #2c3e50;
-    margin: 15mm auto;
-    width: 80%;
-    text-align: center;
+.certificate-number {
+	font-size: 11pt;
+	font-style: italic;
+	color: gray;
+	margin-bottom: 8mm;
+	text-align: center;
 }
 
-.medal-title {
-    font-weight: bold;
-    margin-bottom: 10mm;
+/* === SIGNATORIES === */
+.signatories {
+	margin-top: 10mm;
+	font-size: 12pt;
+	color: #2c3e50;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
 }
 
-.gold { color: #FFD700; }
-.silver { color: #C0C0C0; }
-.bronze { color: #CD7F32; }
+.signatory {
+	display: table-cell;
+	text-align: center;
+	padding: 0 5mm;
+}
 
+.signatory i {
+	font-size: 10pt;
+	color: gray;
+}
+
+/* === FOOTER === */
 .footer {
-    position: absolute;
-    bottom: 20mm;
-    width: calc(100% - 40mm);
-    display: flex;
-    justify-content: space-between;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+	margin-top: 10mm;
 }
 
-.date, .signature {
-    font-size: 14pt;
-    color: #2c3e50;
-}
-
-.signature {
-    width: 50mm;
-    border-top: 1px solid #2c3e50;
-    padding-top: 5mm;
-    text-align: center;
+.date {
+	font-size: 12pt;
+	color: #2c3e50;
+	text-align: left;
+	display: table-cell;
 }
 
 .seal {
-    position: absolute;
-    right: 30mm;
-    bottom: 30mm;
-    opacity: 0.7;
-    width: 40mm;
+	width: 35mm; /* ~99 pt */
+	opacity: 0.7;
+	display: table-cell;
+	text-align: right;
 }
 
-.ribbon-container {
-    position: relative;
-    width: 250px; /* adjust width */
-    margin: 0 auto;
-    text-align: center;
+.certificate-page {
+	position: relative;
+	width: 100%;
+	height: 588pt; /* A4 landscape height */
+	overflow: hidden;
 }
 
-.ribbon {
-    width: 100%;
-    height: auto;
-    display: block;
+.footer {
+	position: absolute;
+	bottom: 40pt;
+	width: 100%;
+	text-align: center;
 }
-
-.signature {
-    position: absolute;
-    top: 10px;  /* adjust so text sits nicely on the ribbon */
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
-    color: #fff; /* if ribbon is dark */
-}
-
-
 </style>
 </head>
 <body>
+	<div class="certificate-page">
 
-<div class="certificate-page">
+		<div class="top-bar">
+			<div class="verification">
+				<i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
+			</div>
 
-    <div class="top-bar">
-        <div class="verification">
-            <i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
-        </div>
-        <div class="qr-container">
-            <img th:src="${qrImage}" width="80" height="80" alt="QR Code" />
-        </div>
-    </div>
+			<div class="affiliation-top">
+				<div class="federation-row">
+					<img class="logo-small"
+						th:src="@{classpath:/static/images/logo.png}"
+						alt="Organization Logo" />
+					<div class="federation-text">INDIAN KALARIPPAYATTU FEDERATION</div>
+					
+					<img class="logo-small"
+						th:src="@{classpath:/static/images/branch.png}"
+						alt="Organization Logo" />
+				</div>
+				<div class="affiliation-text">
+					Recognized by the Ministry of Youth Affairs and Sports, Govt. of
+					India<br /> Affiliated to the All India Council of Sports &amp;
+					International Kalarippayattu Federation
+				</div>
+				<div class="federation-text"> Thiruvananthapuram Kalarippayattu Association</div>
+			</div>
 
-	<div class="header">
-	    <img class="medal-image" th:src="${medalImage}" th:alt="${medalType} + ' Medal'" />
-	    <img class="logo" th:src="@{classpath:/static/images/logo.png}" alt="Organization Logo" />
-	    <div class="organization" th:text="${hostName}">Organization Name</div>
+			<div class="qr-container">
+				<img th:src="@{${qrImagePath}}" width="80" height="80" alt="QR Code" />
+			</div>
+		</div>
+
+		<div class="title-container">
+
+			<div class="title">Trivandrum District Kalarippayattu
+				Championship - 2025</div>
+			<img class="medal-image"
+				th:src="@{classpath:/static/images/GOLD.png}"
+				th:alt="${medalType} + ' Medal'" />
+		</div>
+
+		<div class="subtitle">Certificate of Achivment</div>
+
+		<div class="recipient"
+			th:text="'Sri/Smt/Kumari: ' + ${participantName}">
+			Sri/Smt/Kumari: Ranjith K.</div>
+
+		<div class="event-description"
+			th:text="'has participated in the ' + ${eventName} + ' held at ' + ${eventLocation} + ' on ' + ${#temporals.format(resultDate, 'dd MMMM yyyy')}">
+			has participated in the National Kalarippayattu Seminar held at India
+			Habitat Centre, New Delhi on 28th March 2018.</div>
+
+		<div class="certificate-number">
+			Certificate No: <span th:text="${certificateNumber}">No.
+				Delhi/18</span>
+		</div>
+
+		<div class="signatories">
+			<div class="signatory">
+				M. Krishnamoorthy IPS<br /> <i>DGP (Retd.), Chairman, Organizing
+					Committee</i>
+			</div>
+			<div class="signatory">
+				P. Jayaraj<br /> <i>Organizing Secretary</i>
+			</div>
+			<div class="signatory">
+				K. Jayaraj<br /> <i>Chairman, Indian Kalarippayattu Federation</i>
+			</div>
+			<div class="signatory">
+				Adv. Poonthura Soman<br /> <i>General Secretary, Indian
+					Kalarippayattu Federation</i>
+			</div>
+		</div>
+
+		<div class="footer">
+			<div class="date"
+				th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}">Date</div>
+			<img class="seal" th:src="@{classpath:/static/images/seal.png}"
+				alt="Official Seal" />
+		</div>
+
 	</div>
-
-
-    <div class="title">Certificate of Achievement</div>
-    <div class="recipient" th:text="${participantName}"></div>
-    <div class="event" th:text="'in ' + ${eventName}"></div>
-
-    <div class="achievement">
-        <div class="medal-title" th:text="${medalType} + ' Achievement'"></div>
-        <div th:text="${itemName}"></div>
-    </div>
-
-	<div class="footer">
-	    <div class="ribbon-container">
-	        <img th:src="@{classpath:/static/images/blue-ribbon.png}" 
-	             alt="Blue Ribbon" class="ribbon" />
-	        <div class="signature">Digitally Signed</div>
-	    </div>
-	    <div class="date" th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}"></div>
-	</div>
-
-
-    <img class="seal" th:src="@{classpath:/static/images/seal.png}" alt="Official Seal" />
-    
-    
-
-</div>
-
-
-
-
 </body>
 </html>
