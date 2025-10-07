@@ -1,140 +1,73 @@
 package com.dms.kalari.util;
 
-import java.security.SecureRandom;
-import java.util.concurrent.ConcurrentHashMap;
-
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * A strictly session-based XOR masking helper.
+ * Uses only the "sessionKey" stored in HttpSession — no fallbacks, no randoms.
+ */
 @Component
 @SessionScope
 public class XorMaskHelper {
 
-    private static final long DEFAULT_TEST_KEY = 569874L;
-    private static final SecureRandom RANDOM = new SecureRandom();
-
-    // ThreadLocal cache for fast access within the same thread/request
-    private static final ThreadLocal<Long> sessionKeyHolder = new ThreadLocal<>();
-
-    // Map sessionId -> sessionKey for reference (optional)
-    private static final ConcurrentHashMap<String, Long> sessionKeyMap = new ConcurrentHashMap<>();
-
     private final HttpSession httpSession;
-
-    // Instance fields
-    private long sessionKey;
-    private boolean keyInitialized = false;
 
     public XorMaskHelper(HttpSession httpSession) {
         this.httpSession = httpSession;
     }
 
-    // ================= INSTANCE METHODS =================
-
     /**
-     * Initialize session key explicitly
+     * Initialize a session key explicitly.
+     * Must be called once after login.
      */
     public void initializeSessionKey(long key) {
-        if (key == 0L) throw new IllegalArgumentException("Session key cannot be zero");
-        this.sessionKey = key;
-        this.keyInitialized = true;
-
+        if (key == 0L) {
+            throw new IllegalArgumentException("Session key cannot be zero");
+        }
         httpSession.setAttribute("sessionKey", key);
-        sessionKeyMap.put(httpSession.getId(), key);
-        sessionKeyHolder.set(key); // cache for current thread
     }
 
     /**
-     * Initialize a random non-zero session key
-     */
-    public void initializeWithRandomKey() {
-        long key;
-        do {
-            key = RANDOM.nextLong();
-        } while (key == 0L);
-        initializeSessionKey(key);
-    }
-
-    /**
-     * Get the instance session key
+     * Retrieve the session key.
      */
     public long getSessionKey() {
-        if (!keyInitialized) initializeWithRandomKey();
-        return sessionKey;
+        Long key = (Long) httpSession.getAttribute("sessionKey");
+        if (key == null) {
+            throw new IllegalStateException("Session key not initialized for this session");
+        }
+        return key;
     }
 
     @PreDestroy
     public void cleanup() {
-        sessionKeyMap.remove(httpSession.getId());
+        httpSession.removeAttribute("sessionKey");
     }
 
-    // ================= STATIC METHODS =================
+    // ===================== STATIC UTILITIES =====================
 
     /**
-     * Mask value using ThreadLocal first, then session, fallback to default key
+     * Mask a value using the key from the current session.
      */
     public static long mask(long value) {
-        Long threadKey = sessionKeyHolder.get();
-        if (threadKey != null) {
-            return value ^ threadKey;
-        }
-        return value ^ getEffectiveSessionKey();
+        long key = getCurrentSessionKey();
+        return value ^ key;
     }
 
     /**
-     * Unmask value using ThreadLocal first, then session, fallback to default key
+     * Unmask a value using the key from the current session.
      */
     public static long unmask(long maskedValue) {
-        Long threadKey = sessionKeyHolder.get();
-        if (threadKey != null) {
-            return maskedValue ^ threadKey;
-        }
-        return maskedValue ^ getEffectiveSessionKey();
+        long key = getCurrentSessionKey();
+        return maskedValue ^ key;
     }
 
     /**
-     * Get the session-aware key for static calls
-     */
-    private static long getEffectiveSessionKey() {
-        // Try ThreadLocal first
-        Long cachedKey = sessionKeyHolder.get();
-        if (cachedKey != null) return cachedKey;
-
-        try {
-            HttpSession session = getCurrentSession();
-            if (session != null) {
-                Long key = (Long) session.getAttribute("sessionKey");
-                if (key != null) {
-                    sessionKeyHolder.set(key); // cache in ThreadLocal
-                    return key;
-                }
-            }
-        } catch (Exception ignored) {
-        }
-
-        // fallback
-        return DEFAULT_TEST_KEY;
-    }
-
-    /**
-     * Get current HTTP session from RequestContextHolder
-     */
-    private static HttpSession getCurrentSession() {
-        ServletRequestAttributes attrs =
-                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attrs != null) {
-            return attrs.getRequest().getSession(false); // don't create new session
-        }
-        return null;
-    }
-
-    /**
-     * Mask/unmask using a specific key directly
+     * Mask/unmask using a provided key.
      */
     public static long mask(long value, long key) {
         return value ^ key;
@@ -145,13 +78,30 @@ public class XorMaskHelper {
     }
 
     /**
-     * Generate a random non-zero key
+     * Helper: Get current session's key (no fallbacks).
      */
-    public static long generateSessionKey() {
-        long key;
-        do {
-            key = RANDOM.nextLong();
-        } while (key == 0L);
+    private static long getCurrentSessionKey() {
+        HttpSession session = getCurrentSession();
+        if (session == null) {
+            throw new IllegalStateException("No active HTTP session found");
+        }
+
+        Long key = (Long) session.getAttribute("sessionKey");
+        if (key == null) {
+            throw new IllegalStateException("Session key not found in current session");
+        }
         return key;
+    }
+
+    /**
+     * Helper: Get the active HTTP session.
+     */
+    private static HttpSession getCurrentSession() {
+        ServletRequestAttributes attrs =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            throw new IllegalStateException("No request context available");
+        }
+        return attrs.getRequest().getSession(false); // don't create new
     }
 }

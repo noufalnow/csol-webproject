@@ -40,8 +40,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -57,18 +55,7 @@ import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.source.ByteArrayOutputStream;
-import com.itextpdf.kernel.geom.Rectangle;
-
-
 import java.io.ByteArrayInputStream;
-import com.itextpdf.signatures.BouncyCastleDigest;
-import com.itextpdf.signatures.DigestAlgorithms;
-import com.itextpdf.signatures.IExternalDigest;
-import com.itextpdf.signatures.IExternalSignature;
-import com.itextpdf.signatures.PdfSigner;
-import com.itextpdf.signatures.PdfSignatureAppearance;
-import com.itextpdf.signatures.PrivateKeySignature;
-import com.itextpdf.kernel.pdf.StampingProperties;
 import com.itextpdf.kernel.pdf.WriterProperties;
 
 
@@ -198,9 +185,26 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	}
 
 	@GetMapping("/details/{id}")
-	public String viewEventById(@PathVariable Long id, Model model) {
-		EventDTO event = service.findById(XorMaskHelper.unmask(id));
+	public String viewEventById(@PathVariable(value = "id", required = false) Long maskedId, Model model) {
+		
+		Long eventId = XorMaskHelper.unmask(maskedId);
+		
+		EventDTO event = service.findById(eventId);
 		model.addAttribute("event", event);
+		
+		Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
+				.findItemsByEventIdGroupedByCategory(eventId);
+		model.addAttribute("seniorItemIds",
+				selectedItems.getOrDefault(EventItemMap.Category.SENIOR, Collections.emptyList()));
+		model.addAttribute("juniorItemIds",
+				selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
+		model.addAttribute("subjuniorItemIds",
+				selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
+		
+		   // ✅ Add this line — required for the <th:each="item : ${eventItems}">
+	    model.addAttribute("eventItems", eventItemService.findAll());
+		
+		
 		model.addAttribute("pageTitle", "Event Details: " + event.getEventName());
 		return "fragments/events/view";
 	}

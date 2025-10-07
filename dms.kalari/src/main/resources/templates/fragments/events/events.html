@@ -129,10 +129,10 @@
 
 							<!-- View Participants -->
 							<a
-								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventviews'')')}"
+								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_eventview'')')}"
 								class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-								th:onclick="'loadContent(\'/events/html/champ_event_participants?eventId=' + ${event.eventId} + '\', \'modal\')'">
-								<i class="fa-solid fa-user-group"></i> <span class="ms-1">View</span>
+								th:onclick="'loadContent(\'/champ_eventview/' + ${xorMaskHelper.mask(event.eventId)} + '\', \'modal\')'">
+								<i class="fas fa-eye"></i> <span class="ms-1">View</span>
 							</a>
 
 							<!-- Edit -->

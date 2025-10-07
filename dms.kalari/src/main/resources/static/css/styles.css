@@ -544,3 +544,10 @@ body.modal-open {
     width: 100%;
 }
 
+@media (min-width: 992px) {
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+

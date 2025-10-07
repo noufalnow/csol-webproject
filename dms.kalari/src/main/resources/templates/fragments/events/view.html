@@ -1,0 +1,154 @@
+<div class="container-fluid">
+	<!-- Modal Header -->
+	<div class="modal-header">
+		<h5 class="modal-title" id="editEventModalLabel"
+			th:text="${pageTitle}">Edit Event</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal"
+			aria-label="Close"></button>
+	</div>
+
+	<!-- Modal Body -->
+	<div class="modal-body">
+
+		<!-- Basic Event Info -->
+		<div class="mb-4">
+			<h6 class="fw-bold text-secondary">Event Information</h6>
+			<div class="row">
+				<div class="col-md-6 mb-2">
+					<label class="form-label fw-semibold">Event Name</label>
+					<div class="form-control-plaintext" th:text="${event.eventName}"></div>
+				</div>
+				<div class="col-md-6 mb-2">
+					<label class="form-label fw-semibold">Event Date</label>
+					<div class="form-control-plaintext"
+						th:text="${#temporals.format(event.eventPeriodStart, 'dd-MM-yyyy')} + ' to ' + ${#temporals.format(event.eventPeriodEnd, 'dd-MM-yyyy')}"></div>
+				</div>
+				<div class="col-md-6 mb-2">
+					<label class="form-label fw-semibold">Venue</label>
+					<div class="form-control-plaintext" th:text="${event.eventVenue}"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabs -->
+		<ul class="nav nav-tabs mb-3" id="eventTabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active" id="senior-tab" data-bs-toggle="tab"
+					data-bs-target="#senior-view" type="button" role="tab"
+					aria-controls="senior-view" aria-selected="true">Senior
+					Items</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="junior-tab" data-bs-toggle="tab"
+					data-bs-target="#junior-view" type="button" role="tab"
+					aria-controls="junior-view" aria-selected="false">Junior
+					Items</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="subjunior-tab" data-bs-toggle="tab"
+					data-bs-target="#subjunior-view" type="button" role="tab"
+					aria-controls="subjunior-view" aria-selected="false">Sub-Junior
+					Items</button>
+			</li>
+		</ul>
+
+		<div class="tab-content" id="eventTabsContent">
+
+			<!-- Senior Items -->
+			<div class="tab-pane fade show active" id="senior-view"
+				role="tabpanel" aria-labelledby="senior-tab">
+				<div class="badge-container">
+					<div th:each="item : ${eventItems}">
+						<span th:if="${#lists.contains(seniorItemIds, item.evitemId)}"
+							class="badge bg-secondary text-wrap"> <span
+							th:text="${item.evitemName}"></span>
+						</span>
+					</div>
+					<div th:if="${#lists.isEmpty(seniorItemIds)}"
+						class="text-muted fst-italic">No senior items selected.</div>
+				</div>
+			</div>
+
+			<!-- Junior Items -->
+			<div class="tab-pane fade" id="junior-view" role="tabpanel"
+				aria-labelledby="junior-tab">
+				<div class="badge-container">
+					<div th:each="item : ${eventItems}">
+						<span th:if="${#lists.contains(juniorItemIds, item.evitemId)}"
+							class="badge bg-info text-dark text-wrap"> <span
+							th:text="${item.evitemName}"></span>
+						</span>
+					</div>
+					<div th:if="${#lists.isEmpty(juniorItemIds)}"
+						class="text-muted fst-italic">No junior items selected.</div>
+				</div>
+			</div>
+
+			<!-- Sub-Junior Items -->
+			<div class="tab-pane fade" id="subjunior-view" role="tabpanel"
+				aria-labelledby="subjunior-tab">
+				<div class="badge-container">
+					<div th:each="item : ${eventItems}">
+						<span th:if="${#lists.contains(subjuniorItemIds, item.evitemId)}"
+							class="badge bg-warning text-dark text-wrap"> <span
+							th:text="${item.evitemName}"></span>
+						</span>
+					</div>
+					<div th:if="${#lists.isEmpty(subjuniorItemIds)}"
+						class="text-muted fst-italic">No sub-junior items selected.</div>
+				</div>
+			</div>
+
+		</div>
+		
+		  <div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-success btn-sm" id="btnApproveResult">
+      <i class="fas fa-check-circle fa-sm me-1"></i> Result Approve
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" id="btnGenerateCertificates">
+      <i class="fas fa-certificate fa-sm me-1"></i> Generate Certificates
+    </button>
+    <button type="button" class="btn btn-info btn-sm text-white" id="btnEmailCertificates">
+      <i class="fas fa-envelope fa-sm me-1"></i> Email All Certificates
+    </button>
+    <button type="button" class="btn btn-danger btn-sm" id="btnMarkEventEnd">
+      <i class="fas fa-flag-checkered fa-sm me-1"></i> Mark Event End
+    </button>
+  </div>
+		
+	</div>
+
+	<!-- Footer -->
+<div class="modal-footer d-flex flex-wrap justify-content-between">
+  <div>
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+  </div>
+
+</div>
+
+</div>
+
+<!-- Optional Styling -->
+<style>
+.badge-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	max-height: 280px;
+	overflow-y: auto;
+	padding: 0.5rem;
+	border: 1px solid #e9ecef;
+	border-radius: 0.5rem;
+	background-color: #fafafa;
+}
+
+.badge {
+	font-size: 0.9rem;
+	padding: 0.5em 0.75em;
+	border-radius: 0.5rem;
+}
+
+.modal-body {
+	font-size: 0.95rem;
+}
+</style>
