@@ -82,8 +82,13 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    if (nodeId == null) {
 	        nodeId = principal.getInstId();
 	    } else {
-	        nodeId = XorMaskHelper.unmask(nodeId);
+		    System.out.println("masked " + nodeId);
+		    nodeId = XorMaskHelper.unmask(nodeId);
+		    System.out.println("unmasked " + nodeId);
 	    }
+	    
+
+
 
 	    model.addAttribute("isChild", !principal.getInstId().equals(nodeId));
 

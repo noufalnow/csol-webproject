@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.ResourceUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +18,13 @@ import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
-import com.dms.kalari.core.service.PdfGenerationService;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
-import com.dms.kalari.events.entity.EventItemMap.Category;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.service.CertificateService;
 import com.dms.kalari.events.service.EventItemMapService;
 import com.dms.kalari.events.service.EventItemService;
 import com.dms.kalari.events.service.EventService;
@@ -35,38 +33,24 @@ import com.dms.kalari.events.service.MemberEventService;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import java.io.FileInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.itextpdf.signatures.*;
 import com.itextpdf.kernel.pdf.CompressionConstants;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -84,23 +68,8 @@ import com.itextpdf.signatures.IExternalSignature;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PrivateKeySignature;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
-
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.StampingProperties;
 import com.itextpdf.kernel.pdf.WriterProperties;
-import com.itextpdf.signatures.BouncyCastleDigest;
-import com.itextpdf.signatures.DigestAlgorithms;
-import com.itextpdf.signatures.IExternalDigest;
-import com.itextpdf.signatures.IExternalSignature;
-import com.itextpdf.signatures.PdfSigner;
-import com.itextpdf.signatures.PdfSignatureAppearance;
-import com.itextpdf.signatures.PrivateKeySignature;
 
 
 
@@ -114,11 +83,11 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	private final EventItemMapService eventItemMapService;
 	private final MemberUserService memberUserService;
 	private final MemberEventItemService memberEventItemService;
-	private final PdfGenerationService pdfGenerationService;
+	private final CertificateService certificateService;
 
 	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 			EventItemService eventItemService, MemberUserService memberUserService,
-			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService, PdfGenerationService pdfGenerationService) {
+			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService, CertificateService certificateService) {
 		super(eventService);
 		this.nodeService = nodeService;
 		this.memberEventService = memberEventService;
@@ -126,7 +95,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		this.memberUserService = memberUserService;
 		this.eventItemMapService = eventItemMapService;
 		this.memberEventItemService = memberEventItemService;
-		this.pdfGenerationService = pdfGenerationService;
+		this.certificateService = certificateService;
 	}
 
 	@GetMapping("/")
@@ -610,91 +579,17 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	@GetMapping("/participants_certificate/{mMeiId}")
 	public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
 
-	    // Register BC provider (only once)
-	    if (Security.getProvider("BC") == null) {
-	        Security.addProvider(new BouncyCastleProvider());
-	    }
-
 	    // Unmask ID
 	    Long meiId = XorMaskHelper.unmask(mMeiId);
 
+	    // Validate MemberEventItem exists
 	    MemberEventItem mei = memberEventItemService.findById(meiId)
 	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
 
-	    // Choose timestamp: use tModified if not null, else tCreated
-	    LocalDateTime timestamp = mei.getTModified() != null ? mei.getTModified() : mei.getTCreated();
+	    // Delegate all work to service
+	    byte[] signedPdf = certificateService.generateOrGetSignedCertificate(mei);
 
-	    // Convert timestamp to file-safe format (e.g. 20250927110912984481)
-	    String formattedTimestamp = timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS"));
-
-	    // Build storage path: uploads/certificates/YEAR/HOSTID/EVENTID/MEID/
-	    Path storagePath = Paths.get(
-	            "uploads",
-	            "certificates",
-	            String.valueOf(mei.getMemberEvent().getEventYear()),
-	            String.valueOf(mei.getMemberEventHost().getNodeId()),
-	            String.valueOf(mei.getMemberEvent().getEventId()),
-	            String.valueOf(meiId)
-	    );
-
-	    // Ensure directory exists (optional but safe before read)
-	    Files.createDirectories(storagePath);
-
-	    // Expected file name and path
-	    String fileName = formattedTimestamp + ".pdf";
-	    Path filePath = storagePath.resolve(fileName);
-
-	    // ✅ 1️⃣ If file already exists, return it directly
-	    if (Files.exists(filePath)) {
-	        System.out.println("Existing certificate found at: " + filePath.toAbsolutePath());
-	        byte[] existingPdf = Files.readAllBytes(filePath);
-
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.setContentType(MediaType.APPLICATION_PDF);
-	        headers.setContentDispositionFormData(
-	                "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
-
-	        return ResponseEntity.ok().headers(headers).body(existingPdf);
-	    }
-
-	    // ✅ 2️⃣ File not found → Generate new one
-
-	    // Prepare PDF data
-	    Map<String, Object> data = new HashMap<>();
-	    data.put("meiId", mei.getMeiId());
-	    data.put("participantName", mei.getMemberEventMember().getUserFname());
-	    data.put("eventName", mei.getMemberEvent().getEventName());
-	    data.put("hostName", mei.getMemberEventHost().getNodeName());
-	    data.put("resultDate", mei.getApproveDateTime());
-	    data.put("medalType", mei.getMemberEventGrade().name());
-	    data.put("itemName", mei.getMemberEventItemName());
-
-	    String medalPath = "/static/images/" + mei.getMemberEventGrade().name().toLowerCase() + ".png";
-	    data.put("medalImage", medalPath);
-
-	    // Generate unsigned PDF
-	    byte[] unsignedPdf = pdfGenerationService.generateSingleCertificate(data);
-
-	    // Load PKCS12 keystore
-	    KeyStore ks = KeyStore.getInstance("PKCS12");
-	    try (FileInputStream fis = new FileInputStream("/etc/ssl/indiankalaripayattufederation/indiankalari.p12")) {
-	        ks.load(fis, "changeit".toCharArray());
-	    }
-	    String alias = ks.aliases().nextElement();
-	    PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "changeit".toCharArray());
-	    Certificate[] chain = ks.getCertificateChain(alias);
-
-	    // Sign PDF
-	    
-	    //byte[] compressedPdf = compressPdf(unsignedPdf);
-
-	    byte[] signedPdf = signPdf(unsignedPdf, privateKey, chain);
-
-	    // Save new file
-	    Files.write(filePath, signedPdf);
-	    System.out.println("New certificate stored at: " + filePath.toAbsolutePath());
-
-	    // Return to browser
+	    // Prepare response headers
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_PDF);
 	    headers.setContentDispositionFormData(
@@ -703,42 +598,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    return ResponseEntity.ok().headers(headers).body(signedPdf);
 	}
 
-    
-     
-	private byte[] signPdf(byte[] unsignedPdf, PrivateKey privateKey, Certificate[] chain) throws Exception {
-	    ByteArrayOutputStream signedPdf = new ByteArrayOutputStream();
 
-	    PdfReader reader = new PdfReader(new ByteArrayInputStream(unsignedPdf));
-	    PdfSigner signer = new PdfSigner(reader, signedPdf, new StampingProperties());
-
-	    // Place signature exactly over the seal
-	    float sealWidth = 120f;   // same as 35mm
-	    float sealHeight = 50f;  // adjust to match seal height visually
-	    float x = 710f;          // A4 landscape width - margin - seal width
-	    float y = 13f;           // bottom margin
-
-	    Rectangle rect = new Rectangle(x, y, sealWidth, sealHeight);
-
-	    PdfSignatureAppearance appearance = signer.getSignatureAppearance();
-	    appearance
-	            .setReason("Official Certificate Verification")
-	            .setLocation("Indian Kalarippayattu Federation")
-	            .setLocationCaption("Authority: ")
-	            .setPageRect(rect)
-	            .setPageNumber(1)
-	            .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION); // Shows text
-
-	    signer.setFieldName("DigitalSignature");
-
-	    // Sign
-	    IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
-	    IExternalDigest digest = new BouncyCastleDigest();
-
-	    signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
-
-	    return signedPdf.toByteArray();
-	}
-	
 	
 	private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
 	    try {
@@ -759,39 +619,6 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	}
 
 
-
-	
-	
-	//@GetMapping("/participants_certificate/{mMeiId}")
-	@ResponseBody  // ✅ Add this
-	public String generateSignedHtmlCertificate(@PathVariable Long mMeiId) throws Exception {
-	    if (Security.getProvider("BC") == null) {
-	        Security.addProvider(new BouncyCastleProvider());
-	    }
-
-	    Long meiId = XorMaskHelper.unmask(mMeiId);
-	    MemberEventItem mei = memberEventItemService.findById(meiId)
-	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
-
-	    Map<String, Object> data = new HashMap<>();
-	    data.put("meiId", mei.getMeiId());
-	    data.put("participantName", mei.getMemberEventMember().getUserFname());
-	    data.put("eventName", mei.getMemberEvent().getEventName());
-	    data.put("hostName", mei.getMemberEventHost().getNodeName());
-	    data.put("resultDate", mei.getApproveDateTime());
-	    data.put("medalType", mei.getMemberEventGrade().name());
-	    data.put("itemName", mei.getMemberEventItemName());
-
-	    String medalPath = "/static/images/" + mei.getMemberEventGrade().name().toLowerCase() + ".png";
-	    data.put("medalImage", medalPath);
-
-	    // ✅ This will return the rendered HTML directly
-	    return pdfGenerationService.generateSingleHTMLCertificate(data);
-	}
-
-
-
-	
 
 	@GetMapping("/html/listparticipants")
 	public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
