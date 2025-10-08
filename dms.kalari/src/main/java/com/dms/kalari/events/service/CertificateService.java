@@ -2,6 +2,7 @@ package com.dms.kalari.events.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -48,6 +49,7 @@ public class CertificateService {
     private static final String KEYSTORE_PATH = "/etc/ssl/indiankalaripayattufederation/indiankalari.p12";
     private static final String KEYSTORE_PASSWORD = "changeit";
 
+    @Transactional
     public byte[] generateOrGetSignedCertificate(MemberEventItem mei) throws Exception {
         // Ensure BC provider is available
         if (Security.getProvider("BC") == null) {

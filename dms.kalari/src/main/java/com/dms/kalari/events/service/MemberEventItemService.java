@@ -166,21 +166,6 @@ public class MemberEventItemService {
 	}
 
 
-	// Helper class
-	private static class SubmittedData {
-	    Long eventItemId;
-	    Long userId;
-	    String category;
-	    String gender;
-
-	    SubmittedData(Long eventItemId, Long userId, String category, String gender) {
-	        this.eventItemId = eventItemId;
-	        this.userId = userId;
-	        this.category = category;
-	        this.gender = gender;
-	    }
-	}
-
 
 
 	

@@ -378,7 +378,7 @@ footer {
 }
 .modal-content {
   overflow-y: auto;
-  max-height: 80vh;
+  /*max-height: 80vh;*/
 }
 .modal-header,
 .modal-body,

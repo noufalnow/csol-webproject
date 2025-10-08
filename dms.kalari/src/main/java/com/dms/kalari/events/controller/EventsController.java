@@ -21,9 +21,11 @@ import com.dms.kalari.common.BaseController;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
+import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.service.CertificateBatchService;
 import com.dms.kalari.events.service.CertificateService;
 import com.dms.kalari.events.service.EventItemMapService;
 import com.dms.kalari.events.service.EventItemService;
@@ -58,8 +60,6 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import com.itextpdf.kernel.pdf.WriterProperties;
 
-
-
 @Controller
 @RequestMapping("/champ/events")
 public class EventsController extends BaseController<EventDTO, EventService> {
@@ -71,10 +71,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	private final MemberUserService memberUserService;
 	private final MemberEventItemService memberEventItemService;
 	private final CertificateService certificateService;
+	private final CertificateBatchService certificateBatchService;
 
 	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 			EventItemService eventItemService, MemberUserService memberUserService,
-			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService, CertificateService certificateService) {
+			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService,
+			CertificateService certificateService, CertificateBatchService certificateBatchService) {
 		super(eventService);
 		this.nodeService = nodeService;
 		this.memberEventService = memberEventService;
@@ -83,6 +85,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		this.eventItemMapService = eventItemMapService;
 		this.memberEventItemService = memberEventItemService;
 		this.certificateService = certificateService;
+		this.certificateBatchService = certificateBatchService;
 	}
 
 	@GetMapping("/")
@@ -186,12 +189,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	@GetMapping("/details/{id}")
 	public String viewEventById(@PathVariable(value = "id", required = false) Long maskedId, Model model) {
-		
+
 		Long eventId = XorMaskHelper.unmask(maskedId);
-		
+
 		EventDTO event = service.findById(eventId);
 		model.addAttribute("event", event);
-		
+
 		Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
 				.findItemsByEventIdGroupedByCategory(eventId);
 		model.addAttribute("seniorItemIds",
@@ -200,11 +203,10 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 				selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
 		model.addAttribute("subjuniorItemIds",
 				selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
-		
-		   // ✅ Add this line — required for the <th:each="item : ${eventItems}">
-	    model.addAttribute("eventItems", eventItemService.findAll());
-		
-		
+
+		// ✅ Add this line — required for the <th:each="item : ${eventItems}">
+		model.addAttribute("eventItems", eventItemService.findAll());
+
 		model.addAttribute("pageTitle", "Event Details: " + event.getEventName());
 		return "fragments/events/view";
 	}
@@ -578,51 +580,62 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		return ResponseEntity.ok(body);
 
 	}
-	
-	
+
+	@GetMapping("/certificate_generate/{mEventId}")
+	public ResponseEntity<?> generateBatchCertificate(@PathVariable Long mEventId) throws Exception {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    int count = certificateBatchService.processCertificateBatch(eventId);
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("message", count + " certificate tasks queued successfully!");
+	    body.put("target", "modal");
+	    body.put("loadnext", "champ_eventbynode/" + mEventId);
+
+	    return ResponseEntity.ok(body);
+	}
+
+
 	@GetMapping("/participants_certificate/{mMeiId}")
 	public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
 
-	    // Unmask ID
-	    Long meiId = XorMaskHelper.unmask(mMeiId);
+		// Unmask ID
+		Long meiId = XorMaskHelper.unmask(mMeiId);
 
-	    // Validate MemberEventItem exists
-	    MemberEventItem mei = memberEventItemService.findById(meiId)
-	            .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+		// Validate MemberEventItem exists
+		MemberEventItem mei = memberEventItemService.findById(meiId)
+				.orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
 
-	    // Delegate all work to service
-	    byte[] signedPdf = certificateService.generateOrGetSignedCertificate(mei);
+		// Delegate all work to service
+		byte[] signedPdf = certificateService.generateOrGetSignedCertificate(mei);
 
-	    // Prepare response headers
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_PDF);
-	    headers.setContentDispositionFormData(
-	            "filename", "certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+		// Prepare response headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_PDF);
+		headers.setContentDispositionFormData("filename",
+				"certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
 
-	    return ResponseEntity.ok().headers(headers).body(signedPdf);
+		return ResponseEntity.ok().headers(headers).body(signedPdf);
 	}
 
-
-	
 	private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
-	    try {
-	        try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
-	             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	             PdfReader reader = new PdfReader(bais);
-	             PdfWriter writer = new PdfWriter(baos, new WriterProperties().setFullCompressionMode(true))) {
+		try {
+			try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					PdfReader reader = new PdfReader(bais);
+					PdfWriter writer = new PdfWriter(baos, new WriterProperties().setFullCompressionMode(true))) {
 
-	            writer.setCompressionLevel(CompressionConstants.BEST_COMPRESSION);
-	            PdfDocument pdfDoc = new PdfDocument(reader, writer);
-	            pdfDoc.close();
+				writer.setCompressionLevel(CompressionConstants.BEST_COMPRESSION);
+				PdfDocument pdfDoc = new PdfDocument(reader, writer);
+				pdfDoc.close();
 
-	            return baos.toByteArray();
-	        }
-	    } catch (IOException e) {
-	        throw new RuntimeException("Failed to compress PDF", e);
-	    }
+				return baos.toByteArray();
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to compress PDF", e);
+		}
 	}
-
-
 
 	@GetMapping("/html/listparticipants")
 	public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {

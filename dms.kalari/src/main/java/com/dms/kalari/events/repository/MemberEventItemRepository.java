@@ -86,5 +86,33 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 			""")
 	List<MemberEventItem> findByEventIdWithFilters(@Param("eventId") Long eventId, @Param("itemId") Long itemId,
 			@Param("gender") CoreUser.Gender gender, @Param("category") EventItemMap.Category category);
+	
+	
+	@Query("""
+		    SELECT mei FROM MemberEventItem mei
+		    JOIN FETCH mei.memberEvent me
+		    JOIN FETCH mei.memberEventHost meh
+		    JOIN FETCH mei.memberEventMember mem
+		    WHERE me.eventId = :eventId
+		      AND mei.memberEventGrade IS NOT NULL
+		      AND mei.deleted = false
+		""")
+		List<MemberEventItem> findByEventIdWhereGradeNotEmpty(@Param("eventId") Long eventId);
+	
+	
+	@Query("""
+			SELECT mei FROM MemberEventItem mei
+			JOIN FETCH mei.memberEvent me
+			JOIN FETCH mei.memberEventHost meh
+			JOIN FETCH mei.memberEventMember mem
+			WHERE mei.meiId = :meiId
+			  AND mei.deleted = false
+			""")
+			Optional<MemberEventItem> findByIdWithEagerAssociations(@Param("meiId") Long meiId);
+
+//./kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic certificate-generate-topic
+
+
+
 
 }

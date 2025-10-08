@@ -105,9 +105,14 @@
     <button type="button" class="btn btn-success btn-sm" id="btnApproveResult">
       <i class="fas fa-check-circle fa-sm me-1"></i> Result Approve
     </button>
-    <button type="button" class="btn btn-primary btn-sm" id="btnGenerateCertificates">
-      <i class="fas fa-certificate fa-sm me-1"></i> Generate Certificates
-    </button>
+	<a
+		th:if="${#authorization.expression('hasAuthority(''PRIV_champ_certificate_generate'')')}"
+		class="btn btn-sm btn-primary d-flex align-items-center justify-content-center px-2 py-1"
+		th:onclick="'loadContent(\'/champ_certificate_generate/' + ${xorMaskHelper.mask(event.eventId)} + '\', \'modal\')'">
+		<i class="fas fa-certificate fa-sm me-1"></i>
+		<span>Generate Certificates</span>
+	</a>
+
     <button type="button" class="btn btn-info btn-sm text-white" id="btnEmailCertificates">
       <i class="fas fa-envelope fa-sm me-1"></i> Email All Certificates
     </button>

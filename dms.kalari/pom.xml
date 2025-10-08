@@ -211,6 +211,21 @@
         <artifactId>bcprov-jdk15on</artifactId>
         <version>1.70</version>
     </dependency>
+    
+    <!-- Spring Boot Kafka Support -->
+	<dependency>
+	    <groupId>org.springframework.kafka</groupId>
+	    <artifactId>spring-kafka</artifactId>
+	</dependency>
+	
+	<!-- For JSON serialization/deserialization of events -->
+	<dependency>
+	    <groupId>com.fasterxml.jackson.core</groupId>
+	    <artifactId>jackson-databind</artifactId>
+	</dependency>
+
+    
+    
 </dependencies>
 
 	<dependencyManagement>
