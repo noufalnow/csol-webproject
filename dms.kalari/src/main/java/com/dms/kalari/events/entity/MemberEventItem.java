@@ -5,14 +5,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.DynamicUpdate;
 
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
+@DynamicUpdate
 @Table(
 	    name = "member_events_items",
 	    uniqueConstraints = @UniqueConstraint(
@@ -89,5 +97,64 @@ public class MemberEventItem extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mei_approve_by", nullable = true)
     private CoreUser approvedBy;
+    
+    
+    @Column(name = "mei_certificate_status")
+    @Enumerated(EnumType.STRING)
+    private CertificateStatus certificateStatus;
+
+    public enum CertificateStatus {
+        PENDING,
+        GENERATED,
+        FAILED, 
+        ACTIVE, REVOKED
+    }
+    
+
+    
+    
+    @Column(name = "mei_certificate_history", columnDefinition = "TEXT")
+    private String certificateHistoryJson;
+
+    // Use a single, static ObjectMapper with JavaTimeModule
+    @Transient
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+            .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    // Deserialize JSON to List<CertificateFileRecord>
+    @Transient
+    public List<CertificateFileRecord> getCertificateHistory() {
+        try {
+            if (certificateHistoryJson == null || certificateHistoryJson.isBlank()) {
+                return new ArrayList<>();
+            }
+            return mapper.readValue(
+                    certificateHistoryJson,
+                    new TypeReference<List<CertificateFileRecord>>() {}
+            );
+        } catch (Exception e) {
+            // Log the error if needed
+            return new ArrayList<>();
+        }
+    }
+
+    // Serialize List<CertificateFileRecord> to JSON
+    public void setCertificateHistoryJson(String json) {
+        this.certificateHistoryJson = json;
+    }
+
+    // Add a new certificate record
+    public void addCertificateRecord(CertificateFileRecord record) {
+        List<CertificateFileRecord> history = getCertificateHistory();
+        history.add(record);
+        try {
+            this.certificateHistoryJson = mapper.writeValueAsString(history);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update certificate history JSON", e);
+        }
+    }
+
+
 
 }

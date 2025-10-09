@@ -86,20 +86,18 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 			""")
 	List<MemberEventItem> findByEventIdWithFilters(@Param("eventId") Long eventId, @Param("itemId") Long itemId,
 			@Param("gender") CoreUser.Gender gender, @Param("category") EventItemMap.Category category);
-	
-	
+
 	@Query("""
-		    SELECT mei FROM MemberEventItem mei
-		    JOIN FETCH mei.memberEvent me
-		    JOIN FETCH mei.memberEventHost meh
-		    JOIN FETCH mei.memberEventMember mem
-		    WHERE me.eventId = :eventId
-		      AND mei.memberEventGrade IS NOT NULL
-		      AND mei.deleted = false
-		""")
-		List<MemberEventItem> findByEventIdWhereGradeNotEmpty(@Param("eventId") Long eventId);
-	
-	
+			    SELECT mei FROM MemberEventItem mei
+			    JOIN FETCH mei.memberEvent me
+			    JOIN FETCH mei.memberEventHost meh
+			    JOIN FETCH mei.memberEventMember mem
+			    WHERE me.eventId = :eventId
+			      AND mei.memberEventGrade IS NOT NULL
+			      AND mei.deleted = false
+			""")
+	List<MemberEventItem> findByEventIdWhereGradeNotEmpty(@Param("eventId") Long eventId);
+
 	@Query("""
 			SELECT mei FROM MemberEventItem mei
 			JOIN FETCH mei.memberEvent me
@@ -108,11 +106,25 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 			WHERE mei.meiId = :meiId
 			  AND mei.deleted = false
 			""")
-			Optional<MemberEventItem> findByIdWithEagerAssociations(@Param("meiId") Long meiId);
+	Optional<MemberEventItem> findByIdWithEagerAssociations(@Param("meiId") Long meiId);
+
+	@Modifying
+	@Transactional
+	@Query("""
+	    UPDATE MemberEventItem m
+	    SET m.certificateStatus = :status,
+	        m.certificateHistoryJson = :historyJson
+	    WHERE m.meiId = :meiId
+	""")
+	void updateCertificateStatusAndHistory(
+	        @Param("meiId") Long meiId,
+	        @Param("status") MemberEventItem.CertificateStatus status,
+	        @Param("historyJson") String historyJson
+	);
+
+
+// cd /usr/local/kafka/bin
 
 //./kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic certificate-generate-topic
-
-
-
 
 }

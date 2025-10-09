@@ -591,7 +591,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    Map<String, Object> body = new HashMap<>();
 	    body.put("message", count + " certificate tasks queued successfully!");
 	    body.put("target", "modal");
-	    body.put("loadnext", "champ_eventbynode/" + mEventId);
+	    body.put("status", "success");
+	    body.put("loadnext", "champ_eventview/" + mEventId);
 
 	    return ResponseEntity.ok(body);
 	}
@@ -608,7 +609,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 				.orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
 
 		// Delegate all work to service
-		byte[] signedPdf = certificateService.generateOrGetSignedCertificate(mei);
+		byte[] signedPdf = certificateService.generateOrGetSignedCertificate1(mei);
 
 		// Prepare response headers
 		HttpHeaders headers = new HttpHeaders();

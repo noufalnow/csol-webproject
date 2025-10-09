@@ -1,7 +1,6 @@
 package com.dms.kalari.events.service;
 
 import com.dms.kalari.events.entity.MemberEventItem;
-
 import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.event.CertificateGenerateEvent;
 import com.dms.kalari.events.service.kafka.CertificateProducer;
@@ -26,27 +25,33 @@ public class CertificateBatchService {
     @Transactional(readOnly = true)
     public int processCertificateBatch(Long eventId) {
 
-        // 1️⃣ Get all member event items with grade not null
         List<MemberEventItem> participants = memberEventItemRepository.findByEventIdWhereGradeNotEmpty(eventId);
 
-        if (participants.isEmpty()) {
-            return 0;
-        }
+        if (participants.isEmpty()) return 0;
 
-        // 2️⃣ Publish each participant to Kafka
         for (MemberEventItem item : participants) {
-        	CertificateGenerateEvent event = new CertificateGenerateEvent(
-        		    item.getMeiId(),
-        		    eventId,
-        		    item.getMemberEventMember().getUserFname(),
-        		    item.getMemberEventGrade() != null ? item.getMemberEventGrade().name() : null,
-        		    item.getMemberEventMember().getUserEmail()
-        		);
+
+            CertificateGenerateEvent event = new CertificateGenerateEvent(
+                    item.getMeiId(),                                               // meiId
+                    eventId,                                                       // eventId
+                    item.getMemberEventMember().getUserFname(),                    // participantName
+                    item.getMemberEventGrade() != null ? item.getMemberEventGrade().name() : null, // grade / medalType
+                    item.getMemberEventMember().getUserEmail(),                    // email
+                    item.getMemberEvent().getEventYear(),                          // eventYear
+                    item.getMemberEventHost().getNodeId(),                         // hostNodeId
+                    item.getMemberEvent().getEventName(),                           // eventName
+                    item.getMemberEventHost().getNodeName(),                       // hostName
+                    item.getMemberEventItemName(),                                  // itemName
+                    item.getApproveDateTime() != null ? item.getApproveDateTime().toString() : null, // resultDate
+                    item.getTCreated() != null ? item.getTCreated().toString() : null, 
+                    item.getTModified() != null ? item.getTModified().toString() : null, 
+                    "https://app.indiankalaripayattufederation.com/verify?id=" + item.getMeiId() // verificationUrl
+            );
+
             certificateProducer.sendCertificateEvent(event);
         }
 
-        // 3️⃣ Return how many messages sent
+
         return participants.size();
     }
 }
-

@@ -27,8 +27,10 @@ import com.itextpdf.signatures.IExternalSignature;
 import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PrivateKeySignature;
-
+import com.dms.kalari.events.dto.CertificateGenerationResultDTO;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.service.event.CertificateGenerateEvent;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
@@ -49,8 +51,8 @@ public class CertificateService {
     private static final String KEYSTORE_PATH = "/etc/ssl/indiankalaripayattufederation/indiankalari.p12";
     private static final String KEYSTORE_PASSWORD = "changeit";
 
-    @Transactional
-    public byte[] generateOrGetSignedCertificate(MemberEventItem mei) throws Exception {
+    //@Transactional already in transaction
+    public CertificateGenerationResultDTO generateOrGetSignedCertificate(MemberEventItem mei) throws Exception {
         // Ensure BC provider is available
         if (Security.getProvider("BC") == null) {
             Security.addProvider(new BouncyCastleProvider());
@@ -77,7 +79,7 @@ public class CertificateService {
         // ✅ Return if file already exists
         if (Files.exists(filePath)) {
             System.out.println("Existing certificate found: " + filePath);
-            return Files.readAllBytes(filePath);
+            return new CertificateGenerationResultDTO(filePath.getFileName().toString(), false);
         }
 
         // Generate new unsigned PDF
@@ -91,7 +93,7 @@ public class CertificateService {
         Files.write(filePath, signedPdf);
         System.out.println("New certificate stored: " + filePath);
 
-        return signedPdf;
+        return new CertificateGenerationResultDTO(filePath.getFileName().toString(), true);
     }
 
     // Prepare all certificate data for the template
@@ -189,5 +191,53 @@ public class CertificateService {
 
         return signedPdf.toByteArray();
     }
+    
+    
+    @Transactional
+    public byte[] generateOrGetSignedCertificate1(MemberEventItem mei) throws Exception {
+        // Ensure BC provider is available
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        // Use modified or created timestamp
+        LocalDateTime timestamp = mei.getTModified() != null ? mei.getTModified() : mei.getTCreated();
+        String formattedTimestamp = timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS"));
+
+        // Build directory path
+        Path storagePath = Paths.get(
+                "uploads",
+                "certificates",
+                String.valueOf(mei.getMemberEvent().getEventYear()),
+                String.valueOf(mei.getMemberEventHost().getNodeId()),
+                String.valueOf(mei.getMemberEvent().getEventId()),
+                String.valueOf(mei.getMeiId())
+        );
+        Files.createDirectories(storagePath);
+
+        // Final file
+        Path filePath = storagePath.resolve(formattedTimestamp + ".pdf");
+
+        // ✅ Return if file already exists
+        if (Files.exists(filePath)) {
+            System.out.println("Existing certificate found: " + filePath);
+            return Files.readAllBytes(filePath);
+        }
+
+        // Generate new unsigned PDF
+        Map<String, Object> data = prepareCertificateData(mei);
+        byte[] unsignedPdf = generatePdfFromTemplate(data);
+
+        // Sign PDF
+        byte[] signedPdf = signPdf(unsignedPdf);
+
+        // Store locally
+        Files.write(filePath, signedPdf);
+        System.out.println("New certificate stored: " + filePath);
+
+        return signedPdf;
+    }
+
+
 }
 

@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -341,19 +342,42 @@ public class MemberEventItemService {
 	public void updateScores(Map<Long, Integer> scores,
 	                         Map<Long, MemberEventItem.Grade> grades) {
 
-	    scores.forEach((meiId, score) -> {
-	        MemberEventItem mei = memberEventItemRepository.findById(meiId)
-	                .orElseThrow(() -> new RuntimeException("MemberEventItem not found for id " + meiId));
+	    // Collect all IDs to fetch at once
+	    Set<Long> meiIds = scores.keySet();
 
-	        mei.setMemberEventScore(score);
+	    // Fetch all items in one query
+	    List<MemberEventItem> allMei = memberEventItemRepository.findAllById(meiIds);
 
-	        if (grades.containsKey(meiId)) {
-	            mei.setMemberEventGrade(grades.get(meiId));
+	    List<MemberEventItem> toUpdate = new ArrayList<>();
+
+	    for (MemberEventItem mei : allMei) {
+	        Long meiId = mei.getMeiId();
+	        boolean changed = false;
+
+	        Integer newScore = scores.get(meiId);
+	        if (!Objects.equals(mei.getMemberEventScore(), newScore)) {
+	            mei.setMemberEventScore(newScore);
+	            changed = true;
 	        }
 
-	        memberEventItemRepository.save(mei);
-	    });
+	        if (grades.containsKey(meiId)) {
+	            MemberEventItem.Grade newGrade = grades.get(meiId);
+	            if (!Objects.equals(mei.getMemberEventGrade(), newGrade)) {
+	                mei.setMemberEventGrade(newGrade);
+	                changed = true;
+	            }
+	        }
+
+	        if (changed) {
+	            toUpdate.add(mei);
+	        }
+	    }
+
+	    if (!toUpdate.isEmpty()) {
+	        memberEventItemRepository.saveAll(toUpdate);
+	    }
 	}
+
 
 
 }
