@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.util.Map;
 
 import com.dms.kalari.util.QrCodeUtil;
+import com.dms.kalari.util.SimpleBase64;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
@@ -75,15 +76,16 @@ public class CertificateService {
 
         // Final file
         Path filePath = storagePath.resolve(formattedTimestamp + ".pdf");
+        String filePathString = storagePath.toString();
 
         // ✅ Return if file already exists
         if (Files.exists(filePath)) {
             System.out.println("Existing certificate found: " + filePath);
-            return new CertificateGenerationResultDTO(filePath.getFileName().toString(), false);
+            return new CertificateGenerationResultDTO(filePath.getFileName().toString(), false,filePathString);
         }
 
         // Generate new unsigned PDF
-        Map<String, Object> data = prepareCertificateData(mei);
+        Map<String, Object> data = prepareCertificateData(mei,filePath.getFileName().toString());
         byte[] unsignedPdf = generatePdfFromTemplate(data);
 
         // Sign PDF
@@ -93,11 +95,11 @@ public class CertificateService {
         Files.write(filePath, signedPdf);
         System.out.println("New certificate stored: " + filePath);
 
-        return new CertificateGenerationResultDTO(filePath.getFileName().toString(), true);
+        return new CertificateGenerationResultDTO(filePath.getFileName().toString(), true,filePathString);
     }
 
     // Prepare all certificate data for the template
-    private Map<String, Object> prepareCertificateData(MemberEventItem mei) throws Exception {
+    private Map<String, Object> prepareCertificateData(MemberEventItem mei, String fileName) throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("meiId", mei.getMeiId());
         data.put("participantName", mei.getMemberEventMember().getUserFname());
@@ -106,18 +108,21 @@ public class CertificateService {
         data.put("resultDate", mei.getApproveDateTime());
         data.put("medalType", mei.getMemberEventGrade().name());
         data.put("itemName", mei.getMemberEventItemName());
+        data.put("itemName", mei.getMemberEventItemName());
 
         String medalPath = "/static/images/" + mei.getMemberEventGrade().name() + ".png";
         data.put("medalImage", medalPath);
 
         // Add QR code
         Long meiId = mei.getMeiId();
+        String maskedId = SimpleBase64.encode(meiId, fileName);
+        
         byte[] qrBytes = QrCodeUtil.generateQrCodeBytes(
-                "https://app.indiankalaripayattufederation.com/verify?id=" + meiId
+                "https://app.indiankalaripayattufederation.com/verify?id=" + maskedId
         );
         Path tempQrFile = Files.createTempFile("qr-" + meiId, ".png");
         Files.write(tempQrFile, qrBytes);
-        data.put("verificationIdMasked", "jsb-" + meiId);
+        data.put("verificationIdMasked", maskedId);
         data.put("qrImagePath", tempQrFile.toUri().toString());
 
         return data;
@@ -171,26 +176,39 @@ public class CertificateService {
         PdfReader reader = new PdfReader(new ByteArrayInputStream(unsignedPdf));
         PdfSigner signer = new PdfSigner(reader, signedPdf, new StampingProperties());
 
-        Rectangle rect = new Rectangle(710f, 13f, 120f, 50f);
+        // Invisible rectangle (signature will not be drawn on page)
+        Rectangle invisibleRect = new Rectangle(0, 0, 0, 0);
 
         PdfSignatureAppearance appearance = signer.getSignatureAppearance();
         appearance
                 .setReason("Official Certificate Verification")
                 .setLocation("Indian Kalarippayattu Federation")
-                .setLocationCaption("Authority: ")
-                .setPageRect(rect)
+                .setReuseAppearance(false)
+                .setPageRect(invisibleRect)
                 .setPageNumber(1)
                 .setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
 
+        // Set field name and certification level
         signer.setFieldName("DigitalSignature");
+        signer.setCertificationLevel(PdfSigner.CERTIFIED_NO_CHANGES_ALLOWED);
 
         IExternalSignature pks = new PrivateKeySignature(privateKey, DigestAlgorithms.SHA256, "BC");
         IExternalDigest digest = new BouncyCastleDigest();
 
-        signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CADES);
+        signer.signDetached(
+                digest,
+                pks,
+                chain,
+                null,
+                null,
+                null,
+                0,
+                PdfSigner.CryptoStandard.CADES
+        );
 
         return signedPdf.toByteArray();
     }
+
     
     
     @Transactional
@@ -225,7 +243,7 @@ public class CertificateService {
         }
 
         // Generate new unsigned PDF
-        Map<String, Object> data = prepareCertificateData(mei);
+        Map<String, Object> data = prepareCertificateData(mei,filePath.getFileName().toString());
         byte[] unsignedPdf = generatePdfFromTemplate(data);
 
         // Sign PDF

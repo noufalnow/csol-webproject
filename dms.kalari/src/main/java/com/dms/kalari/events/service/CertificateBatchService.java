@@ -25,7 +25,7 @@ public class CertificateBatchService {
     @Transactional(readOnly = true)
     public int processCertificateBatch(Long eventId) {
 
-        List<MemberEventItem> participants = memberEventItemRepository.findByEventIdWhereGradeNotEmpty(eventId);
+        List<MemberEventItem> participants = memberEventItemRepository.findByEventIdWhereGradeNotEmpty(eventId,MemberEventItem.CertificateStatus.GENERATED);
 
         if (participants.isEmpty()) return 0;
 

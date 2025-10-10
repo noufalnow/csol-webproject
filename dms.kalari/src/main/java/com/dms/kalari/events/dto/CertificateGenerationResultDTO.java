@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 public class CertificateGenerationResultDTO {
     private String fileName;
     private boolean newFile;
+    private String filePath;
 
 }

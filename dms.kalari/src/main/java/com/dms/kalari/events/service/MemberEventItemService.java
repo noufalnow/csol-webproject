@@ -369,6 +369,7 @@ public class MemberEventItemService {
 	        }
 
 	        if (changed) {
+	        	mei.setCertificateStatus(MemberEventItem.CertificateStatus.PENDING);
 	            toUpdate.add(mei);
 	        }
 	    }

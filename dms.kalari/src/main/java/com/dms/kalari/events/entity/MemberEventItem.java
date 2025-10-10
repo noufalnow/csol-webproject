@@ -107,10 +107,15 @@ public class MemberEventItem extends BaseEntity {
         PENDING,
         GENERATED,
         FAILED, 
-        ACTIVE, REVOKED
+        ACTIVE, 
+        REVOKED
     }
     
-
+    @Column(name = "mei_certificate_path")
+    private String meiCertificatePath;
+    
+    @Column(name = "mei_certificate_file")
+    private String meiCertificateFile;
     
     
     @Column(name = "mei_certificate_history", columnDefinition = "TEXT")

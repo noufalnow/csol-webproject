@@ -75,7 +75,9 @@ public class CertificateProcessingService {
             repository.updateCertificateStatusAndHistory(
                     mei.getMeiId(),
                     MemberEventItem.CertificateStatus.GENERATED,
-                    historyJson
+                    historyJson,
+                    result.getFilePath(),
+                    result.getFileName()  
             );
 
             return true;
@@ -94,7 +96,8 @@ public class CertificateProcessingService {
         repository.updateCertificateStatusAndHistory(
                 meiId,
                 MemberEventItem.CertificateStatus.FAILED,
-                historyJson
+                historyJson,
+                "",""
         );
     }
 }

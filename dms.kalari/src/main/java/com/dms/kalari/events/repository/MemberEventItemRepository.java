@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.nio.file.Path;
 
 @Repository
 public interface MemberEventItemRepository extends BaseRepository<MemberEventItem, Long> {
@@ -88,15 +89,20 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 			@Param("gender") CoreUser.Gender gender, @Param("category") EventItemMap.Category category);
 
 	@Query("""
-			    SELECT mei FROM MemberEventItem mei
-			    JOIN FETCH mei.memberEvent me
-			    JOIN FETCH mei.memberEventHost meh
-			    JOIN FETCH mei.memberEventMember mem
-			    WHERE me.eventId = :eventId
-			      AND mei.memberEventGrade IS NOT NULL
-			      AND mei.deleted = false
-			""")
-	List<MemberEventItem> findByEventIdWhereGradeNotEmpty(@Param("eventId") Long eventId);
+		    SELECT mei FROM MemberEventItem mei
+		    JOIN FETCH mei.memberEvent me
+		    JOIN FETCH mei.memberEventHost meh
+		    JOIN FETCH mei.memberEventMember mem
+		    WHERE me.eventId = :eventId
+		      AND mei.memberEventGrade IS NOT NULL
+		      AND mei.certificateStatus <> :status
+		      AND mei.deleted = false
+		""")
+		List<MemberEventItem> findByEventIdWhereGradeNotEmpty(
+		    @Param("eventId") Long eventId,
+		    @Param("status") MemberEventItem.CertificateStatus status
+		);
+
 
 	@Query("""
 			SELECT mei FROM MemberEventItem mei
@@ -113,13 +119,17 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	@Query("""
 	    UPDATE MemberEventItem m
 	    SET m.certificateStatus = :status,
-	        m.certificateHistoryJson = :historyJson
+	        m.certificateHistoryJson = :historyJson,
+	        m.meiCertificatePath = :filePath,
+	        m.meiCertificateFile = :fileName
 	    WHERE m.meiId = :meiId
 	""")
 	void updateCertificateStatusAndHistory(
 	        @Param("meiId") Long meiId,
 	        @Param("status") MemberEventItem.CertificateStatus status,
-	        @Param("historyJson") String historyJson
+	        @Param("historyJson") String historyJson,
+	        @Param("filePath") String filePath,
+	        @Param("fileName") String fileName
 	);
 
 

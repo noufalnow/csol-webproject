@@ -21,7 +21,9 @@ body {
 	background-color: #fff;
 	border: 12px double #d0b152;
 	box-sizing: border-box;
-	padding: 4mm;
+	padding: 0; /* remove 4mm padding to avoid extra bottom space */
+	position: relative;
+	overflow: hidden;
 }
 
 /* === TOP BAR === */
@@ -32,23 +34,10 @@ body {
 	margin-bottom: 10mm;
 }
 
-.verification, .affiliation-top, .qr-container {
-	display: table-cell;
-	vertical-align: top;
-	padding: 0 5mm;
-}
-
-.verification {
-	font-size: 9pt;
-	font-style: italic;
-	color: gray;
-	width: 10%;
-}
-
 .affiliation-top {
 	text-align: center;
 	color: #2c3e50;
-	width: 80%;
+	width: 100%;
 }
 
 .affiliation-top .federation-row {
@@ -70,6 +59,14 @@ body {
 	font-weight: bold;
 }
 
+.affiliation-top .federation-text-medium {
+	font-size: 18pt;
+}
+
+.affiliation-top .federation-text-small {
+	font-size: 12pt;
+}
+
 .affiliation-top .logo-small {
 	height: 25mm;
 }
@@ -78,16 +75,6 @@ body {
 	font-size: 11pt;
 	font-style: italic;
 	line-height: 1.4;
-}
-
-.qr-container {
-	text-align: right;
-	width: 10%;
-}
-
-.qr-container img {
-	width: 70px;
-	height: 70px;
 }
 
 /* === TITLE + MEDAL === */
@@ -114,10 +101,6 @@ body {
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	text-align: center;
-}
-
-.title {
-	
 }
 
 .subtitle {
@@ -182,7 +165,10 @@ body {
 	width: 100%;
 	display: table;
 	table-layout: fixed;
-	margin-top: 10mm;
+	position: absolute;
+	bottom: 40pt; /* reduced from 60pt */
+	text-align: center;
+	margin-top: 0;
 }
 
 .date {
@@ -193,61 +179,67 @@ body {
 }
 
 .seal {
-	width: 35mm; /* ~99 pt */
+	width: 35mm;
 	opacity: 0.7;
 	display: table-cell;
 	text-align: right;
 }
 
-.certificate-page {
-	position: relative;
+/* === BOTTOM BAR === */
+.bottom-bar {
+	position: absolute;
+	bottom: 50pt; /* keep 10pt from page bottom */
+	right: 0;
 	width: 100%;
-	height: 588pt; /* A4 landscape height */
-	overflow: hidden;
+	display: flex;
+	justify-content: space-between;
+	align-items: right;
+	padding: 0 10mm;
+	box-sizing: border-box;
 }
 
-.footer {
-	position: absolute;
-	bottom: 40pt;
-	width: 100%;
-	text-align: center;
+.bottom-bar .verification {
+	font-size: 9pt;
+	font-style: italic;
+	color: gray;
+}
+
+.bottom-bar .qr-container img {
+	width: 100px;
+	height: 100px;
 }
 </style>
 </head>
 <body>
 	<div class="certificate-page">
 
+		<!-- === TOP BAR === -->
 		<div class="top-bar">
-			<div class="verification">
-				<i>Verification ID: <span th:text="${verificationIdMasked}"></span></i>
-			</div>
-
 			<div class="affiliation-top">
 				<div class="federation-row">
 					<img class="logo-small"
 						th:src="@{classpath:/static/images/logo.png}"
 						alt="Organization Logo" />
-					<div class="federation-text">INDIAN KALARIPPAYATTU FEDERATION</div>
-					
+
+					<div class="federation-text">THIRUVANANTHAPURAM KALARIPPAYATTU ASSOCIATION
+						</div>
 					<img class="logo-small"
 						th:src="@{classpath:/static/images/branch.png}"
 						alt="Organization Logo" />
 				</div>
+				<div class="federation-text federation-text-small">KERLA KALARIPPAYATTU ASSOCIATION</div>
+				<div class="federation-text federation-text-small">INDIAN KALARIPPAYATTU FEDERATION</div>
 				<div class="affiliation-text">
 					Recognized by the Ministry of Youth Affairs and Sports, Govt. of
 					India<br /> Affiliated to the All India Council of Sports &amp;
 					International Kalarippayattu Federation
 				</div>
-				<div class="federation-text"> Thiruvananthapuram Kalarippayattu Association</div>
-			</div>
-
-			<div class="qr-container">
-				<img th:src="@{${qrImagePath}}" width="80" height="80" alt="QR Code" />
+				
 			</div>
 		</div>
 
-		<div class="title-container">
-
+		<!-- === TITLE SECTION === -->
+		<div class="title-container" style="margin-top: 25mm;">
 			<div class="title">Trivandrum District Kalarippayattu
 				Championship - 2025</div>
 			<img class="medal-image"
@@ -255,7 +247,7 @@ body {
 				th:alt="${medalType} + ' Medal'" />
 		</div>
 
-		<div class="subtitle">Certificate of Achivment</div>
+		<div class="subtitle">Certificate of Achievement</div>
 
 		<div class="recipient"
 			th:text="'Sri/Smt/Kumari: ' + ${participantName}">
@@ -266,15 +258,14 @@ body {
 			has participated in the National Kalarippayattu Seminar held at India
 			Habitat Centre, New Delhi on 28th March 2018.</div>
 
-		<div class="certificate-number">
-			Certificate No: <span th:text="${certificateNumber}">No.
-				Delhi/18</span>
+		<div class="certificate-number" style="margin-top: 15mm;">
+			 <span th:text="${certificateNumber}">No. Delhi/18</span>
 		</div>
 
-		<div class="signatories">
+		<div class="signatories" style="margin-top: 40mm;">
 			<div class="signatory">
-				M. Krishnamoorthy IPS<br /> <i>DGP (Retd.), Chairman, Organizing
-					Committee</i>
+				M. Krishnamoorthy IPS<br /> <i>DGP (Retd.), Chairman,
+					Organizing Committee</i>
 			</div>
 			<div class="signatory">
 				P. Jayaraj<br /> <i>Organizing Secretary</i>
@@ -288,12 +279,25 @@ body {
 			</div>
 		</div>
 
+		<!-- === FOOTER === -->
 		<div class="footer">
 			<div class="date"
 				th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}">Date</div>
 			<img class="seal" th:src="@{classpath:/static/images/seal.png}"
 				alt="Official Seal" />
 		</div>
+
+		<!-- === BOTTOM BAR === -->
+		<div class="bottom-bar">
+			<div class="verification">
+				<i>Verification ID: <span th:text="${verificationIdMasked}"></span></i><br />
+				<small class="sig-note">(Digitally signed by IKF Authority)</small>
+			</div>
+			<div class="qr-container">
+				<img th:src="@{${qrImagePath}}" alt="QR Code" />
+			</div>
+		</div>
+
 
 	</div>
 </body>
