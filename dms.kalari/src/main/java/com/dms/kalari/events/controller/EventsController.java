@@ -203,11 +203,16 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 				selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
 		model.addAttribute("subjuniorItemIds",
 				selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
+		
+		
+
 
 		// ✅ Add this line — required for the <th:each="item : ${eventItems}">
 		model.addAttribute("eventItems", eventItemService.findAll());
+	    model.addAttribute("categories", EventItemMap.Category.values());
+	    model.addAttribute("genders", CoreUser.Gender.values());
 
-		model.addAttribute("pageTitle", "Event Details: " + event.getEventName());
+		model.addAttribute("pageTitle", "Event Details");
 		return "fragments/events/view";
 	}
 
@@ -506,16 +511,14 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		return ResponseEntity.ok(body);
 	}
 
-	@GetMapping("/participants_score/{eventid}/{nodeid}")
-	public String eventScoreEntry(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
+	@GetMapping("/participants_score/{eventid}")
+	public String eventScoreEntry(@PathVariable("eventid") Long mEventId,
 			@RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
 			@RequestParam(required = false) EventItemMap.Category category, Model model) {
 
 		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		model.addAttribute("eventId", mEventId);
-		model.addAttribute("nodeId", mNodeId);
 		model.addAttribute("pageTitle", "Score Card");
 
 		if (itemId != null && gender != null && category != null) {
@@ -533,8 +536,6 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		paramx.put("category", category != null ? category.name() : "");
 		model.addAttribute("paramx", paramx);
 
-		model.addAttribute("target", "events_target");
-
 		model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
 		model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
 		model.addAttribute("categories", EventItemMap.Category.values());
@@ -542,14 +543,14 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		return "fragments/events/score";
 	}
 
-	@PostMapping("/participants_score/{mEventId}/{mNodeId}")
+	@PostMapping("/participants_score/{mEventId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> updateScores(@PathVariable("mEventId") Long mEventId,
-			@PathVariable("mNodeId") Long mNodeId, @RequestParam Map<String, String> params,
+			@RequestParam Map<String, String> params,
 			@RequestParam(name = "pageParams", required = false) String pageParams) {
 
 		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
+		//Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		// Extract scores and grades from params (meiId is the key)
 		Map<Long, Integer> scores = new HashMap<>();
@@ -574,12 +575,88 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		body.put("message", "Scores updated successfully");
 		body.put("status", "success");
 		body.put("loadnext",
-				"champ_participants_score/" + mEventId + "/" + mNodeId + (pageParams != null ? "?" + pageParams : ""));
-		body.put("target", "modal");
+				"champ_participants_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+		body.put("target", "modal2");
+		
 
 		return ResponseEntity.ok(body);
 
 	}
+	
+	
+	@GetMapping("/certificate_approve/{eventId}")
+	public String certificateApprovalView(@PathVariable("eventId") Long mEventId,
+	                                      @RequestParam(required = false) Long itemId,
+	                                      @RequestParam(required = false) CoreUser.Gender gender,
+	                                      @RequestParam(required = false) EventItemMap.Category category,
+	                                      Model model) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    model.addAttribute("eventId", mEventId);
+	    model.addAttribute("pageTitle", "Certificate Approval");
+
+	    if (itemId != null && gender != null && category != null) {
+	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
+	                memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category);
+	        model.addAttribute("matrix", matrix);
+	    }
+
+	    Map<String, String> paramx = new HashMap<>();
+	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	    paramx.put("gender", gender != null ? gender.name() : "");
+	    paramx.put("category", category != null ? category.name() : "");
+	    model.addAttribute("paramx", paramx);
+	    
+	    
+	    String combined = String.format("itemId=%s;gender=%s;category=%s",
+	    	    paramx.get("itemId"), paramx.get("gender"), paramx.get("category"));
+	    model.addAttribute("combinedParam", combined);
+
+	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	    model.addAttribute("genders", CoreUser.Gender.values());
+	    model.addAttribute("categories", EventItemMap.Category.values());
+	    model.addAttribute("target", "modal2");
+
+	    return "fragments/events/approval";
+	}
+
+	@PostMapping("/certificate_approve/{mEventId}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> updateCertificateApproval(
+	        @PathVariable("mEventId") Long mEventId,
+	        @RequestParam Map<String, String> params,
+	        @RequestParam("cparams") String cparams,
+	        Authentication authentication,
+	        @RequestParam(name = "pageParams", required = false) String pageParams) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    long userId = principal.getUserId();
+
+	    // Collect approvals (meiId -> true/false)
+	    Map<Long, Boolean> approvals = new HashMap<>();
+	    params.forEach((key, value) -> {
+	        if (key.startsWith("approved[")) {
+	            Long meiId = Long.valueOf(key.substring(9, key.length() - 1));
+	            approvals.put(meiId, value.equals("on"));
+	        }
+	    });
+
+	    memberEventItemService.updateCertificateApprovals(eventId,cparams,approvals, userId);
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("message", "Score and Grade Verified and Approved Successfully");
+	    body.put("status", "success");
+	    body.put("loadnext", "champ_certificate_approve/" + mEventId + 
+	            (pageParams != null ? "?" + pageParams : ""));
+	    body.put("target", "modal2");
+
+	    return ResponseEntity.ok(body);
+	}
+
+	
 
 	@GetMapping("/certificate_generate/{mEventId}")
 	public ResponseEntity<?> generateBatchCertificate(@PathVariable Long mEventId) throws Exception {
@@ -589,10 +666,21 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    int count = certificateBatchService.processCertificateBatch(eventId);
 
 	    Map<String, Object> body = new HashMap<>();
-	    body.put("message", count + " certificate tasks queued successfully!");
-	    body.put("target", "modal");
+
+	    String message;
+	    if (count == 0) {
+	        message = "No certificate tasks were queued.";
+	    } else if (count == 1) {
+	        message = "1 certificate task queued successfully!";
+	    } else {
+	        message = count + " certificate tasks queued successfully!";
+	    }
+
+	    body.put("message", message);
+
+	    //body.put("target", "modal");
 	    body.put("status", "success");
-	    body.put("loadnext", "champ_eventview/" + mEventId);
+	    //body.put("loadnext", "champ_eventview/" + mEventId);
 
 	    return ResponseEntity.ok(body);
 	}

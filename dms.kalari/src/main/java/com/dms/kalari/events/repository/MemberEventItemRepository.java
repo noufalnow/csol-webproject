@@ -96,11 +96,13 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		    WHERE me.eventId = :eventId
 		      AND mei.memberEventGrade IS NOT NULL
 		      AND mei.certificateStatus <> :status
+		      AND mei.verificationStatus = :verification
 		      AND mei.deleted = false
 		""")
 		List<MemberEventItem> findByEventIdWhereGradeNotEmpty(
 		    @Param("eventId") Long eventId,
-		    @Param("status") MemberEventItem.CertificateStatus status
+		    @Param("status") MemberEventItem.CertificateStatus status,
+		    @Param("verification") MemberEventItem.VerificationStatus verification
 		);
 
 
@@ -131,6 +133,24 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	        @Param("filePath") String filePath,
 	        @Param("fileName") String fileName
 	);
+	
+	@Query("""
+		    SELECT m.meiId 
+		    FROM MemberEventItem m 
+		    WHERE m.deleted = false
+		      AND m.memberEvent.id = :eventId
+		      AND m.verificationStatus = com.dms.kalari.events.entity.MemberEventItem.VerificationStatus.APPROVED
+		      AND (:itemId IS NULL OR m.memberEventItem.evitemId = :itemId)
+		      AND (:gender IS NULL OR m.memberEventGender = :gender)
+		      AND (:category IS NULL OR m.memberEventCategory = :category)
+		""")
+		List<Long> findApprovedVerificationIdsByFilters(
+		        @Param("eventId") Long eventId,
+		        @Param("itemId") Long itemId,
+		        @Param("gender") CoreUser.Gender gender,
+		        @Param("category") EventItemMap.Category category);
+
+
 
 
 // cd /usr/local/kafka/bin

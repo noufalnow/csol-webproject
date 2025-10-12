@@ -114,10 +114,17 @@ $(document).ready(function() {
 					
 					
 					let dynamicModal = bootstrap.Modal.getInstance(document.getElementById('dynamicModal'));
-					if (dynamicModal) dynamicModal.hide();
-
 					let nestedModal = bootstrap.Modal.getInstance(document.getElementById('nestedModal'));
-					if (nestedModal) nestedModal.hide();
+
+					if (response.target === 'modal' && dynamicModal) {
+					    dynamicModal.hide();
+					} else if (response.target === 'modal2' && nestedModal) {
+					    nestedModal.hide();
+					}
+					else if(dynamicModal){
+						dynamicModal.hide();
+					}
+
 
 					
 	                Swal.fire({
@@ -370,7 +377,7 @@ function loadContent(url, targetSelector,form) {
 		success(data) {
 
 			if (data.status === 'success') {
-				$('#dynamicModal').modal('hide');
+				//$('#dynamicModal').modal('hide');
 				Swal.fire({
 					title: 'Success',
 					html: data.message,
@@ -403,20 +410,11 @@ function loadContent(url, targetSelector,form) {
 			else if (isModal) {
 				// modal path
 
-				//const $modal = (targetSelector === 'modal') ? ($target.is('.modal') ? $target : $('#dynamicModal')) : $('#nestedModal')
-				
-				var targetEl = $target instanceof jQuery ? $target[0] : $target;
+				var modal = (targetSelector === 'modal')
+				    ? ($target.is('.modal') ? $target[0] : document.getElementById('dynamicModal'))
+				    : document.getElementById('nestedModal');
 
-
-				/*var modal = document.getElementById(
-				    (targetSelector === 'modal' && targetEl instanceof HTMLElement && targetEl.classList.contains('modal'))
-				        ? targetEl.id
-				        : (targetSelector === 'modal' ? 'dynamicModal' : 'nestedModal')
-				);
-
-				var $modal = $(modal);*/
-				
-				var modal = targetSelector === 'modal' ? (targetEl && targetEl.classList.contains('modal') ? targetEl : document.getElementById('dynamicModal')) : document.getElementById('nestedModal'); $modal = $(modal);
+				var $modal = $(modal);
 
 				
 								

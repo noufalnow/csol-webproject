@@ -87,6 +87,14 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		    System.out.println("unmasked " + nodeId);
 	    }
 	    
+	    
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds( principal.getInstId());
+	    	    
+	    
+	    if (!allowedNodeIds.contains(nodeId)) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
+	    
 
 
 
@@ -200,7 +208,14 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		Map<String, Object> additionalData = new HashMap<>();
 		NodeDTO node = service.findById(nodeId);
 		nodeDTO.setParentId(node.getParentId());
-		additionalData.put("loadnext", "branch_nodelist/"  + XorMaskHelper.mask(node.getParentId()));
+		
+		if(principal.getInstId()==nodeId)
+			additionalData.put("loadnext", "branch_nodelist/"  + XorMaskHelper.mask(nodeId));
+		else
+			additionalData.put("loadnext", "branch_nodelist/"  + XorMaskHelper.mask(node.getParentId()));
+		
+		
+		
 		additionalData.put("target", "users_target");
 		return handleRequest(result, () -> service.update(nodeId, nodeDTO), "Affiliations updated successfully", additionalData);
 	}

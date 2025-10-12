@@ -7,15 +7,35 @@
 		<div class="row align-items-center">
 
 			<!-- Left: Node Name (4 cols) -->
-			<div class="col-12 col-md-4 mb-2 mb-md-0">
-				<h4 class="mb-0 px-3 py-2 rounded"
-					style="background-color: var(--bs-gray-200); font-size: 1.1rem; font-weight: 600; color: var(--bs-dark);">
-					<label th:text="${nodeName}">Affiliation</label>
-				</h4>
+			<div class="col-12 col-md-5 mb-2 mb-md-0">
+
+					
+			<div class="d-flex align-items-center justify-content-between">
+			    <h4 class="mb-0 px-3 py-2 rounded d-flex align-items-center justify-content-between"
+			        style="background-color: var(--bs-gray-200); font-size: 1.1rem; font-weight: 600; color: var(--bs-dark); width: 100%;">
+			        
+					<a th:onclick="'loadContent(\'/branch_nodeview/' + ${parentId} + '\', \'modal\')'"
+					   class="text-decoration-none cursor-pointer" style="cursor: pointer;">
+					    <span th:text="${nodeName}">Affiliation</span>
+					</a>
+
+			        
+			        <a class="btn btn-sm btn-outline-primary px-1 py-1"
+			           th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit'')')) 
+			                    or (isChild and #authorization.expression('hasAuthority(''PRIV_branch_nodeedit_child'')'))}"
+			           th:onclick="'loadContent(\'/branch_nodeedit/' +${parentId}+ '\', \'modal\')'">
+			            <i class="fas fa-edit"></i>
+			        </a>
+			    </h4>
+			</div>
+
+
+					
+				
 			</div>
 
 			<!-- Right: Radio Buttons (8 cols) -->
-			<div class="col-12 col-md-8">
+			<div class="col-12 col-md-7">
 				<div class="row" style="padding-left: .75rem;">
 					<input type="hidden" id="tempSelectedId" name="tempSelectedId"
 						th:value="${parentId}" />

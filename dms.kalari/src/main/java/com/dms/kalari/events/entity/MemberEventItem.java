@@ -106,10 +106,35 @@ public class MemberEventItem extends BaseEntity {
     public enum CertificateStatus {
         PENDING,
         GENERATED,
+        APPROVED,
         FAILED, 
         ACTIVE, 
         REVOKED
     }
+    
+    
+    @Column(name = "mei_certificate_verification")
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus;
+
+    public enum VerificationStatus {
+        PENDING,
+        APPROVED,
+    }
+    
+    
+	    /*
+	     * -- 1️⃣ Drop the old constraint (if it exists)
+	ALTER TABLE member_events_items
+	DROP CONSTRAINT IF EXISTS member_events_items_mei_certificate_status_check;
+	
+	-- 2️⃣ Add the updated constraint allowing all enum values
+	ALTER TABLE member_events_items
+	ADD CONSTRAINT member_events_items_mei_certificate_status_check
+	CHECK (mei_certificate_status IN ('PENDING', 'GENERATED', 'APPROVED', 'FAILED', 'ACTIVE', 'REVOKED'));
+	
+	     * 
+	     */
     
     @Column(name = "mei_certificate_path")
     private String meiCertificatePath;
@@ -120,6 +145,10 @@ public class MemberEventItem extends BaseEntity {
     
     @Column(name = "mei_certificate_history", columnDefinition = "TEXT")
     private String certificateHistoryJson;
+    
+    
+    @Column(name = "mei_approval_history", columnDefinition = "TEXT")
+    private String certificateAppHistoryJson;
 
     // Use a single, static ObjectMapper with JavaTimeModule
     @Transient

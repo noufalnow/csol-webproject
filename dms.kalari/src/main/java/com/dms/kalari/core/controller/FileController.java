@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
+import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.service.MemberEventItemService;
+import com.dms.kalari.util.XorMaskHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +25,13 @@ public class FileController {
 
     @Autowired
     private CoreFileRepository fileRepository;
+    private MemberEventItemService memberEventItemService;
+    
+    
+    public FileController(MemberEventItemService memberEventItemService) {
+        this.memberEventItemService = memberEventItemService;
+    }
+
 
     private static final String DEFAULT_FILE_PATH = "/opt/app/uploads/default.jpg"; // change to your default file path
 
@@ -66,6 +76,42 @@ public class FileController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + file.getFileActualName() + "\"")
                 .contentLength(file.getFileSize())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+    
+    @GetMapping("/certificate/{maskedId}")
+    public ResponseEntity<InputStreamResource> downloadCertificate(@PathVariable("maskedId") Long maskedId) throws IOException {
+
+        // Unmask the ID
+        Long meiId = XorMaskHelper.unmask(maskedId);
+
+        // Fetch the MemberEventItem
+        MemberEventItem mei = memberEventItemService.findById(meiId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+
+        // Get file path and name
+        String filePath = mei.getMeiCertificatePath();
+        String fileName = mei.getMeiCertificateFile();
+        
+        System.out.println("Certificate Path: " + filePath);
+        System.out.println("Certificate File: " + fileName);
+
+
+        File file = new File(filePath, fileName);
+        
+        System.out.println("Absolute File Path: " + file.getAbsolutePath());
+        
+        if (!file.exists()) {
+            throw new IllegalArgumentException("File not found: " + file.getAbsolutePath());
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        // Set headers to prompt download
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + fileName + "\"")
+                .contentLength(file.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }

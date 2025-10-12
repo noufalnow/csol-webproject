@@ -342,6 +342,8 @@ public class MemberEventItemService {
 	public void updateScores(Map<Long, Integer> scores,
 	                         Map<Long, MemberEventItem.Grade> grades) {
 
+	    if (scores.isEmpty() && grades.isEmpty()) return;
+
 	    // Collect all IDs to fetch at once
 	    Set<Long> meiIds = scores.keySet();
 
@@ -351,15 +353,23 @@ public class MemberEventItemService {
 	    List<MemberEventItem> toUpdate = new ArrayList<>();
 
 	    for (MemberEventItem mei : allMei) {
+
+	        // ✅ skip if certificateStatus is GENERATED or verificationStatus is not PENDING
+	    	if (mei.getVerificationStatus() == MemberEventItem.VerificationStatus.APPROVED) {
+	    		    continue;
+	    	}
+
 	        Long meiId = mei.getMeiId();
 	        boolean changed = false;
 
+	        // Update score
 	        Integer newScore = scores.get(meiId);
 	        if (!Objects.equals(mei.getMemberEventScore(), newScore)) {
 	            mei.setMemberEventScore(newScore);
 	            changed = true;
 	        }
 
+	        // Update grade
 	        if (grades.containsKey(meiId)) {
 	            MemberEventItem.Grade newGrade = grades.get(meiId);
 	            if (!Objects.equals(mei.getMemberEventGrade(), newGrade)) {
@@ -368,8 +378,10 @@ public class MemberEventItemService {
 	            }
 	        }
 
+	        // If anything changed, mark certificateStatus as PENDING
 	        if (changed) {
-	        	mei.setCertificateStatus(MemberEventItem.CertificateStatus.PENDING);
+	            mei.setCertificateStatus(MemberEventItem.CertificateStatus.PENDING); // also the initial status
+	            mei.setVerificationStatus(MemberEventItem.VerificationStatus.PENDING); // also the initial status
 	            toUpdate.add(mei);
 	        }
 	    }
@@ -378,6 +390,98 @@ public class MemberEventItemService {
 	        memberEventItemRepository.saveAll(toUpdate);
 	    }
 	}
+
+	
+	
+	@Transactional
+	public void updateCertificateApprovals(Long eventId, String cparams, Map<Long, Boolean> approvals, long userId) {
+
+	    if (approvals.isEmpty() && (cparams == null || cparams.isBlank())) return;
+
+	    // Parse params
+	    Map<String, String> params = Arrays.stream(cparams.split(";"))
+	            .map(s -> s.split("=", 2))
+	            .filter(arr -> arr.length == 2)
+	            .collect(Collectors.toMap(arr -> arr[0], arr -> arr[1]));
+
+	    Long itemId = params.get("itemId").isEmpty() ? null : Long.valueOf(params.get("itemId"));
+	    CoreUser.Gender gender = params.get("gender").isEmpty() ? null : CoreUser.Gender.valueOf(params.get("gender"));
+	    EventItemMap.Category category = params.get("category").isEmpty() ? null : EventItemMap.Category.valueOf(params.get("category"));
+
+	    CoreUser approver = coreUserRepository.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    // ✅ Get all previously approved items for these filters
+	    List<Long> approvedMeiIds = memberEventItemRepository.findApprovedVerificationIdsByFilters(eventId, itemId, gender, category);
+
+	    // ✅ Fetch all MEIs that are relevant (checked or previously approved)
+	    Set<Long> allIdsToFetch = new HashSet<>(approvals.keySet());
+	    allIdsToFetch.addAll(approvedMeiIds);
+
+	    if (allIdsToFetch.isEmpty()) return;
+
+	    List<MemberEventItem> meis = memberEventItemRepository.findAllById(allIdsToFetch);
+	    List<MemberEventItem> toUpdate = new ArrayList<>();
+
+	    for (MemberEventItem mei : meis) {
+
+	        // Skip if already generated
+	        if (mei.getCertificateStatus() == MemberEventItem.CertificateStatus.GENERATED) {
+	            continue;
+	        }
+
+	        Long meiId = mei.getMeiId();
+	        boolean isChecked = approvals.getOrDefault(meiId, false);
+	        boolean wasApproved = approvedMeiIds.contains(meiId);
+
+	        MemberEventItem.VerificationStatus newStatus = mei.getVerificationStatus();
+
+	        // ✅ Case 1: Checkbox is checked → set APPROVED
+	        if (isChecked) {
+	            newStatus = MemberEventItem.VerificationStatus.APPROVED;
+	        }
+	        // ✅ Case 2: Checkbox is *unchecked* but it was previously approved → revert to PENDING
+	        else if (!isChecked && wasApproved) {
+	            newStatus = MemberEventItem.VerificationStatus.PENDING;
+	        }
+
+	        // Only update if changed
+	        if (!Objects.equals(mei.getCertificateStatus(), newStatus)) {
+	            mei.setVerificationStatus(newStatus);
+	            mei.setApprovedBy(approver);
+	            mei.setApproveDateTime(LocalDateTime.now());
+
+	            // 🧾 Prepare approval history JSON entry
+	            Integer currentScore = mei.getMemberEventScore();
+	            MemberEventItem.Grade currentGrade = mei.getMemberEventGrade();
+
+	            String newEntry = String.format(
+	                    "{\"userId\":%d,\"status\":\"%s\",\"score\":%s,\"grade\":\"%s\",\"time\":\"%s\"}",
+	                    userId,
+	                    newStatus,
+	                    currentScore != null ? currentScore.toString() : "null",
+	                    currentGrade != null ? currentGrade.name() : "",
+	                    LocalDateTime.now()
+	            );
+
+	            String oldHistory = mei.getCertificateAppHistoryJson();
+	            mei.setCertificateAppHistoryJson(
+	                    oldHistory == null || oldHistory.isBlank()
+	                            ? "[" + newEntry + "]"
+	                            : oldHistory.replaceAll("]$", ", " + newEntry + "]")
+	            );
+
+	            toUpdate.add(mei);
+	        }
+	    }
+
+	    if (!toUpdate.isEmpty()) {
+	        memberEventItemRepository.saveAll(toUpdate);
+	    }
+	}
+
+
+
 
 
 

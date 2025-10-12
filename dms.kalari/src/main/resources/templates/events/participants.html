@@ -243,19 +243,10 @@ tr:last-child td {
 								<td th:text="${mei.memberEventNode.nodeName}"></td>
 								<td
 									th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : ''}">0</td>
-<td>
-   <span th:text="${mei.memberEventGrade} ?: ''"></span>
-   <span th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}">
-       &nbsp;|&nbsp;
-       <a th:href="@{'/champ_participants_certificate/' + ${xorMaskHelper.mask(mei.meiId)}}" 
-          target="_blank">
-          Download Certificate
-       </a>
-   </span>
-</td>
-
-
-
+								<td>
+								   <span th:text="${mei.memberEventGrade} ?: ''"></span>
+								
+								</td>
 							</tr>
 						</tbody>
 					</table>
