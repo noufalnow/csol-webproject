@@ -162,6 +162,10 @@ public class MemberEventItemService {
 	        item.setMemberEventGender(s.gender);
 	        item.setMemberEventItemName(map.getItem().getEvitemName());
 	        item.setMemberEventScore(0);
+	        item.setMemberEventYear(event.getEventYear());
+	        item.setMemberHostType(event.getEventHost());
+	        
+	        
 	        memberEventItemRepository.save(item);
 	    }
 	}

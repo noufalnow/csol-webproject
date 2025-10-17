@@ -9,10 +9,13 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import com.dms.kalari.events.service.event.CertificateGenerateEvent;
 
 @Configuration
 @EnableKafka
+@ConditionalOnProperty(name = "spring.kafka.enabled", havingValue = "true", matchIfMissing = true)
+
 public class KafkaConfig {
 
     @Bean

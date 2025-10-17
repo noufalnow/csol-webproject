@@ -13,6 +13,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
+import com.dms.kalari.events.entity.Event.Type;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -155,6 +156,16 @@ public class MemberEventItem extends BaseEntity {
     private static final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    
+    
+	@Column(name = "mei_event_year", nullable = true)
+	private Integer memberEventYear;
+	
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "mei_host_type", nullable = true)
+	private Event.Type memberHostType;
+    
 
     // Deserialize JSON to List<CertificateFileRecord>
     @Transient

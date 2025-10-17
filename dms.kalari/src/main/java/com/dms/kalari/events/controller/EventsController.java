@@ -60,6 +60,8 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import com.itextpdf.kernel.pdf.WriterProperties;
 
+import java.time.Year;
+
 @Controller
 @RequestMapping("/champ/events")
 public class EventsController extends BaseController<EventDTO, EventService> {
@@ -221,6 +223,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		model.addAttribute("event", new EventDTO());
+		model.addAttribute("currentYear", Year.now().getValue());
+		
 		model.addAttribute("pageTitle", "Add Event");
 
 		if (nodeId != null) {
@@ -452,6 +456,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		model.addAttribute("eventId", mEventId);
 		model.addAttribute("nodeId", mNodeId);
 		model.addAttribute("pageTitle", "Add Event Participants");
+		
+		EventDTO eventRecord = service.findById(eventId);
 
 		Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
 				.getParticipationMatrix(eventId, itemId, gender, category);

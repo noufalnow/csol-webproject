@@ -46,10 +46,12 @@
           <label for="event_phone" class="form-label required-field">Official Phone</label>
           <input type="tel" id="event_phone" th:field="*{eventOfficialPhone}" class="form-control" required>
         </div>
-        <div class="col-12 col-md-4">
-          <label for="event_year" class="form-label required-field">Year</label>
-          <input type="number" id="event_year" th:field="*{eventYear}" min="2000" max="2100" class="form-control" required>
-        </div>
+<div class="col-12 col-md-4">
+  <label for="event_year" class="form-label required-field">Year</label>
+  <select id="event_year" class="form-select" required name="eventYear"
+          th:attr="data-default-year=${event.eventYear != null ? event.eventYear : currentYear}">
+  </select>
+</div>
       </div>
 
       <!-- Event Items Tabs -->
@@ -182,4 +184,38 @@ function validateAndSubmit() {
     }
 }
 
+</script>
+
+
+<script>
+function populateEventYearDropdown() {
+    const yearSelect = document.getElementById("event_year");
+    if (!yearSelect) return;
+
+    // Don't repopulate if already done
+    if (yearSelect.options.length > 0) return;
+
+    // Read default year from data attribute or fallback to current year
+    const currentYear = new Date().getFullYear();
+    const defaultYearAttr = yearSelect.getAttribute('data-default-year');
+    const defaultYear = defaultYearAttr ? parseInt(defaultYearAttr, 10) : currentYear;
+
+    // Populate years from currentYear-2 to currentYear+2
+    for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+        const option = new Option(year, year);
+        if (year === defaultYear) option.selected = true;
+        yearSelect.add(option);
+    }
+}
+
+// Trigger on page load
+document.addEventListener('DOMContentLoaded', populateEventYearDropdown);
+window.addEventListener('load', populateEventYearDropdown);
+
+// Trigger when modal is shown (Bootstrap 5)
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('shown.bs.modal', function() {
+        populateEventYearDropdown();
+    });
+});
 </script>
