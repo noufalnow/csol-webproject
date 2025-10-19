@@ -1,7 +1,9 @@
 package com.dms.kalari.events.repository;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseRepository;
+import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
 
@@ -149,6 +151,28 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		        @Param("itemId") Long itemId,
 		        @Param("gender") CoreUser.Gender gender,
 		        @Param("category") EventItemMap.Category category);
+	
+	
+	@Query("""
+		    SELECT CONCAT(m.memberEventItem, '-', m.memberEventCategory, '-', m.memberEventMember)
+		    FROM MemberEventItem m
+		    WHERE (:eventYear IS NULL OR m.memberEventYear = :eventYear)
+		      AND (:nodeId IS NULL OR m.memberEventNode.nodeId = :nodeId)
+		      AND (:hostType IS NULL OR m.memberHostType = :hostType)
+		      AND m.verificationStatus = com.dms.kalari.events.entity.MemberEventItem.VerificationStatus.APPROVED
+		      AND m.memberEventGrade IN (
+		          com.dms.kalari.events.entity.MemberEventItem.Grade.GOLD, 
+		          com.dms.kalari.events.entity.MemberEventItem.Grade.SILVER, 
+		          com.dms.kalari.events.entity.MemberEventItem.Grade.BRONZE)
+		      AND m.deleted = false
+		""")
+		List<String> findMeiIdsByFilters(
+		        @Param("eventYear") Integer eventYear,
+		        @Param("nodeId") Long nodeId,
+		        @Param("hostType") Event.Type hostType
+		);
+
+
 
 
 

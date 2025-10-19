@@ -25,6 +25,7 @@ import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.CertificateBatchService;
 import com.dms.kalari.events.service.CertificateService;
 import com.dms.kalari.events.service.EventItemMapService;
@@ -44,8 +45,10 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,11 +77,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	private final MemberEventItemService memberEventItemService;
 	private final CertificateService certificateService;
 	private final CertificateBatchService certificateBatchService;
+	private final MemberEventItemRepository memberEventItemRepository;
 
 	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 			EventItemService eventItemService, MemberUserService memberUserService,
 			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService,
-			CertificateService certificateService, CertificateBatchService certificateBatchService) {
+			CertificateService certificateService, CertificateBatchService certificateBatchService, MemberEventItemRepository memberEventItemRepository) {
 		super(eventService);
 		this.nodeService = nodeService;
 		this.memberEventService = memberEventService;
@@ -88,6 +92,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		this.memberEventItemService = memberEventItemService;
 		this.certificateService = certificateService;
 		this.certificateBatchService = certificateBatchService;
+		this.memberEventItemRepository = memberEventItemRepository;
 	}
 
 	@GetMapping("/")
@@ -393,6 +398,29 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 		Long eventId = XorMaskHelper.unmask(mEventId);
 		Long nodeId = XorMaskHelper.unmask(mNodeId);
+		
+		EventDTO eventRecord = service.findById(eventId);
+		
+		model.addAttribute("eventId", mEventId);
+		model.addAttribute("nodeId", mNodeId);
+		model.addAttribute("pageTitle", "Add Event Participants");
+		
+		
+		List<String> eligibleMeids = new ArrayList<>();
+		
+		if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
+
+			eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(eventRecord.getEventYear(),nodeId,this.getPreviousLevel(eventRecord.getEventHost()));
+			
+			System.out.println("Eligible MEI IDs: " + eligibleMeids);
+			model.addAttribute("eligibleMeids", eligibleMeids);
+			
+			
+		    if (eligibleMeids == null || eligibleMeids.isEmpty()) {
+		        System.out.println("No eligible MEI IDs found. Skipping further processing.");
+		        return "fragments/events/participation";
+		    }
+		}
 
 		// Safe fetch of members
 		Map<String, Map<String, List<CoreUser>>> memberMatrix = Objects
@@ -438,44 +466,20 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		model.addAttribute("uniqueEventItems", uniqueEventItems);
 		model.addAttribute("allEventItems", allItems);
 		model.addAttribute("eventItemsByCategory", eventItemsByCategory);
-		model.addAttribute("eventId", mEventId);
-		model.addAttribute("nodeId", mNodeId);
-		model.addAttribute("pageTitle", "Add Event Participants");
+
 
 		return "fragments/events/participation";
 	}
 
-	@GetMapping("/participants/{eventid}/{nodeid}")
-	public String Listparticipants(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
-			@RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
-			@RequestParam(required = false) EventItemMap.Category category, Model model) {
-
-		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		model.addAttribute("eventId", mEventId);
-		model.addAttribute("nodeId", mNodeId);
-		model.addAttribute("pageTitle", "Add Event Participants");
-		
-		EventDTO eventRecord = service.findById(eventId);
-
-		Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
-				.getParticipationMatrix(eventId, itemId, gender, category);
-
-		model.addAttribute("matrix", matrix);
-
-		Map<String, String> paramx = new HashMap<>();
-		paramx.put("itemId", itemId != null ? itemId.toString() : "");
-		paramx.put("gender", gender != null ? gender.name() : "");
-		paramx.put("category", category != null ? category.name() : "");
-		model.addAttribute("paramx", paramx);
-
-		model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
-		model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
-		model.addAttribute("categories", EventItemMap.Category.values());
-
-		return "events/participants";
+	private Event.Type getPreviousLevel(Node.Type current) {
+	    return switch (current) {
+	        case NATIONAL -> Event.Type.STATE;
+	        case STATE -> Event.Type.DISTRICT;
+	        default -> null;
+	    };
 	}
+
+
 
 	@PostMapping("/participation/{eventId}/{nodeId}")
 	@ResponseBody
@@ -515,6 +519,39 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 				"champ_participation/" + mEventId + "/" + mNodeId + (pageParams != null ? "?" + pageParams : ""));
 		body.put("target", "modal");
 		return ResponseEntity.ok(body);
+	}
+	
+	
+	@GetMapping("/participants/{eventid}/{nodeid}")
+	public String Listparticipants(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
+			@RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
+			@RequestParam(required = false) EventItemMap.Category category, Model model) {
+
+		Long eventId = XorMaskHelper.unmask(mEventId);
+		Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+		model.addAttribute("eventId", mEventId);
+		model.addAttribute("nodeId", mNodeId);
+		model.addAttribute("pageTitle", "Add Event Participants");
+		
+		EventDTO eventRecord = service.findById(eventId);
+
+		Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
+				.getParticipationMatrix(eventId, itemId, gender, category);
+
+		model.addAttribute("matrix", matrix);
+
+		Map<String, String> paramx = new HashMap<>();
+		paramx.put("itemId", itemId != null ? itemId.toString() : "");
+		paramx.put("gender", gender != null ? gender.name() : "");
+		paramx.put("category", category != null ? category.name() : "");
+		model.addAttribute("paramx", paramx);
+
+		model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
+		model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
+		model.addAttribute("categories", EventItemMap.Category.values());
+
+		return "events/participants";
 	}
 
 	@GetMapping("/participants_score/{eventid}")

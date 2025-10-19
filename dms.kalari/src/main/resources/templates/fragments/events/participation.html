@@ -79,16 +79,18 @@
 													</div>
 
 													<!-- iterate users (same as original) -->
-													<div th:each="user : ${memberMatrix[catEntry.key].MALE}"
-														class="form-check">
+													<div th:each="user : ${memberMatrix[catEntry.key].MALE}">
+														<div th:if="${eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}" class="form-check">
 														<input class="form-check-input" type="checkbox"
 															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
 															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][MALE]'"
 															th:value="${itemInCategory.eimId}"
+															th:some="${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId}"	
 															th:checked="${selectedKeys != null and selectedKeys.contains(itemInCategory.eimId + '-' + user.userId)}" />
 														<label class="form-check-label"
 															th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
 															th:text="${user.userFname + ' ' + user.userLname}"></label>
+													</div>
 													</div>
 												</div>
 											</div>
@@ -102,8 +104,8 @@
 													</div>
 
 													<!-- iterate users (same as original) -->
-													<div th:each="user : ${memberMatrix[catEntry.key].FEMALE}"
-														class="form-check">
+													<div th:each="user : ${memberMatrix[catEntry.key].FEMALE}">
+														<div th:if="${eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}" class="form-check">
 														<input class="form-check-input" type="checkbox"
 															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_g'"
 															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][FEMALE]'"
@@ -112,6 +114,7 @@
 														<label class="form-check-label"
 															th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_g'"
 															th:text="${user.userFname + ' ' + user.userLname}"></label>
+															</div>
 													</div>
 												</div>
 											</div>
