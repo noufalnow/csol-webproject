@@ -23,11 +23,17 @@ public class SecurityConfig {
 
     private final PrivilegeChecker privilegeChecker;
     private final RequestAuthorizationManager requestAuthorizationManager;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
+    
 
     public SecurityConfig(PrivilegeChecker privilegeChecker, 
-                         RequestAuthorizationManager requestAuthorizationManager) {
+                         RequestAuthorizationManager requestAuthorizationManager, CustomOAuth2UserService customOAuth2UserService,CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler) {
         this.privilegeChecker = privilegeChecker;
         this.requestAuthorizationManager = requestAuthorizationManager;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.customOAuth2LoginSuccessHandler = customOAuth2LoginSuccessHandler;
+        
     }
 
     @Bean
@@ -42,9 +48,10 @@ public class SecurityConfig {
                 .requestMatchers("/files/download/*").authenticated()
                 .requestMatchers("/files/certificate/*").authenticated()
                 .requestMatchers("/files/view/*").authenticated()
+                //.requestMatchers("/google_login").permitAll()
                 .anyRequest().access(requestAuthorizationManager) // Use your custom authorization manager
             )
-            .formLogin(form -> form
+            /*.formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/home", true)
@@ -52,12 +59,19 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .permitAll()
-            )
-            .rememberMe(rememberMe -> rememberMe
+            )*/
+            .oauth2Login(oauth2 -> oauth2
+            		.loginPage("/login") 
+            	    .userInfoEndpoint(userInfo -> userInfo
+            	        .userService(customOAuth2UserService) // still fetch OAuth2 attributes
+            	    )
+            	    .successHandler(customOAuth2LoginSuccessHandler) // replace default redirect logic
+            	)
+            /*.rememberMe(rememberMe -> rememberMe
                     .key("uniqueAndSecretKey")
                     .tokenValiditySeconds(24 * 60 * 60)
                     .alwaysRemember(true) // automatically remember every login
-                )
+                )*/
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
@@ -78,7 +92,7 @@ public class SecurityConfig {
         );
     }
 
-    @Bean
+    /*@Bean
     public AuthenticationManager authManager(
         HttpSecurity http,
         CustomUserDetailsService userDetailsService,
@@ -89,7 +103,7 @@ public class SecurityConfig {
             .passwordEncoder(passwordEncoder)
             .and()
             .build();
-    }
+    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() { 
