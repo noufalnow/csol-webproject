@@ -407,20 +407,25 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		
 		
 		List<String> eligibleMeids = new ArrayList<>();
-		
-		if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
 
-			eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(eventRecord.getEventYear(),nodeId,this.getPreviousLevel(eventRecord.getEventHost()));
-			
-			System.out.println("Eligible MEI IDs: " + eligibleMeids);
-			model.addAttribute("eligibleMeids", eligibleMeids);
-			
-			
-		    if (eligibleMeids == null || eligibleMeids.isEmpty()) {
-		        System.out.println("No eligible MEI IDs found. Skipping further processing.");
-		        return "fragments/events/participation";
+		if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
+		    eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(
+		        eventRecord.getEventYear(), nodeId, this.getPreviousLevel(eventRecord.getEventHost())
+		    );
+
+		    if (eligibleMeids == null) eligibleMeids = new ArrayList<>();
+		    
+		    System.out.println("Eligible MEI IDs: " + eligibleMeids);
+		    
+		    if (eligibleMeids.isEmpty()) {
+		        System.out.println("No eligible MEI IDs found for national/state level.");
+		        // Optionally return or just continue
 		    }
 		}
+
+		// ✅ Always add
+		model.addAttribute("eligibleMeids", eligibleMeids);
+
 
 		// Safe fetch of members
 		Map<String, Map<String, List<CoreUser>>> memberMatrix = Objects

@@ -105,6 +105,7 @@ public class OfficialAddDTO extends BaseDTO {
     
     private Long photoFile;
     
+    @Size(max = 50, message = "The text maximum 1000 characters")
     private String officialDescription;
     
 }

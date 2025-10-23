@@ -80,7 +80,8 @@
 
 													<!-- iterate users (same as original) -->
 													<div th:each="user : ${memberMatrix[catEntry.key].MALE}">
-														<div th:if="${eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}" class="form-check">
+													<div th:if="${#lists.isEmpty(eligibleMeids) or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
+     													class="form-check">
 														<input class="form-check-input" type="checkbox"
 															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
 															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][MALE]'"
@@ -105,7 +106,8 @@
 
 													<!-- iterate users (same as original) -->
 													<div th:each="user : ${memberMatrix[catEntry.key].FEMALE}">
-														<div th:if="${eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}" class="form-check">
+													<div th:if="${#lists.isEmpty(eligibleMeids) or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
+     													class="form-check">	
 														<input class="form-check-input" type="checkbox"
 															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_g'"
 															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][FEMALE]'"
