@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.transaction.TransactionSystemException;
+
 
 import com.dms.kalari.exception.service.EmailService;
 import com.dms.kalari.security.CustomUserPrincipal;
@@ -222,25 +224,30 @@ public class GlobalExceptionHandler {
 
     // ===================== DATABASE & PERSISTENCE EXCEPTIONS ========================= //
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        String rootCauseMessage = ex.getRootCause() != null ? ex.getRootCause().getMessage() : "Unknown error";
-        log.error("Data integrity violation: {}", rootCauseMessage, ex);
+    @ExceptionHandler({ DataIntegrityViolationException.class, TransactionSystemException.class })
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(Exception ex) {
+        Throwable root = getRootCause(ex);
+        String rootMessage = root != null ? root.getMessage() : "Unknown data integrity error";
+        log.error("Data integrity violation: {}", rootMessage, ex); // Log only, no email
 
-        Map<String, String> errors = mapDbExceptionToFieldErrors(rootCauseMessage);
-
-        if (shouldSendEmailNotification()) {
-            sendErrorEmail("Data Integrity Violation - 400 Error", 
-                buildDetailedEmailContent("DataIntegrityViolationException", ex, HttpStatus.BAD_REQUEST));
-        }
+        Map<String, String> errors = mapDbExceptionToFieldErrors(rootMessage);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
-        response.put("message", isProduction() ? GENERIC_VALIDATION_MESSAGE : "Data integrity violation: " + rootCauseMessage);
+        response.put("message", "Data integrity violation: " + rootMessage);
         response.put("errors", errors);
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    private Throwable getRootCause(Throwable ex) {
+        Throwable cause = ex.getCause();
+        while (cause != null && cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause;
+    }
+
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {

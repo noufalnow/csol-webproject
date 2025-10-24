@@ -144,7 +144,7 @@ public class CoreUser extends BaseEntity {
     }
     
     
-    @Column(name = "official_description")
+    @Column(name = "official_description", length = 1000)
     private String officialDescription;
 }
 
