@@ -294,19 +294,23 @@ closeBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('change', function (e) {
-    if (e.target && e.target.matches('td.boys-cell input[type="checkbox"], td.girls-cell input[type="checkbox"]')) {
-    	var cell = e.target.closest('td.boys-cell, td.girls-cell');
-        if (!cell) return;
+    if (e.target && e.target.matches('.form-check-input')) {
+        // Find the nearest parent section (Boys or Girls)
+        const section = e.target.closest('.col-sm-6');  
+        if (!section) return;
 
-        var checkboxes = Array.from(cell.querySelectorAll('input[type="checkbox"]'));
-        var checkedCount = checkboxes.filter(c => c.checked).length;
+        // Count how many are checked in this section
+        const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+        const checkedCount = Array.from(checkboxes).filter(c => c.checked).length;
 
+        // Limit to 3 selections
         if (checkedCount > 3) {
             e.target.checked = false;
-            dialog.showModal();  // Show the dialog instead of alert
+            document.getElementById('limitDialog').showModal();
         }
     }
 });
+
 
 
 </script>
