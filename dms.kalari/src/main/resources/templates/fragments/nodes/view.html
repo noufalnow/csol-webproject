@@ -1,7 +1,7 @@
 <div th:fragment="content">
     <!-- Modal Header -->
     <div class="modal-header">
-        <h5 class="modal-title">Affiliation Details</h5>
+        <h5 class="modal-title">Association Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
 
@@ -17,7 +17,7 @@
                     <div class="row align-items-center">
                         <!-- Left Column - Name & Details -->
                         <div class="col-md-8">
-                            <h2 class="mb-2" th:text="${node.nodeName}">Affiliation Name</h2>
+                            <h2 class="mb-2" th:text="${node.nodeName}">Association Name</h2>
                             <h5 class="mb-2 fw-bold" th:text="${node.registerNumber}">Register Number</h5>
                             
                             <div class="d-flex flex-wrap gap-2 mb-4">
@@ -51,7 +51,7 @@
                             <div class="profile-photo-container mx-auto mb-3">
                                 <img th:if="${node.photoFile != null}"
                                     th:src="@{/files/view/{id}(id=${node.photoFile})}"
-                                    alt="Affiliation Logo" class="profile-photo">
+                                    alt="Association Logo" class="profile-photo">
                                 <img th:if="${node.photoFile == null}"
                                     src="/images/default-organization.png" alt="Default Logo"
                                     class="profile-photo">

@@ -16,7 +16,7 @@
 			        
 					<a th:onclick="'loadContent(\'/branch_nodeview/' + ${parentId} + '\', \'modal\')'"
 					   class="text-decoration-none cursor-pointer" style="cursor: pointer;">
-					    <span th:text="${nodeName}">Affiliation</span>
+					    <span th:text="${nodeName}">Association</span>
 					</a>
 
 			        
@@ -48,7 +48,7 @@
 								id="option1" value="nodes" checked
 								th:onclick="|loadContent('branch_nodelist/${parentId}', '#users_target'); clearTreeForm()|">
 							<label class="form-check-label" for="option1"
-								style="cursor: pointer;">Affiliations</label>
+								style="cursor: pointer;">Associations</label>
 						</div>
 					</div>
 
@@ -128,7 +128,7 @@
 			class="btn btn-sm btn-outline-primary me-1 ajax-link"
 			href="javascript:void(0);"
 			th:onclick="'loadContent(\'' + @{'/branch_nodeadd/' + ${parentId}} + '\', \'modal\')'">
-			<i class="fas fa-plus"></i> Add New Affiliation
+			<i class="fas fa-plus"></i> Add New Association
 		</a>
 
 

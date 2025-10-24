@@ -115,7 +115,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    model.addAttribute("nodeList", nodeList);
 
 	    model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
-	    model.addAttribute("pageTitle", "Affiliations");
+	    model.addAttribute("pageTitle", "Associations");
 	    model.addAttribute("target", "users_target");
 
 	    return "fragments/nodes/nodes";
@@ -130,7 +130,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		NodeDTO node = service.findById(nodeId);
 		model.addAttribute("node", node);
 		model.addAttribute("children", service.findChildren(nodeId));
-		model.addAttribute("pageTitle", "Affiliation Detail - " + node.getName());
+		model.addAttribute("pageTitle", "Association Detail - " + node.getName());
 		return "fragments/nodes/view";
 	}
 
@@ -140,7 +140,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		
 		Long parentId = XorMaskHelper.unmask(mParentId);
 		
-		model.addAttribute("pageTitle", "Add Affiliation");
+		model.addAttribute("pageTitle", "Add Association");
 		model.addAttribute("node", new NodeDTO());
 		model.addAttribute("parentId", mParentId);
 		//model.addAttribute("nodeType", service.getNextNodeType(parentId));
@@ -173,7 +173,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		nodeDTO.setNodeType(service.getNextNodeType(parentId));
 		nodeDTO.setParentId(parentId);
 
-		return handleRequest(result, () -> service.save(nodeDTO), "Affiliation added successfully", additionalData);
+		return handleRequest(result, () -> service.save(nodeDTO), "Association added successfully", additionalData);
 	}
 
 	@GetMapping("/node/edit/{mId}")
@@ -185,7 +185,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("nodeDTO", node);
 		model.addAttribute("nodeId", mId);
 		model.addAttribute("nodeType", service.getNextNodeType(node.getParentId()));
-		model.addAttribute("pageTitle", "Edit Affiliation - " + node.getName());
+		model.addAttribute("pageTitle", "Edit Association - " + node.getName());
 		return "fragments/nodes/edit";
 	}
 
@@ -217,7 +217,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		
 		
 		additionalData.put("target", "users_target");
-		return handleRequest(result, () -> service.update(nodeId, nodeDTO), "Affiliations updated successfully", additionalData);
+		return handleRequest(result, () -> service.update(nodeId, nodeDTO), "Associations updated successfully", additionalData);
 	}
 
 	@GetMapping("/node/tree")
