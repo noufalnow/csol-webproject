@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,7 +107,10 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         CoreUser savedCoreUser = coreUserRepository.save(coreUser);
 
         // 2. Handle photo upload if provided
-        savedCoreUser = handleFileUpload(dto.getPhotoFileId(), savedCoreUser);
+        savedCoreUser = handleFileUpload(dto.getPhotoFileId(), savedCoreUser, CoreUser::setPhotoFile);
+        
+        savedCoreUser = handleFileUpload(dto.getSignatureFileId(), savedCoreUser, CoreUser::setSignatureFile);
+        
 
         return coreUserMapper.toDTO(savedCoreUser);
     }
@@ -134,54 +138,51 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         CoreUser updatedUser = coreUserRepository.save(existingUser);
 
         // 2. Handle photo upload if provided
-        updatedUser = handleFileUpload(updateMemberDTO.getPhotoFileId(), updatedUser);
+        updatedUser = handleFileUpload(updateMemberDTO.getPhotoFileId(), updatedUser, CoreUser::setPhotoFile);
+        
+        updatedUser = handleFileUpload(updateMemberDTO.getSignatureFileId(), updatedUser, CoreUser::setSignatureFile);
 
         return coreUserMapper.toDTO(updatedUser);
     }
 
 
-    /**
-     * Common method to handle file upload and metadata persistence.
-     */
-    private CoreUser handleFileUpload(MultipartFile photoFile, CoreUser user) {
-        if (photoFile == null || photoFile.isEmpty()) {
-            return user;
-        }
+	private CoreUser handleFileUpload(MultipartFile file, CoreUser user, BiConsumer<CoreUser, Long> fileSetter) {
 
-        try {
-            // Create file metadata
-            CoreFile file = new CoreFile();
-            file.setFileSrc("users");
-            file.setFileRefId(user.getUserId());
-            file.setFileActualName(photoFile.getOriginalFilename());
-            file.setFileExten(getExtension(photoFile.getOriginalFilename()));
-            file.setFileSize(photoFile.getSize());
+		if (file == null || file.isEmpty())
+			return user;
 
-            // Save binary file to disk
-            Path uploadPath = Paths.get("uploads/users/");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            String fileName = UUID.randomUUID() + "_" + photoFile.getOriginalFilename();
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(photoFile.getInputStream(), filePath);
+		try {
+			CoreFile meta = new CoreFile();
+			meta.setFileSrc("users");
+			meta.setFileRefId(user.getUserId());
+			meta.setFileActualName(file.getOriginalFilename());
+			meta.setFileExten(getExtension(file.getOriginalFilename()));
+			meta.setFileSize(file.getSize());
 
-            // Store file path if needed
-            file.setFilePath(filePath.toString());
+			Path uploadPath = Paths.get("uploads/users/");
+			if (!Files.exists(uploadPath))
+				Files.createDirectories(uploadPath);
 
-            // Save file metadata
-            CoreFile savedFile = coreFileRepository.save(file);
+			String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+			Path filePath = uploadPath.resolve(fileName);
+			Files.copy(file.getInputStream(), filePath);
 
-            // Link fileId to user
-            user.setPhotoFile(savedFile.getFileId());
-            user = coreUserRepository.save(user);
+			meta.setFilePath(filePath.toString());
+			CoreFile savedMeta = coreFileRepository.save(meta);
 
-        } catch (IOException e) {
-            throw new RuntimeException("File upload failed", e);
-        }
+			// Apply correct setter dynamically
+			fileSetter.accept(user, savedMeta.getFileId());
+			user = coreUserRepository.save(user);
 
-        return user;
-    }
+		} catch (IOException e) {
+			throw new RuntimeException("File upload failed", e);
+		}
+		return user;
+	}
+
+	private String getExtension(String fileName) {
+		return (fileName != null && fileName.contains(".")) ? fileName.substring(fileName.lastIndexOf(".") + 1) : null;
+	}
 
 
 
@@ -249,13 +250,6 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         return coreUserMapper.toDTO(savedCoreUser); // Return saved user as DTO
     }
     
-
-    private String getExtension(String fileName) {
-        return fileName != null && fileName.contains(".") 
-               ? fileName.substring(fileName.lastIndexOf(".") + 1) 
-               : null;
-    }
-
 
     @Override
     public void softDeleteById(Long userId) {

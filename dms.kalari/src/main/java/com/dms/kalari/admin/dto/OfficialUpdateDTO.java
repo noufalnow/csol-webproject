@@ -96,4 +96,9 @@ public class OfficialUpdateDTO extends BaseDTO {
     
     @Size(max = 50, message = "The text maximum 1000 characters")
     private String officialDescription;
+    
+    @ValidFile(maxSize = 262144, allowedExtensions = {"jpg", "jpeg", "png"})
+    private MultipartFile signatureFileId;
+        
+    private Long signatureFile;
 }

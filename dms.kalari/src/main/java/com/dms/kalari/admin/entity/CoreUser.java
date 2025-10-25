@@ -155,6 +155,10 @@ public class CoreUser extends BaseEntity {
     
     @Column(name = "verification_status", nullable = false, columnDefinition = "SMALLINT DEFAULT 0")
     private Short verificationStatus = 0;
+    
+    
+    @Column(name = "signature_file")
+    private Long signatureFile;
 
 }
 

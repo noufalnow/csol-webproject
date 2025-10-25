@@ -161,14 +161,28 @@
 
         <!-- Right side: Profile Photo -->
         <div class="col-12 col-lg-4 text-center mt-3 mt-lg-0">
+        
+        <div class="">
           <label class="form-label d-block">Profile Photo</label>
           <input type="file" id="photoFileId" name="photoFileId"
                  th:field="*{photoFileId}"
                  class="d-none" accept="image/*">
-          <div id="imagePreview" class="preview-box">Click to upload</div>
+          <div id="photoFilePreview" class="preview-box">Click to upload</div>
           <small class="text-muted">Max 512KB (JPG, PNG, JPEG)</small>
-          <div id="fileError" class="text-danger small mt-1"></div>
+          <div id="photoFileError" class="text-danger small mt-1"></div>
+        
+         </div>
+         
+          <label class="form-label d-block mt-5">Signature Photo</label>
+          <input type="file" id="signatureFileId" name="signatureFileId"
+                 th:field="*{signatureFileId}"
+                 class="d-none" accept="image/*">
+          <div id="signatureFilePreview" class="preview-box">Click to upload</div>
+			<small class="text-muted">Max 248KB (JPG, PNG, JPEG)</small><p>
+			<small class="text-muted">Upload your signature after removing the background using any online tool.</small>
+			<div id="signatureFileError" class="text-danger small mt-1"></div>
         </div>
+        
       </div>
       <div id="error-messages" class="text-danger mt-2"></div>
     </form>
@@ -215,45 +229,51 @@ form { max-width: 100%; }
 </style>
 
 
-
 <script>
 (function () {
-  let fileInput = document.getElementById("photoFileId");
-  let imagePreview = document.getElementById("imagePreview");
-  let fileError = document.getElementById("fileError");
+  const allowedExtensions = ["jpg", "jpeg", "png"];
 
-  if (!fileInput) return;
+  function initFileUpload(inputId, previewId, errorId, maxSize) {
+    const fileInput = document.getElementById(inputId);
+    const previewBox = document.getElementById(previewId);
+    const errorBox = document.getElementById(errorId);
 
-  const allowedExtensions = ["jpg", "jpeg", "png", "bmp"];
-  const maxSize = 512 * 1024;
+    if (!fileInput || !previewBox || !errorBox) return;
 
-  imagePreview.addEventListener("click", () => fileInput.click());
+    previewBox.addEventListener("click", () => fileInput.click());
 
-  fileInput.addEventListener("change", function () {
-    fileError.textContent = "";
-    const file = this.files[0];
+    fileInput.addEventListener("change", function () {
+      errorBox.textContent = "";
+      const file = this.files[0];
 
-    if (file) {
-      const ext = file.name.split(".").pop().toLowerCase();
-      if (!allowedExtensions.includes(ext)) {
-        fileError.textContent = "Allowed formats: JPEG, JPG, PNG, BMP.";
-        fileInput.value = "";
-        return;
+      if (file) {
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!allowedExtensions.includes(ext)) {
+          errorBox.textContent = "Allowed formats: JPEG, JPG, PNG";
+          fileInput.value = "";
+          return;
+        }
+
+        if (file.size > maxSize) {
+          const kbLimit = (maxSize / 1024).toFixed(0);
+          errorBox.textContent = `File size must be less than ${kbLimit} KB.`;
+          fileInput.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewBox.style.backgroundImage = `url(${e.target.result})`;
+          previewBox.textContent = "";
+        };
+        reader.readAsDataURL(file);
       }
+    });
+  }
 
-      if (file.size > maxSize) {
-        fileError.textContent = "File size must be less than 512KB.";
-        fileInput.value = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.style.backgroundImage = `url(${e.target.result})`;
-        imagePreview.textContent = "";
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+  // Initialize with different max sizes
+  initFileUpload("photoFileId", "photoFilePreview", "photoFileError", 512 * 1024); // 512 KB
+  initFileUpload("signatureFileId", "signatureFilePreview", "signatureFileError", 248 * 1024); // 248 KB
 })();
 </script>
+
