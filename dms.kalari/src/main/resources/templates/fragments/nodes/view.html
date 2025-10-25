@@ -17,7 +17,7 @@
                     <div class="row align-items-center">
                         <!-- Left Column - Name & Details -->
                         <div class="col-md-8">
-                            <h2 class="mb-2" th:text="${node.nodeName}">Association Name</h2>
+                            <h2 class="mb-2 text-start" th:text="${node.nodeName}">Association Name</h2>
                             <h5 class="mb-2 fw-bold" th:text="${node.registerNumber}">Register Number</h5>
                             
                             <div class="d-flex flex-wrap gap-2 mb-4">
@@ -53,8 +53,8 @@
                                     th:src="@{/files/view/{id}(id=${node.photoFile})}"
                                     alt="Association Logo" class="profile-photo">
                                 <img th:if="${node.photoFile == null}"
-                                    src="static//images/default-organization.png" alt="Default Logo"
-                                    class="profile-photo">
+                                    src="/images/default-organization.png" alt="Default Logo"
+                                    class="profile-photo" style="opacity: .1;">
                             </div>
                         </div>
                     </div>
