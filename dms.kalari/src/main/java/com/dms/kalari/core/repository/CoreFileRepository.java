@@ -23,5 +23,8 @@ public interface CoreFileRepository extends BaseRepository<CoreFile, Long> {
 
     // Find by source type (users, branch, event...)
     List<CoreFile> findByDeletedFalseAndFileSrc(String fileSrc);
+    
+    
+    List<CoreFile> findByFileRefIdAndFileSrc(Long fileRefId, String fileSrc);
 }
 

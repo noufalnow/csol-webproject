@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.dto.NodeFlatDTO;
@@ -18,6 +20,8 @@ import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
+import com.dms.kalari.core.entity.CoreFile;
+import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
@@ -32,10 +36,12 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	
 	
 	private final NodeRepository nodeRepository;
+	private final CoreFileRepository coreFileRepository;
 
-	public NodeController(NodeService nodeService,NodeRepository nodeRepository) {
+	public NodeController(NodeService nodeService,NodeRepository nodeRepository,CoreFileRepository coreFileRepository) {
 		super(nodeService);
 		this.nodeRepository = nodeRepository;
+		this.coreFileRepository = coreFileRepository;
 	}
 	
 	
@@ -130,6 +136,12 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		NodeDTO node = service.findById(nodeId);
 		model.addAttribute("node", node);
 		model.addAttribute("children", service.findChildren(nodeId));
+		
+		List<CoreFile> oldFiles = coreFileRepository.findByFileRefIdAndFileSrc(nodeId, "nodes_files");
+
+		model.addAttribute("uploadedDocs", oldFiles);
+		
+		model.addAttribute("maskedNodeId", id);
 		model.addAttribute("pageTitle", "Association Detail - " + node.getName());
 		return "fragments/nodes/view";
 	}
@@ -238,6 +250,37 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/nodes/node_tree";
+	}
+	
+	
+	
+	@PostMapping("/node/upload/{id}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> uploadNodeFile(
+	        @PathVariable Long id,
+	        @RequestParam("file") MultipartFile file,
+	        Authentication authentication) {
+
+	    Long nodeId = XorMaskHelper.unmask(id);
+
+	    // Validate allowed node IDs
+	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds(principal.getInstId());
+	    if (!allowedNodeIds.contains(nodeId)) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
+
+	    CoreFile uploadedFile = service.uploadNodeFile(nodeId, file);
+
+	    Map<String, Object> response = new HashMap<>();
+
+	    response.put("status", "success");
+	    response.put("message", uploadedFile.getFileActualName() + " File uploaded successfully");
+	    
+	    response.put("loadnext", "branch_nodeview/"  + XorMaskHelper.mask(nodeId));
+	    response.put("target", "modal");
+
+	    return ResponseEntity.ok(response);
 	}
 
 	/*

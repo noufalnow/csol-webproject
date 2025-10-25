@@ -322,7 +322,7 @@ public class NodeService implements BaseService<NodeDTO> {
         try {
             // Create file metadata
             CoreFile file = new CoreFile();
-            file.setFileSrc("users");
+            file.setFileSrc("nodes");
             file.setFileRefId(node.getNodeId());
             file.setFileActualName(photoFile.getOriginalFilename());
             file.setFileExten(getExtension(photoFile.getOriginalFilename()));
@@ -360,6 +360,47 @@ public class NodeService implements BaseService<NodeDTO> {
                ? fileName.substring(fileName.lastIndexOf(".") + 1) 
                : null;
     }
+    
+    
+    public CoreFile uploadNodeFile(Long nodeId, MultipartFile file) {
+        Node node = nodeRepository.findByIdAndNotDeleted(nodeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Node", nodeId));
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("No file provided");
+        }
+
+        try {
+            // Save file metadata
+            CoreFile newFile = new CoreFile();
+            newFile.setFileSrc("nodes_files");
+            newFile.setFileRefId(nodeId);
+            newFile.setFileActualName(file.getOriginalFilename());
+            newFile.setFileExten(getExtension(file.getOriginalFilename()));
+            newFile.setFileSize(file.getSize());
+
+            // Save file to disk
+            Path uploadPath = Paths.get("uploads/nodes/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+
+            newFile.setFilePath(filePath.toString());
+
+            // Save metadata in DB
+            CoreFile savedFile = coreFileRepository.save(newFile);
+
+            return savedFile;
+
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed", e);
+        }
+    }
+
 
 
 
