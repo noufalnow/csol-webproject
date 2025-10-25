@@ -139,6 +139,11 @@
 							th:onclick="'loadContent(\'/members_edit/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
 							<i class="fas fa-edit"></i> <span class="ms-1">Edit</span>
 						</a>
+						
+					    <button class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center px-2 py-1 disabled"
+					       th:if="${user.verificationStatus == 1}">
+					        <i class="fas fa-check"></i> <span class="ms-1">Verified</span>
+					    </button>
 
 					</div>
 				</td>

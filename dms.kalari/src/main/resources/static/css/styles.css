@@ -323,6 +323,14 @@ button:hover, a.button:hover, .btn:hover {
   background-color: var(--dms-accent);
   color: #fff;
 }
+
+.btn-outline-success {
+  border: 1px solid #28a745; /* Bootstrap green */
+  background-color: #28a745;
+  color: #fff;
+}
+
+
 .btn-sm {
   padding: 0.5rem 1rem;
   min-height: 44px;
@@ -531,11 +539,21 @@ footer {
   min-width: 4.8rem;
 }
 
+.btn.btn-sm.btn-outline-success {
+  min-height: .25rem;
+  min-width: 4.8rem;
+}
+
 
 button.btn-secondary, button.btn-primary {
   padding: 0.25rem 1.5rem;
   min-height: 38px;
 }
+
+
+
+
+
 
 body.modal-open {
     overflow: hidden;

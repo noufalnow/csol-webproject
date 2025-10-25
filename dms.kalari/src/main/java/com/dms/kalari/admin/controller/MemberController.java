@@ -2,7 +2,10 @@ package com.dms.kalari.admin.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,10 +17,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import com.dms.kalari.admin.dto.MemberAddDTO;
 import com.dms.kalari.admin.dto.MemberUpdateDTO;
+import com.dms.kalari.admin.dto.validation.groups.FullValidation;
+import com.dms.kalari.admin.dto.validation.groups.PartialValidation;
 import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
@@ -32,11 +38,20 @@ import com.dms.kalari.common.BaseController;
 import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.dms.kalari.admin.repository.CoreUserRepository;
 
@@ -123,7 +138,7 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 	public String viewMemberById(@PathVariable Long id, Model model) {
 		model.addAttribute("user", service.findById(XorMaskHelper.unmask(id)));
 		
-		
+		model.addAttribute("userIdMasked", id);
 		model.addAttribute("pageTitle", "Participant's Detail ");
 		return "fragments/manage/members/view";
 	}
@@ -237,38 +252,161 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 
 	@PostMapping("/edit/{refId}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> editMember(@PathVariable("refId") Long id,
-			@Valid @ModelAttribute MemberUpdateDTO coreUserUpdateDTO, BindingResult result,
-			Authentication authentication, HttpSession session) {
-		Map<String, Object> additionalData = new HashMap<>();
+	public ResponseEntity<Map<String, Object>> editMember(
+	        @PathVariable("refId") Long id,
+	        @ModelAttribute MemberUpdateDTO coreUserUpdateDTO, // ← removed @Valid
+	        BindingResult result,
+	        Authentication authentication,
+	        HttpSession session) {
 
-		Long userId = XorMaskHelper.unmask(id);
+	    Map<String, Object> additionalData = new HashMap<>();
 
-		MemberAddDTO user = service.findById(userId); // ← service returns MemberAddDTO
-		NodeDTO node = nodeService.findById(user.getUserNode());
-		Node.Type nodeType = node.getNodeType();
+	    Long userId = XorMaskHelper.unmask(id);
 
-		if (coreUserUpdateDTO.getUserDesig() != null) {
-			Long unmaskedId = XorMaskHelper.unmask(coreUserUpdateDTO.getUserDesig());
-			List<Long> validDesigIds = designationService.findAllByDesigNodeLevel(nodeType).stream()
-					.map(DesignationDTO::getDesigId).collect(Collectors.toList());
-			if (!validDesigIds.contains(unmaskedId)) {
-				throw new IllegalArgumentException("Invalid designation submitted!");
-			}
-			coreUserUpdateDTO.setUserDesig(unmaskedId);
-		}
+	    // Fetch existing member
+	    MemberAddDTO existingUser = service.findById(userId);
+	    NodeDTO node = nodeService.findById(existingUser.getUserNode());
+	    Node.Type nodeType = node.getNodeType();
 
-		// Validate allowed node IDs
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds(principal.getInstId());
-		if (!allowedNodeIds.contains(node.getNodeId())) {
-			throw new SecurityException("Invalid node submitted!");
-		}
+	    // ✅ Determine which validation group to use
+	    Class<?> validationGroup = existingUser.getVerificationStatus() == 1
+	            ? PartialValidation.class   // verified (only editable fields validated)
+	            : FullValidation.class;      // unverified (validate all fields)
 
-		additionalData.put("loadnext", "members_bynode/" + XorMaskHelper.mask(user.getUserNode()));
-		additionalData.put("target", "users_target");
+	    // ✅ Manually validate using Validator
+	    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+	    Set<ConstraintViolation<MemberUpdateDTO>> violations =
+	            validator.validate(coreUserUpdateDTO, validationGroup);
 
-		return handleRequest(result, () -> service.updateMember(userId, coreUserUpdateDTO),
-				"Participants details updated successfully", additionalData);
+	    // Convert violations to BindingResult manually
+	    for (ConstraintViolation<MemberUpdateDTO> violation : violations) {
+	        String fieldName = violation.getPropertyPath().toString();
+	        result.rejectValue(fieldName, "", violation.getMessage());
+	    }
+
+	    // If validation failed → return error response
+	    if (result.hasErrors()) {
+	        Map<String, String> errorMap = result.getFieldErrors().stream()
+	                .collect(Collectors.toMap(
+	                        FieldError::getField,
+	                        FieldError::getDefaultMessage,
+	                        (existing, replacement) -> existing // handle duplicate field errors
+	                ));
+
+	        Map<String, Object> response = new LinkedHashMap<>();
+	        response.put("status", "error");
+	        response.put("message", "Validation failed");
+	        response.put("errors", errorMap);
+
+	        return ResponseEntity.badRequest().body(response);
+	    }
+
+
+	    // ✅ Validate designation
+	    if (coreUserUpdateDTO.getUserDesig() != null) {
+	        Long unmaskedId = XorMaskHelper.unmask(coreUserUpdateDTO.getUserDesig());
+	        List<Long> validDesigIds = designationService.findAllByDesigNodeLevel(nodeType).stream()
+	                .map(DesignationDTO::getDesigId)
+	                .collect(Collectors.toList());
+	        if (!validDesigIds.contains(unmaskedId)) {
+	            throw new IllegalArgumentException("Invalid designation submitted!");
+	        }
+	        coreUserUpdateDTO.setUserDesig(unmaskedId);
+	    }
+
+	    // ✅ Validate allowed node IDs
+	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds(principal.getInstId());
+	    if (!allowedNodeIds.contains(node.getNodeId())) {
+	        throw new SecurityException("Invalid node submitted!");
+	    }
+
+	    // ✅ Proceed with update
+	    additionalData.put("loadnext", "members_bynode/" + XorMaskHelper.mask(existingUser.getUserNode()));
+	    additionalData.put("target", "users_target");
+
+	    return handleRequest(
+	            result,
+	            () -> service.updateMember(userId, coreUserUpdateDTO),
+	            "Participant details updated successfully",
+	            additionalData
+	    );
 	}
+
+	
+
+	@PostMapping("/verify/{id}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> verifyMember(@PathVariable Long id,
+	                                                        Authentication authentication) {
+	    Map<String, Object> response = new HashMap<>();
+
+	    Long userId = XorMaskHelper.unmask(id);
+	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+	    CoreUser user = coreUserRepository.findByIdAndNotDeleted(userId)
+	            .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+
+	    // Build verification record
+	    Map<String, Object> verificationData = new HashMap<>();
+	    verificationData.put("approved_user_id", principal.getUserId());
+	    verificationData.put("approved_by", principal.getUserFullName());
+	    verificationData.put("timestamp", LocalDateTime.now().toString());
+	    verificationData.put("fname", user.getUserFname());
+	    verificationData.put("lname", user.getUserLname());
+	    verificationData.put("dob", user.getUserDob());
+	    verificationData.put("gender", user.getGender());
+	    verificationData.put("aadhaar", user.getAadhaarNumber());
+
+	    try {
+	        ObjectMapper mapper = new ObjectMapper();
+	        mapper.findAndRegisterModules(); // for proper date/time handling
+
+	        List<Map<String, Object>> historyList = new ArrayList<>();
+
+	        // Read existing history (if any)
+	        String existingHistory = user.getMemberVerificationHistory();
+	        if (existingHistory != null && !existingHistory.trim().isEmpty()) {
+	            try {
+	                JsonNode node = mapper.readTree(existingHistory);
+	                if (node.isArray()) {
+	                    historyList = mapper.convertValue(node, new TypeReference<List<Map<String, Object>>>() {});
+	                } else if (node.isObject()) {
+	                    Map<String, Object> oldEntry = mapper.convertValue(node, new TypeReference<Map<String, Object>>() {});
+	                    historyList.add(oldEntry);
+	                }
+	            } catch (Exception e) {
+	            	logInfo("Could not parse existing verification history for user {}: {}", userId, e.getMessage());
+	            }
+	        }
+
+	        // Append new record
+	        historyList.add(verificationData);
+
+	        // Convert back to JSON array
+	        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(historyList);
+	        user.setMemberVerificationHistory(json);
+	        user.setVerificationStatus((short) 1);
+
+	        // Save updated record
+	        coreUserRepository.save(user);
+
+	        // UI redirect info
+	        response.put("loadnext", "members_bynode/" + XorMaskHelper.mask(user.getUserNode().getNodeId()));
+	        response.put("target", "users_target");
+
+	        response.put("status", "success");
+	        response.put("message", "Data verification completed successfully!");
+
+	    } catch (Exception e) {
+	    	logInfo("Error saving verification history for user {}: {}", userId, e.getMessage());
+	        response.put("status", "error");
+	        response.put("message", "Error saving verification data: " + e.getMessage());
+	    }
+
+	    return ResponseEntity.ok(response);
+	}
+
+
+	
 }

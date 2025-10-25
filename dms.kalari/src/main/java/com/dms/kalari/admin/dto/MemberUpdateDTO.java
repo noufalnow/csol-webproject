@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
+import com.dms.kalari.admin.dto.validation.groups.FullValidation;
+import com.dms.kalari.admin.dto.validation.groups.PartialValidation;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.common.BaseDTO;
 
@@ -32,51 +34,47 @@ public class MemberUpdateDTO extends BaseDTO {
 	
 	private Long userId; 
 
-    @NotBlank(message = "First name is required")
-    @Size(max = 50, message = "First name must be less than 50 characters")
-    private String userFname;
+	@NotBlank(message = "First name is required", groups = FullValidation.class)
+	@Size(max = 50, message = "First name must be less than 50 characters", groups = FullValidation.class)
+	private String userFname;
 
-    @NotBlank(message = "Last name is required")
-    @Size(max = 50, message = "Last name must be less than 50 characters")
-    private String userLname;
-    
-    @NotBlank(message = "Father's name is required")
-    @Size(max = 50, message = "Father's name must be less than 50 characters")
-    private String fatherName;
-    
-    private String motherName;
+	@NotBlank(message = "Last name is required", groups = FullValidation.class)
+	@Size(max = 50, message = "Last name must be less than 50 characters", groups = FullValidation.class)
+	private String userLname;
 
+	@NotBlank(message = "Father's name is required", groups = {FullValidation.class})
+	@Size(max = 50, message = "Father's name must be less than 50 characters", groups = {FullValidation.class})
+	private String fatherName;
+
+	@NotNull(message = "Designation is required", groups = {FullValidation.class, PartialValidation.class})
+	private Long userDesig;
+
+	@NotBlank(message = "Email is required", groups = {FullValidation.class, PartialValidation.class})
+	@Email(message = "Invalid email format", groups = {FullValidation.class, PartialValidation.class})
+	@Size(max = 100, message = "Email must be less than 100 characters", groups = {FullValidation.class, PartialValidation.class})
+	private String userEmail;
+
+	@NotNull(message = "Date of birth is required", groups = FullValidation.class)
+	@Past(message = "Date of birth must be in the past", groups = FullValidation.class)
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate userDob;
+
+	@NotNull(message = "Gender is required", groups = FullValidation.class)
+	private Gender gender;
+
+	@Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits", groups = FullValidation.class)
+	private String aadhaarNumber;
+
+	@NotBlank(message = "Blood Group is required", groups = {FullValidation.class})
+	private String bloodGroup;
+	
     @NotNull(message = "Status is required")
     @Min(value = 1, message = "Status must be at least 1")
     @Max(value = 2, message = "Status must be at most 2")
     private Short userStatus = 1;
-
-    @NotNull(message = "Designation is required")
-    private Long userDesig;  // Designation ID
     
-    private DesignationDTO designation; // Reference to the designation DTO
-    
-    private String designationName; 
+    private String motherName;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    @Size(max = 100, message = "Email must be less than 100 characters")
-    private String userEmail;
-
-    @NotNull(message = "Date of birth is required")
-    @Past(message = "Date of birth must be in the past")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate userDob;
-
-
-    @NotNull(message = "Gender is required")
-    private Gender gender;
-    
-    @Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must be 12 digits")
-    private String aadhaarNumber;
-    
-    @NotBlank(message = "Blood Group is required")
-    private String bloodGroup;
 
     @Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
     private String mobileNumber;
@@ -107,5 +105,13 @@ public class MemberUpdateDTO extends BaseDTO {
     private Long ageproofFile;
 
     private String filePath; 
+    
+    
+    private DesignationDTO designation; // Reference to the designation DTO
+    
+    private String designationName; 
+    
+    
+    private Short verificationStatus;
     
 }

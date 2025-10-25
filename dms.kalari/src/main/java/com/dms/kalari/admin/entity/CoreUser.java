@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.dms.kalari.admin.dto.DesignationDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseEntity;
 
@@ -146,6 +147,15 @@ public class CoreUser extends BaseEntity {
     
     @Column(name = "official_description", length = 1000)
     private String officialDescription;
+    
+    
+    @Column(name = "verification_history", columnDefinition = "TEXT")
+    private String memberVerificationHistory;
+    
+    
+    @Column(name = "verification_status", nullable = false, columnDefinition = "SMALLINT DEFAULT 0")
+    private Short verificationStatus = 0;
+
 }
 
 

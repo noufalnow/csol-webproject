@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	console.log('Document ready');
-
+//
 	// Handle pagination with AJAX
 	$(document).on('click', '.page', function(event) {
 		event.preventDefault();
@@ -67,9 +67,13 @@ $(document).ready(function() {
 		    return;
 		}
 		var fileInput = formElement.querySelector('input[name="photoFileId"]');
-		var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+		//var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
 		
 		var pageParams =getEntities();
+		
+		const hasFile = [...(formElement.querySelectorAll('input[type="file"]') || [])]
+		       .some(input => input?.files?.length > 0);
+
 		
 	    if (hasFile) {
 	        // --- If photo file present, use FormData ---

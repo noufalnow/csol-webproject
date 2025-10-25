@@ -118,7 +118,7 @@ public class MemberAddDTO extends BaseDTO {
 
     private String filePath;
 
-    
+    private Short verificationStatus = 0;
     
     private String userMemberCategory;
     

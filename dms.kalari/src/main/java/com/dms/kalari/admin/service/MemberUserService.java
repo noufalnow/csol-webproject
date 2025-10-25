@@ -130,33 +130,51 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 		return coreUserMapper.toMemberAddDTO(savedUser);
 	}
 
-	/** Update existing member using MemberUpdateDTO */
 	public MemberAddDTO updateMember(Long userId, MemberUpdateDTO dto) {
-		CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
+	    CoreUser existingUser = coreUserRepository.findByIdAndNotDeleted(userId)
+	            .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
 
-		if (dto.getUserDesig() != null) {
-			MisDesignation designation = misDesignationRepository.findById(dto.getUserDesig())
-					.orElseThrow(() -> new ResourceNotFoundException("MisDesignation", dto.getUserDesig()));
-			existingUser.setDesignation(designation);
-		}
+	    // 🔹 Step 1: Handle designation (if provided)
+	    if (dto.getUserDesig() != null) {
+	        MisDesignation designation = misDesignationRepository.findById(dto.getUserDesig())
+	                .orElseThrow(() -> new ResourceNotFoundException("MisDesignation", dto.getUserDesig()));
+	        existingUser.setDesignation(designation);
+	    }
 
-		coreUserMapper.updateCoreUserFromMemberUpdateDTO(dto, existingUser);
-		existingUser.setTModified(LocalDateTime.now());
+	    // 🔹 Step 2: Determine verification status
+	    boolean isVerified = existingUser.getVerificationStatus() == 1;
 
-		CoreUser updatedUser = coreUserRepository.save(existingUser);
-		// updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser);
+	 // Step 1: Update all fields from DTO
+	 coreUserMapper.updateCoreUserFromMemberUpdateDTO(dto, existingUser);
 
-		updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser, CoreUser::setPhotoFile);
+	 // Step 2: If verified, restore protected identity fields from DB
+	 if (isVerified) {
+	     CoreUser dbUser = coreUserRepository.findByIdAndNotDeleted(userId)
+	             .orElseThrow(() -> new ResourceNotFoundException("CoreUser", userId));
 
-		// ID proof
-		updatedUser = handleFileUpload(dto.getIdFileId(), updatedUser, CoreUser::setIdFile);
+	     existingUser.setUserFname(dbUser.getUserFname());
+	     existingUser.setUserLname(dbUser.getUserLname());
+	     existingUser.setUserDob(dbUser.getUserDob());
+	     existingUser.setGender(dbUser.getGender());
+	     existingUser.setAadhaarNumber(dbUser.getAadhaarNumber());
+	 }
 
-		// Age proof
-		updatedUser = handleFileUpload(dto.getAgeproofFileId(), updatedUser, CoreUser::setAgeproofFile);
+	 // Step 3: Always update modification timestamp
+	 existingUser.setTModified(LocalDateTime.now());
 
-		return coreUserMapper.toMemberAddDTO(updatedUser);
+	 // Step 4: Save
+	 CoreUser updatedUser = coreUserRepository.save(existingUser);
+
+	 // Step 5: Handle optional file uploads
+	 updatedUser = handleFileUpload(dto.getPhotoFileId(), updatedUser, CoreUser::setPhotoFile);
+	 updatedUser = handleFileUpload(dto.getIdFileId(), updatedUser, CoreUser::setIdFile);
+	 updatedUser = handleFileUpload(dto.getAgeproofFileId(), updatedUser, CoreUser::setAgeproofFile);
+
+	 // Step 6: Return mapped DTO
+	 return coreUserMapper.toMemberAddDTO(updatedUser);
+
 	}
+
 
 	/** Common file upload handler */
 	private CoreUser handleFileUpload(MultipartFile file, CoreUser user, BiConsumer<CoreUser, Long> fileSetter) {
@@ -224,7 +242,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	 * Build matrix: Category -> Gender -> List<CoreUser>
 	 */
 	public Map<String, Map<String, List<CoreUser>>> getMembersMatrix(Long nodeId) {
-	    List<CoreUser> members = coreUserRepository.findByUserNodeIdAndTypeAndNotDeleted(nodeId,CoreUser.UserType.MEMBER);
+	    List<CoreUser> members = coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(nodeId,CoreUser.UserType.MEMBER);
 
 	    Map<String, Map<String, List<CoreUser>>> matrix = new HashMap<>();
 	    List<String> categories = List.of("JUNIOR", "SUBJUNIOR", "SENIOR");
