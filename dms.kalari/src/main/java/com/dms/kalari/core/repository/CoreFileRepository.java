@@ -26,5 +26,8 @@ public interface CoreFileRepository extends BaseRepository<CoreFile, Long> {
     
     
     List<CoreFile> findByFileRefIdAndFileSrc(Long fileRefId, String fileSrc);
+    
+    List<CoreFile> findByFileRefIdAndFileSrcAndDeletedFalseAndActive(Long fileRefId, String fileSrc, Short active);
+
 }
 

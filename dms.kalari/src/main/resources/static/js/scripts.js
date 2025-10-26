@@ -113,7 +113,16 @@ $(document).ready(function() {
 	        success: function(response) {
 	            if (response.status === 'error') {
 	                handleFormErrors(response);
-	            } else if (response.status === 'success') {
+	            } 
+				else if	(response.status === 'warning') {
+					Swal.fire({
+					    icon: 'warning',
+					    title: 'Warning',
+					    text: response.message
+					});      
+				} 
+				
+				else if (response.status === 'success') {
 
 					
 					

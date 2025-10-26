@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,10 +26,12 @@ import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/branch")
@@ -137,7 +140,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("node", node);
 		model.addAttribute("children", service.findChildren(nodeId));
 		
-		List<CoreFile> oldFiles = coreFileRepository.findByFileRefIdAndFileSrc(nodeId, "nodes_files");
+		List<CoreFile> oldFiles = coreFileRepository.findByFileRefIdAndFileSrcAndDeletedFalseAndActive(nodeId, "nodes_files", (short) 1);
 
 		model.addAttribute("uploadedDocs", oldFiles);
 		
@@ -258,30 +261,87 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> uploadNodeFile(
 	        @PathVariable Long id,
-	        @RequestParam("file") MultipartFile file,
+	        @RequestParam(value = "file", required = false) MultipartFile file,
 	        Authentication authentication) {
-
-	    Long nodeId = XorMaskHelper.unmask(id);
-
-	    // Validate allowed node IDs
-	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-	    List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds(principal.getInstId());
-	    if (!allowedNodeIds.contains(nodeId)) {
-	        throw new SecurityException("Invalid node submitted!");
-	    }
-
-	    CoreFile uploadedFile = service.uploadNodeFile(nodeId, file);
 
 	    Map<String, Object> response = new HashMap<>();
 
-	    response.put("status", "success");
-	    response.put("message", uploadedFile.getFileActualName() + " File uploaded successfully");
-	    
-	    response.put("loadnext", "branch_nodeview/"  + XorMaskHelper.mask(nodeId));
-	    response.put("target", "modal");
+	    // Skip if no file uploaded
+	    if (file == null || file.isEmpty()) {
+	        response.put("status", "warning");
+	        response.put("message", "No file uploaded, skipping.");
+	        return ResponseEntity.ok(response);
+	    }
 
-	    return ResponseEntity.ok(response);
+	    try {
+	        Long nodeId = XorMaskHelper.unmask(id);
+
+	        // Validate allowed node IDs
+	        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	        List<Long> allowedNodeIds = nodeRepository.findAllowedNodeIds(principal.getInstId());
+	        if (!allowedNodeIds.contains(nodeId)) {
+	            throw new SecurityException("Invalid node submitted!");
+	        }
+
+	        CoreFile uploadedFile = service.uploadNodeFile(nodeId, file);
+
+	        response.put("status", "success");
+	        response.put("message", uploadedFile.getFileActualName() + " File uploaded successfully");
+	        response.put("loadnext", "branch_nodeview/" + XorMaskHelper.mask(nodeId));
+	        response.put("target", "modal");
+
+	        return ResponseEntity.ok(response);
+
+	    } catch (Exception e) {
+	        response.put("status", "error");
+	        response.put("message", "Sorry, something went wrong. Please try again later.");
+	        response.put("errorType", e.getClass().getSimpleName());
+	        response.put("errorCode", "ERR500");
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
 	}
+
+	
+	
+	@GetMapping("/node/upload_remove/{id}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> removeNodeFile(
+	        @PathVariable Long id,
+	        Authentication authentication) {
+
+	    Map<String, Object> response = new HashMap<>();
+	    try {
+	        // Unmask the ID
+	        Long fileId = XorMaskHelper.unmask(id);
+
+	        Optional<CoreFile> optionalFile = coreFileRepository.findByIdAndNotDeleted(fileId);
+	        CoreFile file = optionalFile.get();
+	        
+	        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+	        // Soft delete (set active = 0 and mark as deleted)
+	        file.setActive((short) 0);
+	        file.setDeleted(true);
+	        file.setUDeleted(principal.getUserId());
+	        file.setTDeleted(LocalDateTime.now());
+
+	        coreFileRepository.save(file);
+
+		    response.put("status", "success");
+		    response.put("message", "The file "+ file.getFileActualName() + " removed successfully");
+		    
+		    response.put("loadnext", "branch_nodeview/"  + XorMaskHelper.mask(file.getFileRefId()));
+		    response.put("target", "modal");
+
+		    return ResponseEntity.ok(response);
+
+	    } catch (Exception e) {
+	        response.put("success", false);
+	        response.put("message", "Error removing file: " + e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	    }
+	}
+
 
 	/*
 	 * @GetMapping("/html/tree") public String showTreeView(Model model) {

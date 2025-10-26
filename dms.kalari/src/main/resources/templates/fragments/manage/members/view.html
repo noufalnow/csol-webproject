@@ -1,12 +1,14 @@
 <!-- fragments/add_node.html -->
 <div th:fragment="content">
-<div class="modal-header">
-    <h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Edit Node</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-</div>
-<!-- Modal Body -->
-<div class="modal-body">
-        <div class="card-body">
+	<div class="modal-header">
+		<h5 class="modal-title" id="addNodeModalLabel" th:text="${pageTitle}">Edit
+			Node</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal"
+			aria-label="Close"></button>
+	</div>
+	<!-- Modal Body -->
+	<div class="modal-body">
+		<div class="card-body">
 
 			<div class="dms-card">
 				<div class="dms-card-header">
@@ -63,54 +65,54 @@
 					</div>
 				</div>
 			</div>
-			
-<!-- Document Preview Section -->
-<div class="dms-card mt-3">
-    <div class="dms-card-header">
-        <i class="fas fa-file-alt me-2"></i>UPLOADED DOCUMENTS
-    </div>
-    <div class="dms-card-body">
-        <div class="row text-center">
 
-            <!-- Photo File Preview -->
-            <div class="col-md-4 mb-3" th:if="${user.photoFile != null}">
-                <div class="preview-box mx-auto lightbox-trigger"
-                     th:attr="data-imgurl=@{/files/view/{id}(id=${user.photoFile})}"
-                     th:style="'background-image:url(/files/view/' + ${user.photoFile} + ');'">
-                </div>
-                <p class="mt-2 fw-bold">Photo</p>
-            </div>
+			<!-- Document Preview Section -->
+			<div class="dms-card mt-3">
+				<div class="dms-card-header">
+					<i class="fas fa-file-alt me-2"></i>UPLOADED DOCUMENTS
+				</div>
+				<div class="dms-card-body">
+					<div class="row text-center">
 
-            <!-- ID Proof Preview -->
-            <div class="col-md-4 mb-3" th:if="${user.idFile != null}">
-                <div class="preview-box mx-auto lightbox-trigger"
-                     th:attr="data-imgurl=@{/files/view/{id}(id=${user.idFile})}"
-                     th:style="'background-image:url(/files/view/' + ${user.idFile} + ');'">
-                </div>
-                <p class="mt-2 fw-bold">ID Proof</p>
-            </div>
+						<!-- Photo File Preview -->
+						<div class="col-md-4 mb-3" th:if="${user.photoFile != null}">
+							<div class="preview-box mx-auto lightbox-trigger"
+								th:attr="data-imgurl=@{/files/view/{id}(id=${user.photoFile})}"
+								th:style="'background-image:url(/files/view/' + ${user.photoFile} + ');'">
+							</div>
+							<p class="mt-2 fw-bold">Photo</p>
+						</div>
 
-            <!-- Age Proof Preview -->
-            <div class="col-md-4 mb-3" th:if="${user.ageproofFile != null}">
-                <div class="preview-box mx-auto lightbox-trigger"
-                     th:attr="data-imgurl=@{/files/view/{id}(id=${user.ageproofFile})}"
-                     th:style="'background-image:url(/files/view/' + ${user.ageproofFile} + ');'">
-                </div>
-                <p class="mt-2 fw-bold">Age Proof</p>
-            </div>
+						<!-- ID Proof Preview -->
+						<div class="col-md-4 mb-3" th:if="${user.idFile != null}">
+							<div class="preview-box mx-auto lightbox-trigger"
+								th:attr="data-imgurl=@{/files/view/{id}(id=${user.idFile})}"
+								th:style="'background-image:url(/files/view/' + ${user.idFile} + ');'">
+							</div>
+							<p class="mt-2 fw-bold">ID Proof</p>
+						</div>
 
-        </div>
-    </div>
-</div>
+						<!-- Age Proof Preview -->
+						<div class="col-md-4 mb-3" th:if="${user.ageproofFile != null}">
+							<div class="preview-box mx-auto lightbox-trigger"
+								th:attr="data-imgurl=@{/files/view/{id}(id=${user.ageproofFile})}"
+								th:style="'background-image:url(/files/view/' + ${user.ageproofFile} + ');'">
+							</div>
+							<p class="mt-2 fw-bold">Age Proof</p>
+						</div>
 
-
+					</div>
+				</div>
+			</div>
 
 
 
 
 
 
-			
+
+
+
 
 			<div class="row">
 				<!-- Personal Information Column -->
@@ -195,30 +197,39 @@
 					</div>
 				</div>
 			</div>
-			
-			<div th:if="${#authorization.expression('hasAuthority(''PRIV_members_verify'')')}">
-				<div th:if="${user.photoFile != null and user.idFile != null and user.ageproofFile != null and user.verificationStatus == 0}">
-				   <form id="verifyForm" th:action="@{'/members_verify/' + ${userIdMasked}}" method="post">
-				    <div class="form-check mt-3">
-				        <input class="form-check-input" type="checkbox" id="verifyCheck" name="verified">
-				        <label class="form-check-label" for="verifyCheck">
-				        I hereby confirm that I have verified the details of the participant(s) provided above, including the name, date of birth, gender, and Aadhaar number, and that all supporting documents are correct and valid. I accept full responsibility for any disputes, discrepancies, or irregularities arising now or in the future in connection with events, competitions, or issuance of certificates associated with the verified data.
-				        </label>
-				    </div>
-				    <button type="button" class="btn btn-success btn-sm mt-2" id="verifyBtn" onclick="submitHtmlForm('verifyForm', 'modal')">
-				        Confirm Verification
-				    </button>
-				   </form>
+
+			<div
+				th:if="${#authorization.expression('hasAuthority(''PRIV_members_verify'')')}">
+				<div
+					th:if="${user.photoFile != null and user.idFile != null and user.ageproofFile != null and user.verificationStatus == 0}">
+					<form id="verifyForm"
+						th:action="@{'/members_verify/' + ${userIdMasked}}" method="post">
+						<div class="form-check mt-3">
+							<input class="form-check-input" type="checkbox" id="verifyCheck"
+								name="verified"> <label class="form-check-label"
+								for="verifyCheck"> I hereby confirm that I have verified
+								the details of the participant(s) provided above, including the
+								name, date of birth, gender, and Aadhaar number, and that all
+								supporting documents are correct and valid. I accept full
+								responsibility for any disputes, discrepancies, or
+								irregularities arising now or in the future in connection with
+								events, competitions, or issuance of certificates associated
+								with the verified data. </label>
+						</div>
+						<button type="button" class="btn btn-success btn-sm mt-2"
+							id="verifyBtn" onclick="submitHtmlForm('verifyForm', 'modal')">
+							Confirm Verification</button>
+					</form>
 				</div>
 			</div>
-        
-    </div>
-</div>
+
+		</div>
+	</div>
 
 </div>
 <!-- Modal Footer -->
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
 
 
@@ -228,142 +239,158 @@
 
 /* Preview box */
 .preview-box {
-    width: 120px;
-    height: 120px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+	width: 120px;
+	height: 120px;
+	background-size: cover;
+	background-position: center;
+	border-radius: 10px;
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .preview-box:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* Lightbox modal */
 .lightbox-modal {
-    z-index: 1060 !important; /* above parent modal */
-    text-align: center;
+	z-index: 1060 !important; /* above parent modal */
+	text-align: center;
 }
 
 /* Backdrop */
 .lightbox-modal .modal-backdrop {
-    z-index: 1059 !important;
+	z-index: 1059 !important;
 }
 
 /* Modal dialog shrinks to image */
 .lightbox-modal .modal-dialog {
-    display: inline-block;
-    max-width: 90vw;
-    margin: 1.5rem auto;
-    vertical-align: middle;
+	display: inline-block;
+	max-width: 90vw;
+	margin: 1.5rem auto;
+	vertical-align: middle;
 }
 
 /* Modal content */
 .lightbox-modal .modal-content {
-    background: transparent !important;
-    border: none !important;
-    padding: 0;
-    display: inline-block;
-    position: relative;
+	background: transparent !important;
+	border: none !important;
+	padding: 0;
+	display: inline-block;
+	position: relative;
 }
 
 /* Image container */
 .lightbox-modal .lightbox-img-container {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 }
 
 /* Image */
 .lightbox-modal .lightbox-img {
-    display: block;
-    max-width: 90vw;
-    max-height: 80vh;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+	display: block;
+	max-width: 90vw;
+	max-height: 80vh;
+	object-fit: contain;
+	border-radius: 8px;
+	box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
 }
 
 /* Floating close button */
 .lightbox-modal .lightbox-close {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 35px;
-    height: 35px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
-    border: 2px solid white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    opacity: 0.9;
-    transition: opacity 0.2s ease;
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	width: 35px;
+	height: 35px;
+	background: rgba(0, 0, 0, 0.7);
+	border-radius: 50%;
+	border: 2px solid white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 10;
+	opacity: 0.9;
+	transition: opacity 0.2s ease;
 }
 
 /* White "X" for close button */
-.lightbox-modal .lightbox-close::before,
-.lightbox-modal .lightbox-close::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 2px;
-    background-color: white;
+.lightbox-modal .lightbox-close::before, .lightbox-modal .lightbox-close::after
+	{
+	content: '';
+	position: absolute;
+	width: 16px;
+	height: 2px;
+	background-color: white;
 }
-.lightbox-modal .lightbox-close::before { transform: rotate(45deg); }
-.lightbox-modal .lightbox-close::after { transform: rotate(-45deg); }
+
+.lightbox-modal .lightbox-close::before {
+	transform: rotate(45deg);
+}
+
+.lightbox-modal .lightbox-close::after {
+	transform: rotate(-45deg);
+}
 
 .lightbox-modal .lightbox-close:hover {
-    opacity: 1;
+	opacity: 1;
 }
 
-
-
-
-.modal-dialog { max-width: 60% !important; }
-@media (max-width: 768px) {
-  .modal-dialog { max-width: 100% !important; margin: 10px; }
-  .preview-box { width: 120px; height: 120px; }
+.modal-dialog {
+	max-width: 60% !important;
 }
 
-
+@media ( max-width : 768px) {
+	.modal-dialog {
+		max-width: 100% !important;
+		margin: 10px;
+	}
+	.preview-box {
+		width: 120px;
+		height: 120px;
+	}
+}
 </style>
 
 <script>
-// Simple lightbox implementation
-document.addEventListener('click', function(e) {
-	var trigger = e.target.closest('.lightbox-trigger');
-    if (!trigger) return;
+	// Simple lightbox implementation
+	document.addEventListener('click', function(e) {
+		var trigger = e.target.closest('.lightbox-trigger');
+		if (!trigger)
+			return;
 
-    e.preventDefault();
+		e.preventDefault();
 
-    var imgUrl = trigger.getAttribute('data-imgurl');
-    if (!imgUrl) return;
+		var imgUrl = trigger.getAttribute('data-imgurl');
+		if (!imgUrl)
+			return;
 
-    var lightboxModalEl = document.getElementById('imageLightbox');
-    var lightboxImage = document.getElementById('lightboxImage');
+		var lightboxModalEl = document.getElementById('imageLightbox');
+		var lightboxImage = document.getElementById('lightboxImage');
 
-    // Set image src
-    lightboxImage.src = imgUrl;
+		// Set image src
+		lightboxImage.src = imgUrl;
 
-    // Show modal
-    var lightboxModal = new bootstrap.Modal(lightboxModalEl, { backdrop: 'static' });
-    lightboxModal.show();
+		// Show modal
+		var lightboxModal = new bootstrap.Modal(lightboxModalEl, {
+			backdrop : 'static'
+		});
+		lightboxModal.show();
 
-    // Clear image when closed
-    lightboxModalEl.addEventListener('hidden.bs.modal', function() {
-        lightboxImage.src = '';
-        
-        var backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-        
-    }, { once: true });
-});
+		// Clear image when closed
+		lightboxModalEl.addEventListener('hidden.bs.modal', function() {
+			lightboxImage.src = '';
 
+			var backdrop = document.querySelector('.modal-backdrop');
+			if (backdrop)
+				backdrop.remove();
 
+		}, {
+			once : true
+		});
+	});
 </script>
 
 
@@ -371,8 +398,8 @@ document.addEventListener('click', function(e) {
 
 
 
-     
-        <!-- Championship Participation Section 
+
+<!-- Championship Participation Section 
         <h3 class="section-title">
             <i class="fas fa-trophy me-2"></i> ACHIVEMENTS
         </h3>
@@ -445,4 +472,3 @@ document.addEventListener('click', function(e) {
                 </tbody>
             </table>
         </div>-->
-    

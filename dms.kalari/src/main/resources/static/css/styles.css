@@ -336,11 +336,22 @@ button:hover, a.button:hover, .btn:hover {
   min-height: 44px;
   font-size: 0.875rem;
 }
+
 .btn-primary {
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
 }
 .btn-success {
   background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.btn-micro {
+	padding: 0.3rem 1rem !important;
+    font-size: 0.875rem !important;
+    background-color: transparent;
+  	border: 1px solid var(--dms-accent);
+  	color: var(--dms-accent);
+  	min-width: 1rem !important;
+  	min-height: .25rem !important;
 }
 
 /* ================= Section Titles ================= */
