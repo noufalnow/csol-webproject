@@ -23,6 +23,7 @@ import com.dms.kalari.common.BaseService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
+import com.dms.kalari.exception.service.EmailService;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -60,6 +61,9 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
         this.nodeRepository = nodeRepository;
         this.coreFileRepository = coreFileRepository;
     }
+    
+    @Autowired
+    private EmailService emailService;
 
     // Update CoreUser using CoreUserDTO
     @Override
@@ -269,9 +273,26 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     }
     
     public CoreUserDTO getUserByEmailAddress(String email) {
-        CoreUser user = coreUserRepository.findByUserEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-        return coreUserMapper.toDTO(user);
+        return coreUserRepository.findByUserEmail(email)
+                .map(coreUserMapper::toDTO)
+                .orElseThrow(() -> {
+                    // --- Send alert to admin before throwing exception ---
+                    try {
+                        String[] recipients = { "admin@indiankalaripayattufederation.com" };
+                        String subject = "Account Not Found: Google Login Attempt";
+                        String body = "Hello Admin,\n\n" +
+                                      "A Google login attempt was made using the email: " + email + ".\n" +
+                                      "However, this user does not exist in the system.\n\n" +
+                                      "Please review the logs or create the necessary user account if appropriate.\n\n" +
+                                      "Regards,\nSystem Notification";
+                        emailService.sendEmail(recipients, subject, body);
+                    } catch (Exception e) {
+                        System.err.println("⚠️ Failed to send admin alert: " + e.getMessage());
+                    }
+
+                    // --- now throw the exception to trigger auth failure flow ---
+                    return new UsernameNotFoundException("User not found: " + email);
+                });
     }
     
     public List<CoreUser> listUsersByNode(Long nodeId) {
