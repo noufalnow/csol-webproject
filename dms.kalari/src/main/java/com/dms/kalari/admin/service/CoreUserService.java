@@ -34,8 +34,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -277,15 +280,17 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
                 .map(coreUserMapper::toDTO)
                 .orElseThrow(() -> {
                     // --- Send alert to admin before throwing exception ---
-                    try {
-                        String[] recipients = { "admin@indiankalaripayattufederation.com" };
-                        String subject = "Account Not Found: Google Login Attempt";
-                        String body = "Hello Admin,\n\n" +
-                                      "A Google login attempt was made using the email: " + email + ".\n" +
-                                      "However, this user does not exist in the system.\n\n" +
-                                      "Please review the logs or create the necessary user account if appropriate.\n\n" +
-                                      "Regards,\nSystem Notification";
-                        emailService.sendEmail(recipients, subject, body);
+                	try {
+                        Map<String, Object> vars = new HashMap<>();
+                        vars.put("email", email);
+                        vars.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                        emailService.sendHtmlMail(
+                            new String[]{"admin@indiankalaripayattufederation.com"},
+                            "Account Not Found: Google Login Attempt",
+                            "email/account_not_found.html",
+                            vars
+                        );
                     } catch (Exception e) {
                         System.err.println("⚠️ Failed to send admin alert: " + e.getMessage());
                     }

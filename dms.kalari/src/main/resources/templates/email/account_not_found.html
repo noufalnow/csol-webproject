@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Account Not Found</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            border-bottom: 3px solid #c11b17;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            color: #c11b17;
+            margin: 0;
+        }
+        .content {
+            line-height: 1.6;
+        }
+        .footer {
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+            padding-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Account Not Found</h2>
+    </div>
+
+    <div class="content">
+        <p>Hello Admin,</p>
+        <p>
+            A Google login attempt was made using the email:
+            <strong th:text="${email}">sample@example.com</strong>.
+        </p>
+        <p>
+            However, this user does not exist in the system.<br/>
+            Please review the logs or create the necessary user account if appropriate.
+        </p>
+
+        <p>
+            <strong>Timestamp:</strong>
+            <span th:text="${timestamp}">2025-10-28 20:15:00</span>
+        </p>
+    </div>
+
+    <div class="footer">
+        Regards,<br/>
+        <strong>Indian Kalaripayattu Federation</strong><br/>
+        System Notification Service
+    </div>
+</div>
+</body>
+</html>

@@ -1,17 +1,25 @@
 package com.dms.kalari.exception.service;
 
 import com.dms.kalari.security.CustomUserPrincipal;
+
+import jakarta.mail.internet.MimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
 
 @Service
 public class EmailService {
@@ -19,9 +27,12 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final TemplateEngine templateEngine;
+    private static final String DEFAULT_FROM = "admin@indiankalaripayattufederation.com";
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender,TemplateEngine templateEngine) {
         this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
     }
 
     /**
@@ -49,6 +60,7 @@ public class EmailService {
             CustomUserPrincipal principal = getCurrentUserPrincipal();
             String traceInfo = buildUserTraceInfo(principal);
             SimpleMailMessage message = createEmailMessage(recipients, subject, body + traceInfo);
+            message.setFrom("Indian Kalaripayattu Federation <admin@indiankalaripayattufederation.com>");
             mailSender.send(message);
 
             logMultipleEmailSuccess(principal);
@@ -73,6 +85,7 @@ public class EmailService {
      */
     private SimpleMailMessage createEmailMessage(String[] recipients, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("Indian Kalaripayattu Federation <admin@indiankalaripayattufederation.com>");
         message.setTo(recipients);
         message.setSubject(subject);
         message.setText(body);
@@ -165,6 +178,32 @@ public class EmailService {
     
     public void sendEmail(String[] recipients, String subject, String body) {
         SimpleMailMessage message = createEmailMessage(recipients, subject, body);
+        message.setFrom("Indian Kalaripayattu Federation <admin@indiankalaripayattufederation.com>");
         mailSender.send(message);
+    }
+    
+    
+    @Async
+    public void sendHtmlMail(String[] to, String subject, String templateName, Map<String, Object> variables) {
+        try {
+            Context context = new Context();
+            context.setVariables(variables);
+
+            String htmlContent = templateEngine.process(templateName, context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom("admin@indiankalaripayattufederation.com", "Indian Kalaripayattu Federation");
+            helper.setTo("admin@indiankalaripayattufederation.com");
+            helper.setBcc("admin@indiankalaripayattufederation.com");
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true); // true => HTML
+
+            mailSender.send(mimeMessage);
+
+            log.debug("✅ HTML email sent successfully to {}", (Object) to);
+        } catch (Exception e) {
+            log.error("❌ Failed to send HTML email: {}", e.getMessage(), e);
+        }
     }
 }
