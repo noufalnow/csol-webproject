@@ -21,6 +21,13 @@ public class AuthController {
                 error != null ? error : "Authentication failed. Please try again.");
         return "auth-error"; // name of the Thymeleaf template
     }
+    
+    
+    @GetMapping("/access-denied")
+    public String accessDenied(Model model) {
+        model.addAttribute("errorMessage", "You do not have permission to access this page.");
+        return "access-denied"; // must match the template name
+    }
 }
 
 

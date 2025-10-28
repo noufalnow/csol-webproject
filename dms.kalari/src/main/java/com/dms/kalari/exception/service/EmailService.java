@@ -162,4 +162,9 @@ public class EmailService {
             "by user: " + principal.getUsername() : "by system";
         log.debug("Email sent successfully to multiple recipients {}", userContext);
     }
+    
+    public void sendEmail(String[] recipients, String subject, String body) {
+        SimpleMailMessage message = createEmailMessage(recipients, subject, body);
+        mailSender.send(message);
+    }
 }
