@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import com.dms.kalari.config.CustomOAuth2FailureHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -25,14 +26,16 @@ public class SecurityConfig {
     private final RequestAuthorizationManager requestAuthorizationManager;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
     
 
     public SecurityConfig(PrivilegeChecker privilegeChecker, 
-                         RequestAuthorizationManager requestAuthorizationManager, CustomOAuth2UserService customOAuth2UserService,CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler) {
+                         RequestAuthorizationManager requestAuthorizationManager, CustomOAuth2UserService customOAuth2UserService,CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler,CustomOAuth2FailureHandler customOAuth2FailureHandler) {
         this.privilegeChecker = privilegeChecker;
         this.requestAuthorizationManager = requestAuthorizationManager;
         this.customOAuth2UserService = customOAuth2UserService;
         this.customOAuth2LoginSuccessHandler = customOAuth2LoginSuccessHandler;
+        this.customOAuth2FailureHandler = customOAuth2FailureHandler;
         
     }
 
@@ -44,7 +47,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
             	.requestMatchers("/logout").permitAll() 	
                 .requestMatchers("/", "/public/**", "/login", "/login-error", "/verify/**", 
-                        "/error", "/access-denied", "/health", "/actuator/health").permitAll()
+                        "/error","auth-error","/access-denied", "/health", "/actuator/health").permitAll()
                 .requestMatchers("/files/download/*").authenticated()
                 .requestMatchers("/files/certificate/*").authenticated()
                 .requestMatchers("/files/view/*").authenticated()
@@ -66,6 +69,7 @@ public class SecurityConfig {
             	        .userService(customOAuth2UserService) // still fetch OAuth2 attributes
             	    )
             	    .successHandler(customOAuth2LoginSuccessHandler) // replace default redirect logic
+            	    .failureHandler(customOAuth2FailureHandler) 
             	)
             /*.rememberMe(rememberMe -> rememberMe
                     .key("uniqueAndSecretKey")

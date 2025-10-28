@@ -118,8 +118,8 @@ public class PrivilegeChecker {
 	// but REMOVE the call from hasAccess() above
 	private boolean isPublicResource(String path) {
 		String cleanPath = stripQueryParams(path);
-
-		return cleanPath.startsWith("/public/") || cleanPath.equals("/login") || cleanPath.equals("/logout")
+		
+		return cleanPath.startsWith("/public/") || cleanPath.equals("/login") || cleanPath.equals("/logout")|| cleanPath.equals("/auth-error")
 				|| cleanPath.startsWith("/login/") || cleanPath.equals("/error") || cleanPath.equals("/access-denied")
 				|| cleanPath.startsWith("/access-denied/") || cleanPath.startsWith("/verify/")
 				|| cleanPath.startsWith("/css/") || cleanPath.startsWith("/js/") || cleanPath.startsWith("/images/")

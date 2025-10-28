@@ -1,6 +1,7 @@
 package com.dms.kalari.admin.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -269,7 +270,7 @@ public class CoreUserService implements BaseService<CoreUserDTO> {
     
     public CoreUserDTO getUserByEmailAddress(String email) {
         CoreUser user = coreUserRepository.findByUserEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return coreUserMapper.toDTO(user);
     }
     
