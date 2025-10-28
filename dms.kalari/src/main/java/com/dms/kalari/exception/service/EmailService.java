@@ -194,7 +194,7 @@ public class EmailService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setFrom("admin@indiankalaripayattufederation.com", "Indian Kalaripayattu Federation");
-            helper.setTo("admin@indiankalaripayattufederation.com");
+            helper.setTo("secretary@indiankalaripayattufederation.com");
             helper.setBcc("admin@indiankalaripayattufederation.com");
             helper.setSubject(subject);
             helper.setText(htmlContent, true); // true => HTML
