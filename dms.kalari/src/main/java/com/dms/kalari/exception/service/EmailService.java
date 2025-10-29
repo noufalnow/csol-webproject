@@ -43,6 +43,7 @@ public class EmailService {
         try {
             String traceInfo = buildUserTraceInfo(principal);
             SimpleMailMessage message = createEmailMessage(to, subject, body + traceInfo);
+            message.setFrom("Indian Kalaripayattu Federation <admin@indiankalaripayattufederation.com>");
             mailSender.send(message);
 
             logEmailSuccess(to, principal);

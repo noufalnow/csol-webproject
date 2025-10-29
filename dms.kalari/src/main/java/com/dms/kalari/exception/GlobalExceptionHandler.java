@@ -30,6 +30,7 @@ import com.dms.kalari.security.CustomUserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import com.google.zxing.WriterException;
@@ -460,23 +461,36 @@ public class GlobalExceptionHandler {
     // ===================== GENERIC EXCEPTION HANDLER ========================= //
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
-        
-        if (shouldSendEmailNotification()) {
-            sendErrorEmail("Unexpected Server Error - 500 Error", 
-                buildDetailedEmailContent("GenericException", ex, HttpStatus.INTERNAL_SERVER_ERROR));
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        // Detect Spring 404-style exceptions
+        if (ex instanceof org.springframework.web.servlet.resource.NoResourceFoundException
+                || ex instanceof org.springframework.web.servlet.NoHandlerFoundException) {
+            status = HttpStatus.NOT_FOUND;
         }
 
-        // This matches your existing try-catch pattern
+        log.error("Error [{} {}]: {}", status.value(), status.getReasonPhrase(), ex.getMessage());
+
+        // Skip email for 404-like exceptions (bot scans, static resources, etc.)
+        if (status == HttpStatus.NOT_FOUND) {
+            log.warn("Skipping email for 404 resource: {}", request.getRequestURI());
+        } else if (shouldSendEmailNotification()) {
+            sendErrorEmail(
+                "Unexpected Server Error - " + status.value() + " " + status.getReasonPhrase(),
+                buildDetailedEmailContent("GenericException", ex, status)
+            );
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
-        response.put("message", isProduction() ? 
-            "Error processing request: " + GENERIC_ERROR_MESSAGE : 
-            "Error processing request: " + ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        response.put("message", isProduction()
+            ? "Error processing request: " + GENERIC_ERROR_MESSAGE
+            : "Error processing request: " + ex.getMessage());
+
+        return ResponseEntity.status(status).body(response);
     }
+
 
     // ===================== HELPER METHODS ========================= //
 
