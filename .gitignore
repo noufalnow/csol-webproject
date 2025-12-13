@@ -8,3 +8,11 @@ dms.kalari/target/
 dms.kalari/uploads/
 
 dms.kalari/.classpath
+
+.settings/
+
+.classpath
+
+.factorypath
+
+.project
