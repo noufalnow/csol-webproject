@@ -149,8 +149,12 @@
 	border: 1px solid var(--dms-gray-300);
 	border-radius: 1.25rem;
 	padding: 0.125rem;
-	overflow-y: auto;
-	overflow-x: scroll;
+}
+
+.tree-scroll{
+  max-height: 80vh;      /* adjust: 70vh / 85vh etc */
+  overflow-y: auto;      /* scroll only when needed */
+  overflow-x: hidden;
 }
 
 .content-column {
@@ -186,7 +190,7 @@ ul.collapsed {
 <div class="row mb-3 border-secondary">
 	<!-- Left column -->
 	<div th:if="not ${#strings.equals(nodeType, 'KALARI')}"
-		class="tree-column col-12 col-md-3 mb-2" style="overflow: scroll;">
+		class="tree-column col-12 col-md-3 mb-2 tree-scroll">
 		<div>
 			<!-- templates/fragments/node_tree.html -->
 			<!-- Main content fragment -->
