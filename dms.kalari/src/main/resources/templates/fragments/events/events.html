@@ -85,8 +85,8 @@
 
 
 	<div class="d-flex justify-content-between align-items-center mb-3">
-		<h4 class="mb-0">
-			EVENTS [<span th:text="${#lists.size(events)}"></span>]
+		<h4 class="mb-0" title="List of Kalaripayattu Championship Events in this Branch">
+			CHAMPIONSHIP COMPETITION EVENTS [<span th:text="${#lists.size(events)}"></span>]
 		</h4>
 		<a
 			th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_champ_eventadd'')')) 
