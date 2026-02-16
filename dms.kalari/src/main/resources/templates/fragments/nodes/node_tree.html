@@ -1,200 +1,188 @@
 <style>
-/*─── Tree Container & Structure ──────────────────────────────────────────*/
-.tree-container {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+	/* ─── Global Reset (REQUIRED FOR MOBILE) ─────────────────────────────── */
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	}
 
-.tree-title {
-	color: var(--dms-dark);
-	margin-bottom: 1.25rem;
-	padding-bottom: 0.625rem;
-	border-bottom: 2px solid var(--dms-gray-200);
-}
+	/*─── Tree Container & Structure ──────────────────────────────────────────*/
+	.tree-container {
+	  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	}
 
-.tree {
-	list-style: none;
-	padding-left: 0.25rem;
-}
+	.tree-title {
+	  color: var(--dms-dark);
+	  margin-bottom: 1.25rem;
+	  padding-bottom: 0.625rem;
+	  border-bottom: 2px solid var(--dms-gray-200);
+	}
 
-.tree ul {
-	list-style: none;
-	padding-left: 1.25rem;
-}
+	.tree {
+	  list-style: none;
+	  padding-left: 0.25rem;
+	}
 
-.tree li {
-	margin: 0.2rem 0;
-	position: relative;
-}
+	.tree ul {
+	  list-style: none;
+	  padding-left: 1.25rem;
+	}
 
-/*─── Base Tree Node ─────────────────────────────────────────────────────*/
-.tree-node {
-	display: flex;
-	align-items: center;
-	padding: 0.25rem 0.625rem;
-	border-radius: 0.25rem;
-	margin: 0.125rem 0;
-	white-space: nowrap;
-	transition: all 0.2s ease;
-	min-width: min-content;
-}
+	.tree li {
+	  margin: 0.2rem 0;
+	  position: relative;
+	}
 
-/*─── Node Type-Specific Styling ──────────────────────────────────────────*/
-.tree-node.ROOT {
-	background-color: rgba(44, 62, 80, 0.15);
-	border-left: 3px solid var(--dms-primary);
-	font-weight: bold;
-}
+	/*─── Base Tree Node ─────────────────────────────────────────────────────*/
+	.tree-node {
+	  display: flex;
+	  align-items: center;
+	  padding: 0.25rem 0.625rem;
+	  border-radius: 0.25rem;
+	  margin: 0.125rem 0;
+	  white-space: nowrap;
+	  transition: all 0.2s ease;
+	  min-width: min-content;
+	}
 
-.toggle-btn, .aspan {
-	cursor: pointer;
-}
+	/*─── Node Type-Specific Styling ──────────────────────────────────────────*/
+	.tree-node.ROOT {
+	  background-color: rgba(44, 62, 80, 0.15);
+	  border-left: 3px solid var(--dms-primary);
+	  font-weight: bold;
+	}
 
-.tree-node.NATIONAL {
-	background-color: rgba(52, 73, 94, 0.15);
-	border-left: 3px solid var(--dms-secondary);
-}
+	.toggle-btn, .aspan {
+	  cursor: pointer;
+	}
 
-.tree-node.STATE {
-	background-color: rgba(241, 196, 15, 0.15);
-	border-left: 3px solid var(--dms-warning);
-}
+	.tree-node.NATIONAL {
+	  background-color: rgba(52, 73, 94, 0.15);
+	  border-left: 3px solid var(--dms-secondary);
+	}
 
-.tree-node.DISTRICT {
-	background-color: rgba(231, 76, 60, 0.15);
-	border-left: 3px solid var(--dms-danger);
-}
+	.tree-node.STATE {
+	  background-color: rgba(241, 196, 15, 0.15);
+	  border-left: 3px solid var(--dms-warning);
+	}
 
-.tree-node.KALARI {
-	background-color: rgba(108, 117, 125, 0.15);
-	border-left: 3px solid var(--dms-gray-600);
-}
+	.tree-node.DISTRICT {
+	  background-color: rgba(231, 76, 60, 0.15);
+	  border-left: 3px solid var(--dms-danger);
+	}
 
-/*─── Interactive States ─────────────────────────────────────────────────*/
-.tree-node:hover {
-	background-color: var(--dms-gray-100);
-}
+	.tree-node.KALARI {
+	  background-color: rgba(108, 117, 125, 0.15);
+	  border-left: 3px solid var(--dms-gray-600);
+	}
 
-.tree-node.active {
-	/*background-color: var(--dms-accent) !important;
-    color: #fff;
-    font-weight: bolder;
-    position: relative;
-    padding-left: 1.5rem;*/
-	font-weight: bolder;
-	position: relative;
-	padding-left: 1.5rem;
-	font-family: 'Courgette', cursive;
-}
+	/*─── Interactive States ─────────────────────────────────────────────────*/
+	.tree-node:hover {
+	  background-color: var(--dms-gray-100);
+	}
 
-.tree-node.active::before {
-	content: "•";
-	position: absolute;
-	left: 0.5rem;
-	font-size: 1.5rem;
-	line-height: 1;
-	color: green;
-}
+	.tree-node.active {
+	  font-weight: bolder;
+	  position: relative;
+	  padding-left: 1.5rem;
+	  font-family: 'Courgette', cursive;
+	}
 
-/*─── Links ───────────────────────────────────────────────────────────────*/
-.tree-node>span .aspan {
-	color: inherit;
-	text-decoration: none;
-	flex-grow: 1;
-	cursor: pointer;
-	pointer-events: auto;
-}
+	.tree-node.active::before {
+	  content: "•";
+	  position: absolute;
+	  left: 0.5rem;
+	  font-size: 1.5rem;
+	  line-height: 1;
+	  color: green;
+	}
 
-.tree-node>span .aspan:hover {
-	text-decoration: underline;
-}
+	/*─── Links ───────────────────────────────────────────────────────────────*/
+	.tree-node > span .aspan {
+	  color: inherit;
+	  text-decoration: none;
+	  flex-grow: 1;
+	  pointer-events: auto;
+	}
 
-/*─── Toggle Elements ────────────────────────────────────────────────────*/
-.toggle-btn {
-	width: 1.5rem;
-	height: 1.5rem;
-	margin-right: 0.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background-color: var(--dms-gray-200);
-	border-radius: 0.25rem;
-	cursor: pointer;
-	font-size: 0.75rem;
-	user-select: none;
-	transition: background-color 0.2s ease;
-	border: 1px solid #bfddfb;
-}
+	.tree-node > span .aspan:hover {
+	  text-decoration: underline;
+	}
 
-.toggle-btn:hover {
-	background-color: var(--dms-gray-300);
-}
+	/*─── Toggle Elements ────────────────────────────────────────────────────*/
+	.toggle-btn {
+	  width: 1.5rem;
+	  height: 1.5rem;
+	  margin-right: 0.5rem;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  background-color: var(--dms-gray-200);
+	  border-radius: 0.25rem;
+	  font-size: 0.75rem;
+	  user-select: none;
+	  transition: background-color 0.2s ease;
+	  border: 1px solid #bfddfb;
+	}
 
-.toggle-btn.closed>span {
-	/*transform: rotate(0deg);*/
-	transition: transform 0.2s ease;
-}
+	.toggle-btn:hover {
+	  background-color: var(--dms-gray-300);
+	}
 
-.toggle-btn.open>span {
-	/*transform: rotate(90deg);*/
-	box-sizing: content-box;
-}
+	.empty-toggle {
+	  width: 1.5rem;
+	  margin-right: 0.5rem;
+	}
 
-.empty-toggle {
-	width: 1.5rem;
-	margin-right: 0.5rem;
-}
+	/*─── Layout Columns (FIXED FOR MOBILE) ───────────────────────────────────*/
+	.page-layout {
+	  height: 100dvh;
+	  height: -webkit-fill-available;
+	  display: flex;
+	  flex-direction: column;
+	}
 
-/*─── Layout Columns ────────────────────────────────────────────────────*/
-.tree-column {
-	border: 1px solid var(--dms-gray-300);
-	border-radius: 1.25rem;
-	padding: 0.125rem;
-}
+	.main-row {
+	  flex: 1;
+	  overflow: hidden;
+	  min-height: 0; /* CRITICAL */
+	}
 
-.page-layout {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+	.tree-column {
+	  border: 1px solid var(--dms-gray-300);
+	  border-radius: 1.25rem;
+	  padding: 0.125rem;
+	}
 
-.main-row {
-  flex: 1;
-  overflow: hidden;
-}
+	.tree-scroll {
+	  flex: 1;
+	  overflow-y: auto;
+	  -webkit-overflow-scrolling: touch;
+	}
 
-.tree-scroll {
-  height: 100%;
-  overflow-y: auto;
-}
+	.content-column {
+	  border: 2px solid var(--dms-gray-300);
+	  border-radius: 1.25rem;
+	  padding: 1.25rem;
+	}
 
+	/*─── Collapsed Branches ─────────────────────────────────────────────────*/
+	ul.collapsed {
+	  display: none;
+	}
 
+	/*─── Mobile Spacing Tweaks ONLY ─────────────────────────────────────────*/
+	@media (max-width: 768px) {
 
-.content-column {
-	border: 2px solid var(--dms-gray-300);
-	border-radius: 1.25rem;
-	padding: 1.25rem;
-}
+	  .col-12.col-md-9 {
+	    padding-right: 1px;
+	    padding-left: 1px;
+	  }
 
-/*─── Collapsed Branches ─────────────────────────────────────────────────*/
-ul.collapsed {
-	display: none;
-}
+	  .content-column {
+	    padding: 0.25rem;
+	  }
+	}
 
-
-@media (max-width: 768px) {
-
-.col-12.col-md-9 {
-  padding-right: 1px;
-  padding-left: 1px;
-}
-
-.content-column {
-  padding: 0.25rem;
-}
- 
-
-
-  }
 </style>
 
 
