@@ -151,10 +151,22 @@
 	padding: 0.125rem;
 }
 
-.tree-scroll{
-  max-height: none;
-  overflow: visible;
+.page-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.main-row {
+  flex: 1;
+  overflow: hidden;
+}
+
+.tree-scroll {
+  height: 100%;
+  overflow-y: auto;
+}
+
 
 
 .content-column {
