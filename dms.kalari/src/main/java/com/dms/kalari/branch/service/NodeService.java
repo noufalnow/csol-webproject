@@ -483,6 +483,7 @@ public class NodeService implements BaseService<NodeDTO> {
                     c.put("id", node.getNodeId());
                     c.put("name", node.getNodeName());
                     c.put("type", node.getNodeType());
+                    c.put("code", node.getBranchCode());
 
                     // optional (only if useful)
                     c.put("state", node.getAddressState());
