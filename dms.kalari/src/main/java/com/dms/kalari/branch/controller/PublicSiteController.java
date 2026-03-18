@@ -59,15 +59,15 @@ public class PublicSiteController {
 	            : new File(DEFAULT_FILE_PATH);
 
 	    if (!originalFile.exists()) {
-	        //log.warn("Original file missing, using default");
 	        originalFile = new File(DEFAULT_FILE_PATH);
 	    }
 
-	    File thumbnailDir = new File(DEFAULT_FILE_PATH, "thumbnails");
+	    // 🔥 Key fix here
+	    File parentDir = originalFile.getParentFile();
+	    File thumbnailDir = new File(parentDir, "thumbnails");
 
 	    if (!thumbnailDir.exists()) {
-	        boolean created = thumbnailDir.mkdirs();
-	        //log.info("Thumbnail dir created: {}", created);
+	        thumbnailDir.mkdirs();
 	    }
 
 	    File thumbnailFile = new File(thumbnailDir, id + ".jpg");
@@ -91,10 +91,14 @@ public class PublicSiteController {
 
 	            //log.info("Generating thumbnail...");
 
-	            Thumbnails.of(originalFile)
-	                    .size(200, 200)
-	                    .outputFormat("jpg")
-	                    .toFile(thumbnailFile);
+	            try {
+	                Thumbnails.of(originalFile)
+	                        .size(200, 200)
+	                        .outputFormat("jpg")
+	                        .toFile(thumbnailFile);
+	            } catch (Exception e) {
+	                throw new RuntimeException("Thumbnail generation failed for: " + originalFile.getAbsolutePath(), e);
+	            }
 	        }
 	    }
 
