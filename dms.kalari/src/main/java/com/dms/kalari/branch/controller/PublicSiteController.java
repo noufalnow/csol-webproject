@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
+
+import net.coobird.thumbnailator.Thumbnails;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,30 +48,75 @@ public class PublicSiteController {
 	
 	@CrossOrigin(origins = "*")
     @GetMapping("image_public/{id}")
-    public ResponseEntity<InputStreamResource> viewFilePublic(@PathVariable Long id) throws IOException {
-        CoreFile file = fileRepository.findById(id).orElse(null);
+	public ResponseEntity<InputStreamResource> viewFilePublic(
+	        @PathVariable Long id,
+	        @RequestParam(required = false, defaultValue = "false") boolean thumbnail
+	) throws IOException {
 
-        File diskFile = (file != null && file.getFilePath() != null) 
-                        ? new File(file.getFilePath()) 
-                        : null;
+	    CoreFile file = fileRepository.findById(id).orElse(null);
 
-        // Fallback if file not found
-        if (diskFile == null || !diskFile.exists()) {
-            diskFile = new File(DEFAULT_FILE_PATH);
-        }
+	    File originalFile = (file != null && file.getFilePath() != null)
+	            ? new File(file.getFilePath())
+	            : new File(DEFAULT_FILE_PATH);
 
-        MediaType mediaType = detectMimeType(diskFile);
+	    if (!originalFile.exists()) {
+	        originalFile = new File(DEFAULT_FILE_PATH);
+	    }
 
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(diskFile));
-        long contentLength = (file != null && file.getFileSize() != null) ? file.getFileSize() : diskFile.length();
-        String fileName = (file != null && file.getFileActualName() != null) ? file.getFileActualName() : "default.jpg";
+	    // 🔥 Thumbnail logic
+	    if (thumbnail) {
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=\"" + fileName + "\"")
-                .contentLength(contentLength)
-                .contentType(mediaType)
-                .body(resource);
-    }
+	        File thumbnailDir = new File(DEFAULT_FILE_PATH, "thumbnails");
+
+	        if (!thumbnailDir.exists()) {
+	            thumbnailDir.mkdirs();
+	        }
+
+	        File thumbnailFile = new File(thumbnailDir, id + ".jpg");
+
+	        // ✅ 1. If exists → return immediately
+	        if (thumbnailFile.exists()) {
+	            return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
+	        }
+
+	        // ⚠️ Prevent duplicate generation (basic lock)
+	        synchronized (id.toString().intern()) {
+
+	            // Double check after lock
+	            if (!thumbnailFile.exists()) {
+
+	                MediaType mediaType = detectMimeType(originalFile);
+
+	                // ❌ Skip non-images
+	                if (mediaType == null || !mediaType.toString().startsWith("image")) {
+	                    return buildResponse(originalFile, mediaType);
+	                }
+
+	                // ✅ Generate thumbnail once
+	                Thumbnails.of(originalFile)
+	                        .size(200, 200)
+	                        .outputFormat("jpg")
+	                        .toFile(thumbnailFile);
+	            }
+	        }
+
+	        return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
+	    }
+
+	    // 🔥 Return original file
+	    MediaType mediaType = detectMimeType(originalFile);
+	    return buildResponse(originalFile, mediaType);
+	}
+	
+	private ResponseEntity<InputStreamResource> buildResponse(File file, MediaType mediaType) throws IOException {
+	    InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+	    return ResponseEntity.ok()
+	            .header(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=\"" + file.getName() + "\"")
+	            .contentLength(file.length())
+	            .contentType(mediaType)
+	            .body(resource);
+	}
     
     private MediaType detectMimeType(File file) {
         try {
