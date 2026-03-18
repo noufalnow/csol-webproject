@@ -47,11 +47,10 @@ public class PublicSiteController {
 	}
 	
 	@CrossOrigin(origins = "*")
-    @GetMapping("image_public/{id}")
-	public ResponseEntity<InputStreamResource> viewFilePublic(
-	        @PathVariable Long id,
-	        @RequestParam(required = false, defaultValue = "false") boolean thumbnail
-	) throws IOException {
+	@GetMapping("image_public/{id}")
+	public ResponseEntity<InputStreamResource> viewThumbnail(@PathVariable Long id) throws IOException {
+
+	    //log.info("Thumbnail request for id={}", id);
 
 	    CoreFile file = fileRepository.findById(id).orElse(null);
 
@@ -60,52 +59,46 @@ public class PublicSiteController {
 	            : new File(DEFAULT_FILE_PATH);
 
 	    if (!originalFile.exists()) {
+	        //log.warn("Original file missing, using default");
 	        originalFile = new File(DEFAULT_FILE_PATH);
 	    }
 
-	    // 🔥 Thumbnail logic
-	    if (thumbnail) {
+	    File thumbnailDir = new File(DEFAULT_FILE_PATH, "thumbnails");
 
-	        File thumbnailDir = new File(DEFAULT_FILE_PATH, "thumbnails");
+	    if (!thumbnailDir.exists()) {
+	        boolean created = thumbnailDir.mkdirs();
+	        //log.info("Thumbnail dir created: {}", created);
+	    }
 
-	        if (!thumbnailDir.exists()) {
-	            thumbnailDir.mkdirs();
-	        }
+	    File thumbnailFile = new File(thumbnailDir, id + ".jpg");
 
-	        File thumbnailFile = new File(thumbnailDir, id + ".jpg");
-
-	        // ✅ 1. If exists → return immediately
-	        if (thumbnailFile.exists()) {
-	            return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
-	        }
-
-	        // ⚠️ Prevent duplicate generation (basic lock)
-	        synchronized (id.toString().intern()) {
-
-	            // Double check after lock
-	            if (!thumbnailFile.exists()) {
-
-	                MediaType mediaType = detectMimeType(originalFile);
-
-	                // ❌ Skip non-images
-	                if (mediaType == null || !mediaType.toString().startsWith("image")) {
-	                    return buildResponse(originalFile, mediaType);
-	                }
-
-	                // ✅ Generate thumbnail once
-	                Thumbnails.of(originalFile)
-	                        .size(200, 200)
-	                        .outputFormat("jpg")
-	                        .toFile(thumbnailFile);
-	            }
-	        }
-
+	    // ✅ Return cached
+	    if (thumbnailFile.exists()) {
+	        //log.info("Returning cached thumbnail");
 	        return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
 	    }
 
-	    // 🔥 Return original file
-	    MediaType mediaType = detectMimeType(originalFile);
-	    return buildResponse(originalFile, mediaType);
+	    synchronized (id.toString().intern()) {
+
+	        if (!thumbnailFile.exists()) {
+
+	            MediaType mediaType = detectMimeType(originalFile);
+
+	            if (mediaType == null || !mediaType.toString().startsWith("image")) {
+	                //log.warn("Not an image, returning original");
+	                return buildResponse(originalFile, mediaType);
+	            }
+
+	            //log.info("Generating thumbnail...");
+
+	            Thumbnails.of(originalFile)
+	                    .size(200, 200)
+	                    .outputFormat("jpg")
+	                    .toFile(thumbnailFile);
+	        }
+	    }
+
+	    return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
 	}
 	
 	private ResponseEntity<InputStreamResource> buildResponse(File file, MediaType mediaType) throws IOException {
