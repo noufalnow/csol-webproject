@@ -423,7 +423,7 @@ public class NodeService implements BaseService<NodeDTO> {
     	            // ✅ photo (real file mapping)
     	            if (u.getPhotoFile() != null) {
     	                coreFileRepository.findById(u.getPhotoFile())
-    	                        .ifPresent(file -> m.put("photo", "http://localhost:6060/image_public/" + file.getFileId()));
+    	                        .ifPresent(file -> m.put("photo", "https://app.indiankalaripayattufederation.com/image_public/" + file.getFileId()));
     	            } else {
     	                m.put("photo", null);
     	            }
@@ -462,7 +462,7 @@ public class NodeService implements BaseService<NodeDTO> {
 
         // ✅ Optional extras (safe)
         branchMap.put("registerNumber", branch.getRegisterNumber());
-        branchMap.put("photo", "http://localhost:6060/image_public/" +branch.getPhotoFile());
+        branchMap.put("photo", "https://app.indiankalaripayattufederation.com/image_public/" +branch.getPhotoFile());
 
         response.put("branch", branchMap);
 
