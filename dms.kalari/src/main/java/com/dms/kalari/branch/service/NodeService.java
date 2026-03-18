@@ -458,7 +458,16 @@ public class NodeService implements BaseService<NodeDTO> {
         address.put("pin", branch.getAddressPin());
 
         branchMap.put("address", address);
-
+        
+        
+        Map<String, Object> about = new HashMap<>();
+        
+        
+        about.put("branch_activity", branch.getBranchActivity());
+        about.put("branch_vision", branch.getBranchVision());
+        about.put("branch_history", branch.getBranchHistory());
+        
+        branchMap.put("anout", about);
 
         // ✅ Optional extras (safe)
         branchMap.put("registerNumber", branch.getRegisterNumber());
