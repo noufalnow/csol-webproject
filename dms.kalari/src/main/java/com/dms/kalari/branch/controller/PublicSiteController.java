@@ -26,6 +26,8 @@ public class PublicSiteController {
 	private CoreFileRepository fileRepository;
 	
 	private static final String DEFAULT_FILE_PATH = "/opt/app/uploads/default.jpg"; 
+	private static final String BASE_PATH = "/opt/kalari";
+	
 
 	public PublicSiteController(NodeService nodeService, CoreFileRepository fileRepository) {
 		this.nodeService = nodeService;
@@ -55,7 +57,7 @@ public class PublicSiteController {
 	    CoreFile file = fileRepository.findById(id).orElse(null);
 
 	    File originalFile = (file != null && file.getFilePath() != null)
-	            ? new File(file.getFilePath())
+	            ? new File(BASE_PATH, file.getFilePath())
 	            : new File(DEFAULT_FILE_PATH);
 
 	    if (!originalFile.exists()) {
