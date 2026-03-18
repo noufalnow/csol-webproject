@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.admin.entity.CoreUser.UserType;
+import com.dms.kalari.admin.repository.CoreUserRepository;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
@@ -41,12 +43,14 @@ public class NodeService implements BaseService<NodeDTO> {
 	private final NodeRepository nodeRepository;
 	private final NodeMapper nodeMapper;
 	private final CoreFileRepository coreFileRepository;
+	private final CoreUserRepository coreUserRepository;
 
 	@Autowired
-	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository) {
+	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository,CoreUserRepository coreUserRepository) {
 		this.nodeRepository = nodeRepository;
 		this.nodeMapper = nodeMapper;
 		this.coreFileRepository = coreFileRepository;
+		this.coreUserRepository = coreUserRepository;
 	}
 
 	@Override
@@ -399,6 +403,99 @@ public class NodeService implements BaseService<NodeDTO> {
         } catch (IOException e) {
             throw new RuntimeException("File upload failed", e);
         }
+    }
+    
+    
+    public List<Map<String, Object>> getBranchOfficials(Long nodeId) {
+
+    	return coreUserRepository
+    	        .findBranchOfficials(nodeId, UserType.OFFICIAL)
+    	        .stream()
+    	        .map(u -> {
+    	            Map<String, Object> m = new HashMap<>();
+
+    	            m.put("id", u.getUserId());
+    	            m.put("name", u.getUserFname() + " " + u.getUserLname());
+    	            m.put("designation", u.getDesignation().getDesigName());
+    	            m.put("phone", u.getMobileNumber());
+    	            m.put("email", u.getUserEmail());
+
+    	            // ✅ photo (real file mapping)
+    	            if (u.getPhotoFile() != null) {
+    	                coreFileRepository.findById(u.getPhotoFile())
+    	                        .ifPresent(file -> m.put("photo", "http://localhost:6060/image_public/" + file.getFileId()));
+    	            } else {
+    	                m.put("photo", null);
+    	            }
+
+    	            return m;
+    	        })
+    	        .toList();
+    }
+    
+    
+    public Map<String, Object> getFullBranchDetailsByCode(String code) {
+
+        Node branch = nodeRepository.findByBranchCode(code)
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+
+        Map<String, Object> response = new HashMap<>();
+
+        // basic
+        Map<String, Object> branchMap = new HashMap<>();
+
+        branchMap.put("id", branch.getNodeId());
+        branchMap.put("name", branch.getNodeName());
+        branchMap.put("type", branch.getNodeType());
+        branchMap.put("code", branch.getBranchCode());
+
+        // ✅ Address (group it, don’t scatter)
+        Map<String, Object> address = new HashMap<>();
+        address.put("line1", branch.getAddressLine1());
+        address.put("line2", branch.getAddressLine2());
+        address.put("line3", branch.getAddressLine3());
+        address.put("state", branch.getAddressState());
+        address.put("pin", branch.getAddressPin());
+
+        branchMap.put("address", address);
+
+
+        // ✅ Optional extras (safe)
+        branchMap.put("registerNumber", branch.getRegisterNumber());
+        branchMap.put("photo", "http://localhost:6060/image_public/" +branch.getPhotoFile());
+
+        response.put("branch", branchMap);
+
+        // officials
+        response.put("officials",
+                this.getBranchOfficials(
+                        branch.getNodeId()));
+        
+        
+
+
+        
+        List<Map<String, Object>> children = nodeRepository
+                .findByParentId(branch.getNodeId())
+                .stream()
+                .map(node -> {
+                    Map<String, Object> c = new HashMap<>();
+                    c.put("id", node.getNodeId());
+                    c.put("name", node.getNodeName());
+                    c.put("type", node.getNodeType());
+
+                    // optional (only if useful)
+                    c.put("state", node.getAddressState());
+                    c.put("photo", node.getPhotoFile());
+
+                    return c;
+                })
+                .toList();
+
+        response.put("children", children);
+
+
+        return response;
     }
 
 

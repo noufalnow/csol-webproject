@@ -77,4 +77,8 @@ public class NodeDTO extends BaseDTO {
     private String branchActivity;
     
     private String branchVision;
+    
+    private String branchCode;
+    
+    
 }

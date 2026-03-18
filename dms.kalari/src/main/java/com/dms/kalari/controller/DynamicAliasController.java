@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/{alias:^(?!css|js|images|webjars|static|assets|favicon\\.ico|public|error|logout|login).+}")
+@RequestMapping("/{alias:^(?!css|js|images|webjars|static|assets|favicon\\.ico|public|error|branch_public|image_public|logout|login).+}")
 public class DynamicAliasController {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicAliasController.class);

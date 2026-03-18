@@ -13,6 +13,7 @@ import java.util.List;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.dms.kalari.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "nodes")
@@ -49,7 +50,8 @@ public class Node extends BaseEntity {
     @NotNull(message = "Node status is required")
     private Short nodeStatus = 1;
 
-    @ManyToOne
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "node_id")
     private Node parent;
 
@@ -93,4 +95,11 @@ public class Node extends BaseEntity {
     
     @Column(name = "branch_vision", nullable = true, length = 500)
     private String branchVision;
+    
+    
+    @Column(name = "branch_code", nullable = true,length = 20)
+    private String branchCode;
+    //ALTER TABLE nodes ADD COLUMN branch_code VARCHAR(20 UNIQUE;
+    
+ 
 }

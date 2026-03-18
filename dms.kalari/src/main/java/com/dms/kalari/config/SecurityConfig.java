@@ -16,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import com.dms.kalari.config.CustomOAuth2FailureHandler;
 
 @Configuration
@@ -46,7 +49,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .authorizeHttpRequests(auth -> auth
             	.requestMatchers("/logout").permitAll() 	
-                .requestMatchers("/", "/public/**", "/login", "/login-error", "/verify/**", 
+                .requestMatchers("/", "/public/**","/branch_public/**","/image_public/**", "/login", "/login-error", "/verify/**", 
                         "/error","auth-error","/access-denied", "/health", "/actuator/health").permitAll()
                 .requestMatchers("/files/download/*").authenticated()
                 .requestMatchers("/files/certificate/*").authenticated()
@@ -86,6 +89,18 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+    
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/public/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET");
+            }
+        };
     }
 
     @Bean

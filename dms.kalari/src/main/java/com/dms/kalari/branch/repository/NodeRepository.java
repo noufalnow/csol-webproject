@@ -16,6 +16,9 @@ import java.util.Optional;
 @Repository
 public interface NodeRepository extends BaseRepository<Node, Long> {
 
+	@Query("SELECT n FROM Node n WHERE n.branchCode = :branchCode AND n.deleted = false")
+	Optional<Node> findByBranchCode(@Param("branchCode") String branchCode);
+	
 	@Query("SELECT n FROM Node n WHERE n.nodeId = :nodeId AND n.deleted = false")
 	Optional<Node> findByIdAndNotDeleted(@Param("nodeId") Long nodeId);
 
