@@ -501,24 +501,39 @@ public class NodeService implements BaseService<NodeDTO> {
                         branch.getNodeId()));
         
         
-
-
-        
         List<Map<String, Object>> children = nodeRepository
                 .findByParentId(branch.getNodeId())
                 .stream()
                 .map(node -> {
+
                     Map<String, Object> c = new HashMap<>();
+
                     c.put("id", node.getBranchRandomId());
                     c.put("name", node.getNodeName());
                     c.put("type", node.getNodeType());
                     c.put("code", node.getBranchCode());
 
-                    // optional (only if useful)
                     c.put("state", node.getAddressState());
                     c.put("photo", node.getPhotoFile());
 
+                    // ✅ ONLY FOR KALARI (child level)
+                    if (node.getNodeType() == Node.Type.KALARI) {
+
+                        c.put("officials",
+                                this.getBranchOfficials(node.getNodeId())
+                                    .stream()
+                                    .limit(1) // only first contact
+                                    .toList()
+                        );
+
+                        c.put("address", Map.of(
+                                "line1", node.getAddressLine1(),
+                                "state", node.getAddressState()
+                        ));
+                    }
+
                     return c;
+
                 })
                 .toList();
 
