@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -100,6 +101,9 @@ public class Node extends BaseEntity {
     @Column(name = "branch_code", nullable = true,length = 20)
     private String branchCode;
     //ALTER TABLE nodes ADD COLUMN branch_code VARCHAR(20 UNIQUE;
+    
+    @Column(name = "branch_random_id", nullable = false, unique = true)
+    private UUID branchRandomId;
     
  
 }

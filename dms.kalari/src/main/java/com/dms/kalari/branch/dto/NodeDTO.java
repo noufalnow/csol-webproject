@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
+import java.util.UUID;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.branch.entity.Node;
@@ -79,6 +81,8 @@ public class NodeDTO extends BaseDTO {
     private String branchVision;
     
     private String branchCode;
+    
+    private UUID branchRandomId;
     
     
 }

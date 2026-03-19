@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/")
@@ -35,17 +36,18 @@ public class PublicSiteController {
 	}
 
 	@CrossOrigin(origins = "*")
-	@GetMapping("branch_public/{code}")
-	public ResponseEntity<?> getBranchByCode(@PathVariable String code) {
+	@GetMapping("branch_public")
+	public ResponseEntity<?> getBranch(
+	        @RequestParam(required = false) String code,
+	        @RequestParam(required = false) UUID id
+	) {
 
-		Map<String, Object> branchData = nodeService.getFullBranchDetailsByCode(code);
+	    Map<String, Object> branchData = nodeService.getFullBranchDetails(code, id);
 
-		if (branchData == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(Map.of("status", "error", "message", "Branch not found"));
-		}
-
-		return ResponseEntity.ok(Map.of("status", "success", "data", branchData));
+	    return ResponseEntity.ok(Map.of(
+	            "status", "success",
+	            "data", branchData
+	    ));
 	}
 	
 	@CrossOrigin(origins = "*")

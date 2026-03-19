@@ -433,18 +433,38 @@ public class NodeService implements BaseService<NodeDTO> {
     	        .toList();
     }
     
-    
-    public Map<String, Object> getFullBranchDetailsByCode(String code) {
+    public Map<String, Object> getFullBranchDetails(String code, UUID id) {
 
-        Node branch = nodeRepository.findByBranchCode(code)
-                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        Node branch = resolveNode(code, id);
+
+        return buildBranchResponse(branch);
+    }
+    
+    private Node resolveNode(String code, UUID id) {
+
+        if (code != null) {
+            return nodeRepository.findByBranchCode(code)
+                    .orElseThrow(() -> new RuntimeException("Branch not found (code)"));
+        }
+
+        if (id != null) {
+            return nodeRepository.findByBranchRandomId(id)
+                    .orElseThrow(() -> new RuntimeException("Branch not found (id)"));
+        }
+
+        throw new IllegalArgumentException("Either code or id must be provided");
+    }
+    
+    
+    public Map<String, Object> buildBranchResponse(Node branch) {
+
 
         Map<String, Object> response = new HashMap<>();
 
         // basic
         Map<String, Object> branchMap = new HashMap<>();
 
-        branchMap.put("id", branch.getNodeId());
+        branchMap.put("id", branch.getBranchRandomId());
         branchMap.put("name", branch.getNodeName());
         branchMap.put("type", branch.getNodeType());
         branchMap.put("code", branch.getBranchCode());
@@ -489,7 +509,7 @@ public class NodeService implements BaseService<NodeDTO> {
                 .stream()
                 .map(node -> {
                     Map<String, Object> c = new HashMap<>();
-                    c.put("id", node.getNodeId());
+                    c.put("id", branch.getBranchRandomId());
                     c.put("name", node.getNodeName());
                     c.put("type", node.getNodeType());
                     c.put("code", node.getBranchCode());

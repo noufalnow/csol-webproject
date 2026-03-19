@@ -12,9 +12,14 @@ import com.dms.kalari.common.BaseRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface NodeRepository extends BaseRepository<Node, Long> {
+	
+	
+	@Query("SELECT n FROM Node n WHERE n.branchRandomId = :branchRandomId AND n.deleted = false")
+	Optional<Node> findByBranchRandomId(@Param("branchRandomId") UUID branchRandomId);
 
 	@Query("SELECT n FROM Node n WHERE n.branchCode = :branchCode AND n.deleted = false")
 	Optional<Node> findByBranchCode(@Param("branchCode") String branchCode);
