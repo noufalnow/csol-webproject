@@ -509,7 +509,7 @@ public class NodeService implements BaseService<NodeDTO> {
                 .stream()
                 .map(node -> {
                     Map<String, Object> c = new HashMap<>();
-                    c.put("id", branch.getBranchRandomId());
+                    c.put("id", node.getBranchRandomId());
                     c.put("name", node.getNodeName());
                     c.put("type", node.getNodeType());
                     c.put("code", node.getBranchCode());
