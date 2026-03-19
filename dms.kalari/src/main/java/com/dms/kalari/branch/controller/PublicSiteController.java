@@ -41,6 +41,10 @@ public class PublicSiteController {
 	        @RequestParam(required = false) String code,
 	        @RequestParam(required = false) UUID id
 	) {
+		
+	    if (id == null && code== null) {
+	        return ResponseEntity.badRequest().build();
+	    }
 
 	    Map<String, Object> branchData = nodeService.getFullBranchDetails(code, id);
 
@@ -53,8 +57,11 @@ public class PublicSiteController {
 	@CrossOrigin(origins = "*")
 	@GetMapping("image_public/{id}")
 	public ResponseEntity<InputStreamResource> viewThumbnail(@PathVariable Long id) throws IOException {
+		
 
-	    //log.info("Thumbnail request for id={}", id);
+	    if (id == null) {
+	        return ResponseEntity.badRequest().build();
+	    }
 
 	    CoreFile file = fileRepository.findById(id).orElse(null);
 
