@@ -493,7 +493,7 @@ public class NodeService implements BaseService<NodeDTO> {
         about.put("branch_vision", branch.getBranchVision());
         about.put("branch_history", branch.getBranchHistory());
         
-        branchMap.put("anout", about);
+        branchMap.put("about", about);
 
         // ✅ Optional extras (safe)
         branchMap.put("registerNumber", branch.getRegisterNumber());
