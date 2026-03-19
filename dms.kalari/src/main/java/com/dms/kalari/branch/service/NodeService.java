@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -435,24 +436,29 @@ public class NodeService implements BaseService<NodeDTO> {
     
     public Map<String, Object> getFullBranchDetails(String code, UUID id) {
 
-        Node branch = resolveNode(code, id);
+        Optional<Node> branchOpt = resolveNode(code, id);
 
-        return buildBranchResponse(branch);
+        if (branchOpt.isEmpty()) {
+            return Map.of(
+                    "status", "not_found",
+                    "message", "Branch not found"
+            );
+        }
+
+        return buildBranchResponse(branchOpt.get());
     }
     
-    private Node resolveNode(String code, UUID id) {
+    private Optional<Node> resolveNode(String code, UUID id) {
 
         if (code != null) {
-            return nodeRepository.findByBranchCode(code)
-                    .orElseThrow(() -> new RuntimeException("Branch not found (code)"));
+            return nodeRepository.findByBranchCode(code);
         }
 
         if (id != null) {
-            return nodeRepository.findByBranchRandomId(id)
-                    .orElseThrow(() -> new RuntimeException("Branch not found (id)"));
+            return nodeRepository.findByBranchRandomId(id);
         }
 
-        throw new IllegalArgumentException("Either code or id must be provided");
+        return Optional.empty();
     }
     
     
