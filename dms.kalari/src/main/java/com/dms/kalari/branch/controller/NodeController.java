@@ -79,6 +79,13 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 		return "fragments/nodes/list";
 	}
+	
+	public static String capitalize(Node.Type input) {
+	    if (input == null) return null;
+
+	    String v = input.name().toLowerCase();
+	    return Character.toUpperCase(v.charAt(0)) + v.substring(1);
+	}
 
 	@GetMapping({ "/nodelist", "/nodelist/{id}" })
 	public String listNodesByParent(@PathVariable(value = "id", required = false) Long nodeId,
@@ -115,6 +122,10 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	    model.addAttribute("nodeName", node != null ? node.getNodeName() : principal.getNodeName());
 	    model.addAttribute("nodeType", node != null ? node.getNodeType() : principal.getNodeType());
 	    model.addAttribute("nextNodeType", service.getNextNodeType(nodeId));
+	    model.addAttribute(
+	    	    "nextNodeType",
+	    	    capitalize(service.getNextNodeType(nodeId))
+	    	);
 
 		List<NodeDTO> nodeList = service.findByParentId(nodeId);
 
@@ -129,6 +140,8 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 	    return "fragments/nodes/nodes";
 	}
+	
+
 
 
 	@GetMapping("/node/view/{id}")
