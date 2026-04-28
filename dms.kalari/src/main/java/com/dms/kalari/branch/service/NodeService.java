@@ -419,6 +419,7 @@ public class NodeService implements BaseService<NodeDTO> {
     	            m.put("name", u.getUserFname() + " " + u.getUserLname());
     	            m.put("designation", u.getDesignation().getDesigName());
     	            m.put("phone", u.getMobileNumber());
+    	            m.put("offdesc", u.getOfficialDescription());
     	            m.put("email", u.getUserEmail());
 
     	            // ✅ photo (real file mapping)
