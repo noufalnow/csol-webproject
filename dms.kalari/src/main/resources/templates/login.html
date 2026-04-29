@@ -261,11 +261,15 @@ body {
 }
 
 .ssl-seal {
-	position: fixed; /* Fix to viewport */
-	bottom: 10px; /* Distance from bottom */
-	left: 50%; /* Start from horizontal center */
-	transform: translateX(-50%); /* Adjust to truly center */
-	z-index: 9999; /* On top of other content */
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+
+    z-index: 9999;
 }
 
 .ssl-seal img {
