@@ -273,6 +273,29 @@ body {
 	height: 32px;
 	display: block;
 }
+
+.footer-links {
+    font-size: 0.95rem;              /* slightly bigger than small */
+    color: rgba(255,255,255,0.75);  /* soft white */
+    
+    background: rgba(0,0,0,0.35);   /* 🔥 key: overlay for readability */
+    backdrop-filter: blur(4px);     /* smooth glass effect */
+    
+    padding: 10px 14px;
+    border-radius: 8px;
+    
+    display: inline-block;
+}
+
+.footer-links a {
+    color: rgba(255,255,255,0.95);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -316,14 +339,39 @@ body {
 				</div>
 			</div>
 		</div>
+		
+		
+
 
 
 		<!-- PositiveSSL Trust Seal -->
 		<div class="ssl-seal">
-			<a href="https://www.positivessl.com/" target="_blank"> <img
+			
+			<div class="text-center mt-4 footer-links">
+
+			    <p class="mb-2">
+			        🚧 Website beta version under development:
+			        <a href="https://www.indiankalaripayattufederation.com/demo.php" 
+			           target="_blank">
+			            Visit Demo
+			        </a>
+			    </p>
+
+			    <p class="mb-0">
+			        ⚡ Powered by 
+			        <a href="https://www.creativeboard.net/" 
+			           target="_blank">
+			            CreativeBoard
+			        </a>
+			    </p>
+
+			</div>
+			
+			
+			<!--<a href="https://www.positivessl.com/" target="_blank"> <img
 				src="https://www.positivessl.com/images/seals/positivessl_trust_seal_lg_222x54.png"
 				alt="Positive SSL">
-			</a>
+			</a>-->
 		</div>
 
 
