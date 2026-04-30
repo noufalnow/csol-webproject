@@ -3,6 +3,9 @@ package com.dms.kalari.config;
 import com.dms.kalari.security.PrivilegeChecker;
 import com.dms.kalari.security.CustomUserDetailsService;
 import com.dms.kalari.security.RequestAuthorizationManager;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -66,6 +69,22 @@ public class SecurityConfig {
                 .passwordParameter("password")
                 .permitAll()
             )*/
+            
+            
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+
+                    String ajaxHeader = request.getHeader("X-Requested-With");
+
+                    if ("XMLHttpRequest".equals(ajaxHeader)) {
+                        // 🔴 AJAX → return 401 instead of redirect
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    } else {
+                        // 🟢 normal browser → redirect to login
+                        response.sendRedirect("/login");
+                    }
+                })
+            )
             .oauth2Login(oauth2 -> oauth2
             		.loginPage("/login") 
             	    .userInfoEndpoint(userInfo -> userInfo

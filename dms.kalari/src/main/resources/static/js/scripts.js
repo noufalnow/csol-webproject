@@ -510,7 +510,43 @@ function loadContent(url, targetSelector,form) {
 	
 		  console.error('loadContent error for', url, err);
 		}*/
+		
+		
+
+		error: function (xhr, status, error) {
+
+		    console.log("AJAX ERROR:", xhr.status, status);
+
+		    // 🔴 CASE 1: Redirect happened but failed (your case)
+		    if (xhr.status === 0 || status === "error") {
+		        handleSessionExpired();
+		        return;
+		    }
+
+		    // 🔴 CASE 2: If somehow 302 is visible
+		    if (xhr.status === 302) {
+		        handleSessionExpired();
+		        return;
+		    }
+
+		    // 🔴 CASE 3: If backend ever fixed (ideal future)
+		    if (xhr.status === 401) {
+		        handleSessionExpired();
+		        return;
+		    }
+		}
 	});
+}
+
+
+function handleSessionExpired() {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Session Expired',
+        text: 'Please login again'
+    }).then(() => {
+        window.location.href = "/login";
+    });
 }
 
 
