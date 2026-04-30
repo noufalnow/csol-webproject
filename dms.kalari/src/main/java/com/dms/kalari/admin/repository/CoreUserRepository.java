@@ -74,6 +74,7 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     	       "WHERE u.userNode.id = :nodeId " +
     	       "AND u.userType = :userType " +
     	       "AND u.deleted = false " +
+    	       "AND u.userStatus = 1 " +
     	       "ORDER BY u.userFname ASC")
     	List<CoreUser> findBranchOfficials(
     	        @Param("nodeId") Long nodeId,
