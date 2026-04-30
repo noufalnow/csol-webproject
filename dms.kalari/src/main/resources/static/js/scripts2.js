@@ -529,10 +529,10 @@ function loadContent(url, targetSelector,form) {
 			    return;
 			}
 			
-		    if (xhr.status === 0 ) {
+		    /*if (xhr.status === 0 ) {
 		        handleSessionExpired();
 		        return;
-		    }
+		    }*/
 
 		    // 🔴 CASE 2: If somehow 302 is visible
 		    if (xhr.status === 302) {
