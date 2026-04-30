@@ -518,7 +518,18 @@ function loadContent(url, targetSelector,form) {
 		    console.log("AJAX ERROR:", xhr.status, status);
 
 		    // 🔴 CASE 1: Redirect happened but failed (your case)
-		    if (xhr.status === 0 || status === "error") {
+			
+			
+			if (xhr.status === 500) {
+			    Swal.fire({
+			        icon: 'error',
+			        title: 'Server Error',
+			        text: 'Internal server error.'
+			    });
+			    return;
+			}
+			
+		    if (xhr.status === 0 ) {
 		        handleSessionExpired();
 		        return;
 		    }
