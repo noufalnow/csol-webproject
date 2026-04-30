@@ -102,8 +102,46 @@ public class Node extends BaseEntity {
     private String branchCode;
     //ALTER TABLE nodes ADD COLUMN branch_code VARCHAR(20 UNIQUE;
     
-    @Column(name = "branch_random_id", nullable = false, unique = true)
+    @Column(name = "branch_random_id", insertable = false, updatable = false, nullable = false, unique = true)
     private UUID branchRandomId;
     
  
 }
+
+
+/*
+ * 
+ * What you should do (clean, stable setup)
+
+If this field is used like an ID (which it is in your API), then stop weakening it.
+
+🔹 Step 1 — keep DB default
+DEFAULT gen_random_uuid()
+
+Step 2 — enforce rules in DB
+
+ALTER TABLE public.nodes
+ALTER COLUMN branch_random_id SET NOT NULL;
+
+ALTER TABLE public.nodes
+ADD CONSTRAINT uq_branch_random_id UNIQUE (branch_random_id);
+
+Step 3 — keep your Hibernate config
+@Column(name = "branch_random_id", insertable = false, updatable = false, nullable = false, unique = true)
+private UUID branchRandomId;
+
+
+UPDATE public.nodes
+SET branch_random_id = gen_random_uuid()
+WHERE branch_random_id IS NULL;
+
+
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
