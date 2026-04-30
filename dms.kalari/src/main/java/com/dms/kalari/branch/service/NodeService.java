@@ -509,7 +509,7 @@ public class NodeService implements BaseService<NodeDTO> {
         
         
         List<Map<String, Object>> children = nodeRepository
-                .findByParentId(branch.getNodeId())
+                .findByParentId(branch.getNodeId(),(short)1)
                 .stream()
                 .map(node -> {
 

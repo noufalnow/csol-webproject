@@ -33,6 +33,15 @@ public interface NodeRepository extends BaseRepository<Node, Long> {
 
 	@Query("SELECT n FROM Node n WHERE n.parent.nodeId = :parentId AND n.deleted = false " + "ORDER BY n.nodeName ASC")
 	List<Node> findByParentId(@Param("parentId") Long parentId);
+	
+	
+	@Query("SELECT n FROM Node n " +
+		       "WHERE n.parent.nodeId = :parentId " +
+		       "AND n.deleted = false " +
+		       "AND n.nodeStatus = :status " +
+		       "ORDER BY n.nodeName ASC")
+		List<Node> findByParentId(@Param("parentId") Long parentId,
+		                                   @Param("status") Short status);
 
 	@Query("SELECT n FROM Node n WHERE n.parent IS NULL AND n.deleted = false")
 	List<Node> findRootNodes();
