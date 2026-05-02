@@ -516,6 +516,11 @@ function loadContent(url, targetSelector,form) {
 		error: function (xhr, status, error) {
 
 		    console.log("AJAX ERROR:", xhr.status, status);
+			
+			/*console.log("STATUS:", xhr.status);
+			console.log("STATUS TEXT:", xhr.statusText);
+			console.log("ERROR:", error);
+			console.log("RESPONSE:", xhr.responseText);*/
 
 		    // 🔴 CASE 1: Redirect happened but failed (your case)
 			

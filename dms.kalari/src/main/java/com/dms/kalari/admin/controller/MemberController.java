@@ -117,6 +117,9 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 			model.addAttribute("isChild", true);
 		else
 			model.addAttribute("isChild", false);
+		
+		model.addAttribute("MyNodeType", principal.getNodeType());
+		
 
 		NodeDTO node = nodeService.findById(nodeId);
 		Node.Type nodeType = node.getNodeType();

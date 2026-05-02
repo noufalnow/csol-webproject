@@ -267,7 +267,9 @@
 		</div>
 	</div>
 	<!-- Right column -->
-	<div class="col-12 col-md-9">
+	<div th:class="${#strings.equals(nodeType, 'KALARI')} 
+	        ? 'col-12 col-md-12' 
+	        : 'col-12 col-md-9'">
 		<div id="users_target" class="content-column"></div>
 	</div>
 

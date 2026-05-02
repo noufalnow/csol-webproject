@@ -256,6 +256,7 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 
 		model.addAttribute("userType", principal.getUserType());
 		model.addAttribute("nodeType", principal.getNodeType());
+		model.addAttribute("MyNodeType", principal.getNodeType());
 
 		Map<String, Object> treeData = service.getSubTreeFromParent((Long) principal.getInstId());
 
