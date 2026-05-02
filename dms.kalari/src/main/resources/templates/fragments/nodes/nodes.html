@@ -151,7 +151,15 @@
 					<td>
 					    <!-- Show plain label if KALARI -->
 					    <span th:if="${node.nodeTypeLabel == 'KALARI'}"
-					          th:text="${node.nodeName}">
+					          >
+							  
+							  
+							  <a href="#"
+							     th:text="${node.nodeName}"
+							     th:onclick="'loadContent(`/officials_bynode/' + ${xorMaskHelper.mask(node.nodeId)} + '`, \'#users_target\'); return false;'">
+							  </a>
+							  
+							  
 					    </span>
 
 					    <!-- Show link only if NOT KALARI AND user has permission -->
@@ -193,6 +201,14 @@
 			</tbody>
 
 		</table>
+		<div 		th:if="${!(nodeType == MyNodeType or MyNodeType == 'KALARI')
+		        and #authorization.expression('hasAuthority(''PRIV_branch_nodelist'')')}" class="col-12 col-md d-flex justify-content-end">
+		    <a href="#"
+		       class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
+		       th:onclick="'loadContent(\'/branch_nodelist/' + ${MyParentId} + '\', \'#users_target\'); return false;'">
+		        <i class="fas fa-arrow-left"></i> Back to Parent
+		    </a>
+		</div>
 	</div>
 
 </div>

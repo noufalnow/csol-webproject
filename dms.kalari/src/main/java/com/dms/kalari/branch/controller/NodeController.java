@@ -133,6 +133,9 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("parentId", nodeId);
 
 	    model.addAttribute("nodeList", nodeList);
+	    model.addAttribute("MyNodeType", principal.getNodeType());
+	    model.addAttribute("MyParentId",
+		        node.getParentId() != null ? XorMaskHelper.mask(node.getParentId()) : "");
 
 	    model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
 	    model.addAttribute("pageTitle", "Associations");

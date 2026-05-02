@@ -120,7 +120,12 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 
 		model.addAttribute("nodeName", node.getNodeName());
 		model.addAttribute("nodeType", nodeType.name());
-        model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+		model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+		
+		    model.addAttribute("MyNodeType", principal.getNodeType());
+		    model.addAttribute("MyParentId",
+			        node.getParentId() != null ? XorMaskHelper.mask(node.getParentId()) : "");
+		
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
 
