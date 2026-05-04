@@ -19,6 +19,7 @@ import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
+import com.dms.kalari.events.repository.EventRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
 import java.io.IOException;
@@ -45,13 +46,15 @@ public class NodeService implements BaseService<NodeDTO> {
 	private final NodeMapper nodeMapper;
 	private final CoreFileRepository coreFileRepository;
 	private final CoreUserRepository coreUserRepository;
+	private final EventRepository eventRepository;
 
 	@Autowired
-	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository,CoreUserRepository coreUserRepository) {
+	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository,CoreUserRepository coreUserRepository,EventRepository eventRepository) {
 		this.nodeRepository = nodeRepository;
 		this.nodeMapper = nodeMapper;
 		this.coreFileRepository = coreFileRepository;
 		this.coreUserRepository = coreUserRepository;
+		this.eventRepository = eventRepository;
 	}
 
 	@Override
@@ -435,6 +438,29 @@ public class NodeService implements BaseService<NodeDTO> {
     	        .toList();
     }
     
+    public List<Map<String, Object>> getBranchEvents(Long nodeId) {
+
+	    return eventRepository
+	            .findRecentAndUpcomingEventsByHost(nodeId)
+	            .stream()
+	            .map(e -> {
+	                Map<String, Object> m = new HashMap<>();
+
+	                //m.put("eventId", e.getEventId());
+	                m.put("eventName", e.getEventName());
+	                //m.put("eventHost", e.getEventHost().name());
+	                //m.put("hostNodeId", e.getHostNode().getNodeId());
+	                m.put("eventYear", e.getEventYear());
+	                m.put("startDate", e.getEventPeriodStart());
+	                m.put("endDate", e.getEventPeriodEnd());
+	                m.put("venue", e.getEventVenue());
+	                m.put("officialPhone", e.getEventOfficialPhone());
+
+	                return m;
+	            })
+	            .toList();
+	}
+    
     public Map<String, Object> getFullBranchDetails(String code, UUID id) {
 
         Optional<Node> branchOpt = resolveNode(code, id);
@@ -505,6 +531,11 @@ public class NodeService implements BaseService<NodeDTO> {
         // officials
         response.put("officials",
                 this.getBranchOfficials(
+                        branch.getNodeId()));
+        
+        
+        response.put("events",
+                this.getBranchEvents(
                         branch.getNodeId()));
         
         

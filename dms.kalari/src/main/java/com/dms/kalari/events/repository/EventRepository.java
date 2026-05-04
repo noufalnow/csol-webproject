@@ -58,6 +58,16 @@ public interface EventRepository extends BaseRepository<Event, Long> {
     	""")
     	Optional<Event> findByIdWithItemsByCategory(@Param("eventId") Long eventId,
     	                                            @Param("category") EventItemMap.Category category);
+    
+    
+    @Query(value = """
+	    SELECT * FROM events e
+	    WHERE e.deleted = false
+	    AND e.event_host_id = :hostId
+	    AND e.event_period_end >= CURRENT_DATE - INTERVAL '7 days'
+	    AND e.event_period_start <= CURRENT_DATE + INTERVAL '1 month'
+	""", nativeQuery = true)
+	List<Event> findRecentAndUpcomingEventsByHost(@Param("hostId") Long hostId);
 
 
     
