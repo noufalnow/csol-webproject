@@ -137,38 +137,95 @@
 		</thead>
 		<tbody>
 			<tr th:each="user, iterStat : ${users}">
-				<th scope="row" th:text="${iterStat.count}">1</th>
-				<td th:text="${user.userFname} + ' ' + ${user.userLname}">John
-					Doe</td>
-				<td>
-					<div
-						class="d-flex flex-column flex-lg-row gap-2 align-items-center">
 
-						<!-- View Button -->
-						<a
-							class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-							th:onclick="'loadContent(\'/members_details/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
-							<i class="fas fa-eye"
-							th:classappend="${user.userStatus == 1} ? ' text-success' : ' text-danger'"></i>
-							<span class="ms-1">View</span>
-						</a>
+			    <td colspan="3" class="p-2 border-0">
 
-						<!-- Edit Button -->
-						<a
-							class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-							th:if="${#authorization.expression('hasAuthority(''PRIV_members_edit'')')}"
-							th:onclick="'loadContent(\'/members_edit/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
-							<i class="fas fa-edit"></i> <span class="ms-1">Edit</span>
-						</a>
-						
-					    <button class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center px-2 py-1 disabled"
-					       th:if="${user.verificationStatus == 1}">
-					        <i class="fas fa-check"></i> <span class="ms-1">Verified</span>
-					    </button>
+			        <div class="card shadow-sm border-0 mb-3 member-card">
 
-					</div>
-				</td>
+			            <div class="card-body">
 
+			                <div class="d-flex align-items-start">
+
+			                    <!-- PHOTO -->
+			                    <div class="me-3 flex-shrink-0">
+
+			                        <img
+			                            th:src="'https://app.indiankalaripayattufederation.com/image_public/' + ${user.photoFile}"
+			                            onerror="this.src='/images/default-user.png'"
+			                            class="member-photo"
+			                            alt="Member Photo">
+
+			                    </div>
+
+			                    <!-- CONTENT -->
+								<div class="flex-grow-1">
+
+								    <!-- TOP ROW -->
+								    <div class="d-flex justify-content-between align-items-start gap-2">
+
+								        <!-- LEFT SIDE -->
+								        <div class="flex-grow-1">
+
+								            <h5 class="mb-1 fw-bold text-dark">
+								                <span th:text="${user.userFname}"></span>
+								                <span th:text="${user.userLname}"></span>
+								            </h5>
+
+								            <div class="text-muted small mb-2">
+								                Participant ID :
+								                <span th:text="${user.userId}"></span>
+								            </div>
+
+								            <!-- VERIFIED -->
+								            <div th:if="${user.verificationStatus == 1}">
+								                <span class="badge bg-success px-3 py-2">
+								                    <i class="fas fa-check-circle"></i>
+								                    Verified Participant
+								                </span>
+								            </div>
+
+								        </div>
+
+								        <!-- RIGHT SIDE ACTIONS -->
+								        <div class="d-flex flex-column flex-sm-row gap-2 align-items-end">
+
+								            <!-- VIEW -->
+								            <a class="btn btn-sm btn-outline-primary"
+
+								               th:onclick="'loadContent(\'/members_details/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
+
+								                <i class="fas fa-eye"
+								                   th:classappend="${user.userStatus == 1} ? ' text-success' : ' text-danger'"></i>
+
+								                <span class="ms-1">View</span>
+
+								            </a>
+
+								            <!-- EDIT -->
+								            <a class="btn btn-sm btn-outline-dark"
+
+								               th:if="${#authorization.expression('hasAuthority(''PRIV_members_edit'')')}"
+
+								               th:onclick="'loadContent(\'/members_edit/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
+
+								                <i class="fas fa-edit"></i>
+								                <span class="ms-1">Edit</span>
+
+								            </a>
+
+								        </div>
+
+								    </div>
+
+								</div>
+
+			                </div>
+
+			            </div>
+
+			        </div>
+
+			    </td>
 
 			</tr>
 			<!-- Empty state -->

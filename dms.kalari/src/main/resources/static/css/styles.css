@@ -585,3 +585,78 @@ div:where(.swal2-container) {
   z-index: 1090 !important;
 }
 
+
+
+
+.official-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.official-photo {
+    width: 98px;
+    height: 98px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 3px solid #dc3545;
+    background: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+
+    .official-photo {
+        width: 90px;
+        height: 90px;
+    }
+
+    .official-card .btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .official-card h5 {
+        font-size: 16px;
+    }
+}
+
+
+.member-card {
+    border-radius: 14px;
+    overflow: hidden;
+    transition: 0.2s ease;
+}
+
+.member-card:hover {
+    transform: translateY(-2px);
+}
+
+.member-photo {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 3px solid #dc3545;
+    background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+
+    .member-photo {
+        width: 90px;
+        height: 90px;
+    }
+
+    .member-card h5 {
+        font-size: 16px;
+    }
+
+    .member-card .btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .member-card .badge {
+        font-size: 11px;
+    }
+}
+

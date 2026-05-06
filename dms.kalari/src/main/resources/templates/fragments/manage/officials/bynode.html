@@ -131,33 +131,89 @@
 		</thead>
 		<tbody>
 			<tr th:each="user, iterStat : ${users}">
-				<th scope="row" th:text="${iterStat.count}">1</th>
-				<td th:text="${user.userFname} + ' ' + ${user.userLname}">John
-					Doe</td>
-				<td th:text="${user.designation.desigName}">johndoe</td>
-<td>
-	<div class="d-flex flex-column flex-lg-row gap-2 align-items-center">
 
-		<!-- View Button -->
-		<a class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-		   th:onclick="'loadContent(\'/officials_details/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
-			<i class="fas fa-eye"
-			   th:classappend="${user.userStatus == 1} ? ' text-success' : ' text-danger'"></i>
-			<span class="ms-1">View</span>
-		</a>
+			    <td colspan="4" class="p-2 border-0">
 
-		<!-- Edit Button -->
-		<a class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-		   th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_officials_edit'')')) 
-                or (isChild and #authorization.expression('hasAuthority(''PRIV_officials_edit_child'')'))}"
-		   th:onclick="'loadContent(\'/officials_edit/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
-			<i class="fas fa-edit"></i>
-			<span class="ms-1">Edit</span>
-		</a>
+			        <div class="card shadow-sm border-0 mb-3 official-card">
 
-	</div>
-</td>
+			            <div class="card-body">
 
+			                <div class="d-flex align-items-start">
+
+			                    <!-- PHOTO -->
+			                    <div class="me-3 flex-shrink-0">
+
+			                        <img
+			                            th:src="'https://app.indiankalaripayattufederation.com/image_public/' + ${user.photoFile}"
+			                            onerror="this.src='/images/default-user.png'"
+			                            class="official-photo"
+			                            alt="Official Photo">
+
+			                    </div>
+
+			                    <!-- DETAILS -->
+								<div class="flex-grow-1">
+
+								    <!-- TOP ROW -->
+								    <div class="d-flex justify-content-between align-items-start gap-2">
+
+								        <!-- LEFT -->
+								        <div class="flex-grow-1">
+
+								            <h5 class="mb-1 fw-bold text-dark">
+								                <span th:text="${user.userFname}"></span>
+								                <span th:text="${user.userLname}"></span>
+								            </h5>
+
+								            <div class="mb-2">
+								                <span class="badge bg-danger"
+								                      th:text="${user.designation.desigName}">
+								                </span>
+								            </div>
+
+								        </div>
+
+								        <!-- RIGHT ACTIONS -->
+								        <div class="d-flex flex-column flex-sm-row gap-2 align-items-end">
+
+								            <!-- VIEW -->
+								            <a class="btn btn-sm btn-outline-primary"
+
+								               th:onclick="'loadContent(\'/officials_details/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
+
+								                <i class="fas fa-eye"
+								                   th:classappend="${user.userStatus == 1} ? ' text-success' : ' text-danger'"></i>
+
+								                <span class="ms-1">View</span>
+
+								            </a>
+
+								            <!-- EDIT -->
+								            <a class="btn btn-sm btn-outline-dark"
+
+								               th:if="${(!isChild and #authorization.expression('hasAuthority(''PRIV_officials_edit'')')) 
+								               or (isChild and #authorization.expression('hasAuthority(''PRIV_officials_edit_child'')'))}"
+
+								               th:onclick="'loadContent(\'/officials_edit/' + ${xorMaskHelper.mask(user.userId)} + '\', \'modal\')'">
+
+								                <i class="fas fa-edit"></i>
+								                <span class="ms-1">Edit</span>
+
+								            </a>
+
+								        </div>
+
+								    </div>
+
+								</div>
+
+			                </div>
+
+			            </div>
+
+			        </div>
+
+			    </td>
 
 			</tr>
 			<tr th:if="${#lists.isEmpty(users)}">
@@ -176,3 +232,10 @@
 	</div>
 </div>
 </div>
+
+<style>
+	
+
+
+
+</style>
