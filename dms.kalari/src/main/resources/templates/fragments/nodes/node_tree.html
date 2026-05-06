@@ -419,9 +419,13 @@ function toggleTreeNode(event, nodeElement) {
     
     $(document).ready(function() {
         if (SCREEN_WIDTH <= 430) {
-           
+			
+			collapseAllNodes();
         }
-		collapseAllNodes();
+		else{
+			collapseExceptLeafeNodes();
+		}
+		
     });
 
 

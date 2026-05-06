@@ -327,7 +327,7 @@
 
 
 
-/*function collapseAllNodes() {
+function collapseAllNodes() {
 	  let count = 0;
 
 	  document.querySelectorAll('.tree-node').forEach(node => {
@@ -353,71 +353,41 @@
 	  });
 
 	  return `Collapsed ${count} nodes`;
-}*/
-
-function collapseAllNodes() {
-    let count = 0;
-
-    // Find the root node
-    const rootNode = document.querySelector('ul.tree > li > div > .tree-node');
-    if (!rootNode) return `Collapsed ${count} nodes`;
-
-    // Find the ul.tree-children directly under the root
-    const rootChildrenUl = rootNode.closest('li').querySelector(':scope > div > ul.tree-children');
-    if (!rootChildrenUl) return `Collapsed ${count} nodes`;
-
-    // Collapse only the immediate children of root (first level)
-    rootChildrenUl.querySelectorAll(':scope > li > div > .tree-node').forEach(node => {
-        const toggleBtn = node.querySelector('.toggle-btn');
-        if (!toggleBtn) return;
-
-        const childrenUl = node.closest('li').querySelector(':scope > div > ul.tree-children');
-        if (!childrenUl) return;
-
-        // Collapse this first-level node
-        childrenUl.classList.remove('expanded');
-        childrenUl.classList.add('collapsed');
-
-        toggleBtn.classList.remove('open');
-        toggleBtn.classList.add('closed');
-
-        const icon = toggleBtn.querySelector('i');
-        if (icon) {
-            icon.classList.remove('fa-folder-open');
-            icon.classList.add('fa-folder');
-        }
-
-        // ✅ Recursively collapse ALL descendants inside this node
-        collapseDescendants(childrenUl);
-
-        count++;
-    });
-
-    return `Collapsed ${count} nodes`;
 }
 
-// Collapses all nested nodes inside a given ul, resetting their state
-function collapseDescendants(ul) {
-    ul.querySelectorAll('.tree-node').forEach(node => {
-        const toggleBtn = node.querySelector('.toggle-btn');
-        const childrenUl = node.closest('li').querySelector(':scope > div > ul.tree-children');
 
-        if (childrenUl) {
-            childrenUl.classList.remove('expanded');
-            childrenUl.classList.add('collapsed');
-        }
+function collapseExceptLeafeNodes() {
+    let count = 0;
 
+    document.querySelectorAll('ul.tree-children').forEach(ul => {
+        // Check if every direct tree-node child is a KALARI
+        const childNodes = ul.querySelectorAll(':scope > li > div > .tree-node');
+        const allKalari = childNodes.length > 0 && 
+                          [...childNodes].every(n => n.classList.contains('KALARI'));
+
+        if (!allKalari) return;
+
+        // Collapse this ul
+        ul.classList.remove('expanded');
+        ul.classList.add('collapsed');
+
+        // Update the parent toggle button
+        const parentNode = ul.closest('li')?.querySelector('.tree-node');
+        const toggleBtn = parentNode?.querySelector('.toggle-btn');
         if (toggleBtn) {
             toggleBtn.classList.remove('open');
             toggleBtn.classList.add('closed');
-
             const icon = toggleBtn.querySelector('i');
             if (icon) {
                 icon.classList.remove('fa-folder-open');
                 icon.classList.add('fa-folder');
             }
         }
+
+        count++;
     });
+
+    return `Collapsed ${count} nodes`;
 }
 
 
