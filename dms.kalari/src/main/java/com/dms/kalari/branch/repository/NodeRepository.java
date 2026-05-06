@@ -93,8 +93,10 @@ public interface NodeRepository extends BaseRepository<Node, Long> {
 			       n.node_name AS nodeName,
 			       n.node_type AS nodeType,
 			       n.node_status AS nodeStatus,
-			       lvl
+			       lvl,
+			       cchilds
 			FROM node_hierarchy n
+			left join (select count(*) as cchilds, parent_id as cparent from nodes group by parent_id) nchild on nchild.cparent = n.node_id
 			ORDER BY lvl, parent_id, node_name;
 
 			    	    """, nativeQuery = true)

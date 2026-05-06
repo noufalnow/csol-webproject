@@ -221,7 +221,7 @@
 				<th:block
 					th:with="
     nodeId = ${node != null ? node.nodeId : null},
-    nodeName = ${node != null ? node.nodeName : ''},
+    nodeName = ${node != null ? node.nodeName +  (node.cchilds != null ? ' (' + node.cchilds + ')': '')  : ''},
     nodeType = ${node != null ? node.nodeType : ''},
     hasChildren = ${grouped != null && nodeId != null && grouped.containsKey(nodeId) && !grouped.get(nodeId).isEmpty()}
 ">

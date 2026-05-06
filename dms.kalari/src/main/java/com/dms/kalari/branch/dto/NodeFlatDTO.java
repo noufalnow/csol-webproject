@@ -7,4 +7,5 @@ public interface NodeFlatDTO {
     String getNodeType();
     Integer getLvl();
     Integer getNodeStatus();
+    Integer getCchilds();
 }
