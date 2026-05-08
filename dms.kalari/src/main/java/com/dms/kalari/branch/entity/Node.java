@@ -80,7 +80,7 @@ public class Node extends BaseEntity {
     @Size(min = 6, max = 6, message = "PIN must be exactly 6 digits")
     private String addressPin;
 
-    @Column(name = "register_number", length = 20, nullable = true)
+    @Column(name = "register_number", length = 20, nullable = true, unique = true)
     @NotBlank(message = "Register number is mandatory")
     @Size(max = 20, message = "Register number cannot exceed 20 characters")
     private String registerNumber;
