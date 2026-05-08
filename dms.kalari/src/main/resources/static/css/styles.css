@@ -413,6 +413,7 @@ footer {
   color: #222;
   background: #f8f9fa;
   border-radius: 5px;
+  margin-top: 0px;
 }
 .gender-heading {
   font-weight: bold;

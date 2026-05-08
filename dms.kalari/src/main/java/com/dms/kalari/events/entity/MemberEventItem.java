@@ -73,7 +73,8 @@ public class MemberEventItem extends BaseEntity {
     private String memberEventItemName;
     
     @Column(name = "mei_score")
-    private Integer memberEventScore;
+    private Double memberEventScore;
+    
     
     @Column(name = "mei_grade")
     @Enumerated(EnumType.STRING)     // store the enum name in DB
@@ -150,7 +151,22 @@ public class MemberEventItem extends BaseEntity {
     
     @Column(name = "mei_approval_history", columnDefinition = "TEXT")
     private String certificateAppHistoryJson;
-
+    
+    
+    @Column(name = "mei_chest_no")
+    private Long memberChestNo;
+    
+    
+    @Column(name = "mei_score1")
+    private Double memberScore1;
+    
+    @Column(name = "mei_score2")
+    private Double memberScore2;
+    
+    @Column(name = "mei_score3")
+    private Double memberScore3;
+    
+    
     // Use a single, static ObjectMapper with JavaTimeModule
     @Transient
     private static final ObjectMapper mapper = new ObjectMapper()

@@ -18,16 +18,20 @@ import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
+import com.dms.kalari.events.dto.EventChestConfigDTO;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
 import com.dms.kalari.events.entity.Event;
+import com.dms.kalari.events.entity.EventChestConfig;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.repository.EventChestConfigRepository;
 import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.CertificateBatchService;
 import com.dms.kalari.events.service.CertificateService;
+import com.dms.kalari.events.service.EventChestConfigService;
 import com.dms.kalari.events.service.EventItemMapService;
 import com.dms.kalari.events.service.EventItemService;
 import com.dms.kalari.events.service.EventService;
@@ -78,11 +82,15 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	private final CertificateService certificateService;
 	private final CertificateBatchService certificateBatchService;
 	private final MemberEventItemRepository memberEventItemRepository;
+	private final EventChestConfigService eventChestConfigService;
+	private final EventChestConfigRepository eventChestConfigRepository;
+	
 
 	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 			EventItemService eventItemService, MemberUserService memberUserService,
 			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService,
-			CertificateService certificateService, CertificateBatchService certificateBatchService, MemberEventItemRepository memberEventItemRepository) {
+			CertificateService certificateService, CertificateBatchService certificateBatchService, MemberEventItemRepository memberEventItemRepository, 
+			EventChestConfigService eventChestConfigService, EventChestConfigRepository eventChestConfigRepository) {
 		super(eventService);
 		this.nodeService = nodeService;
 		this.memberEventService = memberEventService;
@@ -93,6 +101,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		this.certificateService = certificateService;
 		this.certificateBatchService = certificateBatchService;
 		this.memberEventItemRepository = memberEventItemRepository;
+		this.eventChestConfigService = eventChestConfigService;
+		this.eventChestConfigRepository = eventChestConfigRepository;
 	}
 
 	@GetMapping("/")
@@ -527,36 +537,88 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	}
 	
 	
-	@GetMapping("/participants/{eventid}/{nodeid}")
-	public String Listparticipants(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
-			@RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
-			@RequestParam(required = false) EventItemMap.Category category, Model model) {
+	@GetMapping({
+	        "/participants/{eventid}/{nodeid}",
+	        "/participants/{eventid}/{nodeid}/{viewType}"
+	})
+	public String listParticipants(
+	        @PathVariable("eventid") Long mEventId,
+	        @PathVariable("nodeid") Long mNodeId,
+	        @PathVariable(value = "viewType", required = false) String viewType,
 
-		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
+	        @RequestParam(required = false) Long itemId,
+	        @RequestParam(required = false) CoreUser.Gender gender,
+	        @RequestParam(required = false) EventItemMap.Category category,
 
-		model.addAttribute("eventId", mEventId);
-		model.addAttribute("nodeId", mNodeId);
-		model.addAttribute("pageTitle", "Add Event Participants");
-		
-		EventDTO eventRecord = service.findById(eventId);
+	        Model model) {
 
-		Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
-				.getParticipationMatrix(eventId, itemId, gender, category);
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+	    Long nodeId = XorMaskHelper.unmask(mNodeId);
 
-		model.addAttribute("matrix", matrix);
+	    // default view
+	    if (viewType == null || viewType.isBlank()) {
+	        viewType = "summary";
+	    }
 
-		Map<String, String> paramx = new HashMap<>();
-		paramx.put("itemId", itemId != null ? itemId.toString() : "");
-		paramx.put("gender", gender != null ? gender.name() : "");
-		paramx.put("category", category != null ? category.name() : "");
-		model.addAttribute("paramx", paramx);
+	    model.addAttribute("eventId", mEventId);
+	    model.addAttribute("nodeId", mNodeId);
+	    model.addAttribute("viewType", viewType);
 
-		model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
-		model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
-		model.addAttribute("categories", EventItemMap.Category.values());
+	    EventDTO eventRecord = service.findById(eventId);
 
-		return "events/participants";
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
+	            memberEventItemService.getParticipationMatrix(
+	                    eventId,
+	                    itemId,
+	                    gender,
+	                    category
+	            );
+	    
+	    model.addAttribute("eventRecord" , eventRecord);
+
+	    model.addAttribute("matrix", matrix);
+
+	    Map<String, String> paramx = new HashMap<>();
+	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	    paramx.put("gender", gender != null ? gender.name() : "");
+	    paramx.put("category", category != null ? category.name() : "");
+
+	    model.addAttribute("paramx", paramx);
+
+	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	    model.addAttribute("genders", CoreUser.Gender.values());
+	    model.addAttribute("categories", EventItemMap.Category.values());
+
+	    // view resolver
+	    switch (viewType.toLowerCase()) {
+
+	        case "chestcard":
+	            model.addAttribute("pageTitle", "Chest Card");
+
+	            return "events/chestcard";
+
+	        case "judgecard":
+	            model.addAttribute("pageTitle", "Judge Card");
+	            return "events/judgecard";
+
+	        case "tabsheet":
+	            model.addAttribute("pageTitle", "Tab Sheet");
+	            return "events/tabsheet";
+	            
+	            
+	        case "finallist":
+	            model.addAttribute("pageTitle", "Final Sheet");
+	            return "events/finallist";
+
+	        case "summary":
+	            model.addAttribute("pageTitle", "Tab Summary");
+	            return "events/summary";
+	            
+	            
+	        default:
+	            model.addAttribute("pageTitle", "Add Event Participants");
+	            return "events/participants";
+	    }
 	}
 
 	@GetMapping("/participants_score/{eventid}")
@@ -601,13 +663,13 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		//Long nodeId = XorMaskHelper.unmask(mNodeId);
 
 		// Extract scores and grades from params (meiId is the key)
-		Map<Long, Integer> scores = new HashMap<>();
+		Map<Long, Double> scores = new HashMap<>();
 		Map<Long, MemberEventItem.Grade> grades = new HashMap<>();
 
 		params.forEach((key, value) -> {
 			if (key.startsWith("scores[")) {
 				Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-				scores.put(meiId, Integer.valueOf(value));
+				scores.put(meiId, Double.valueOf(value));
 			} else if (key.startsWith("grades[")) {
 				Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
 				if (value != null && !value.isBlank()) {
@@ -902,5 +964,198 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		model.addAttribute("events", activeEvents);
 		model.addAttribute("pageTitle", "Active Events");
 		return "fragments/active_events";
+	}
+	
+	
+	
+	@GetMapping("/participants_chestno/{eventid}")
+	public String participantChestConfig(
+	        @PathVariable("eventid") Long mEventId,
+	        Model model
+	) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    model.addAttribute("eventId", mEventId);
+
+	    model.addAttribute(
+	            "pageTitle",
+	            "Chest Number Configuration"
+	    );
+
+	    Map<String, Map<String, Map<String, EventChestConfigDTO>>> matrix =
+		        eventChestConfigService.getChestConfigMatrix(eventId);
+	    
+	    
+	    logger.debug("Chest Config Matrix : {}", matrix);
+	    
+	    System.out.println(matrix);
+	    
+
+	    
+
+
+	    model.addAttribute("matrix", matrix);
+	    
+	    
+
+	    model.addAttribute(
+	            "genders",
+	            CoreUser.Gender.values()
+	    );
+
+	    model.addAttribute(
+	            "categories",
+	            EventItemMap.Category.values()
+	    );
+
+	    return "fragments/events/chestno";
+	}
+	
+	
+	@PostMapping("/participants_chestno/{eventid}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> updateChestConfig(
+	        @PathVariable("eventid") Long mEventId,
+	        @RequestParam Map<String, String> params
+	) {
+	    
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    List<EventChestConfigDTO> rows =
+	            new ArrayList<>();
+
+	 // matches both maleChest[303] and femaleChest[303]
+	    java.util.regex.Pattern pattern =
+	        java.util.regex.Pattern.compile("^(male|female)Chest\\[(\\d+)\\]$");
+
+	    params.forEach((key, value) -> {
+	        if (value == null || value.isBlank()) return;
+
+	        java.util.regex.Matcher m = pattern.matcher(key);
+	        if (!m.matches()) return;
+
+	        String gender = m.group(1);   // "male" or "female"
+	        Long eimId = Long.valueOf(m.group(2));
+
+	        EventChestConfigDTO dto = new EventChestConfigDTO();
+	        dto.setEventItemMapId(eimId);
+	        dto.setGender(gender.equals("male") ? CoreUser.Gender.MALE : CoreUser.Gender.FEMALE);
+	        dto.setCurrentNo(Long.valueOf(value));
+	        dto.setStartNo(Long.valueOf(value));
+	        rows.add(dto);
+	    });
+
+	    eventChestConfigService.updateChestConfigs(eventId, rows);
+
+	    eventChestConfigService.regenerateChestNumbers(eventId);
+	    
+
+	    Map<String, Object> body =
+	            new HashMap<>();
+
+	    
+	    
+	    body.put("message", "Chest No. updated successfully");
+
+	    body.put("target", "modal2");
+	    body.put("status", "success");
+	    return ResponseEntity.ok(body);
+	}
+	
+	
+	@GetMapping("/participants_judge_score/{eventid}")
+	public String eventJudgeScoreEntry(
+	        @PathVariable("eventid") Long mEventId,
+	        @RequestParam(required = false) Long itemId,
+	        @RequestParam(required = false) CoreUser.Gender gender,
+	        @RequestParam(required = false) EventItemMap.Category category,
+	        Model model) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    model.addAttribute("eventId", mEventId);
+	    model.addAttribute("pageTitle", "Judge Score Card");
+
+	    if (itemId != null && gender != null && category != null) {
+
+	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
+	                memberEventItemService.getParticipationMatrix(
+	                        eventId,
+	                        itemId,
+	                        gender,
+	                        category
+	                );
+
+	        model.addAttribute("matrix", matrix);
+	    }
+
+	    Map<String, String> paramx = new HashMap<>();
+	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	    paramx.put("gender", gender != null ? gender.name() : "");
+	    paramx.put("category", category != null ? category.name() : "");
+
+	    model.addAttribute("paramx", paramx);
+
+	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	    model.addAttribute("genders", CoreUser.Gender.values());
+	    model.addAttribute("categories", EventItemMap.Category.values());
+
+	    return "fragments/events/judge_score";
+	}
+	
+	
+	@PostMapping("/participants_judge_score/{mEventId}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> updateJudgeScores(
+	        @PathVariable("mEventId") Long mEventId,
+	        @RequestParam Map<String, String> params,
+	        @RequestParam(name = "pageParams", required = false) String pageParams) {
+
+	    Long eventId = XorMaskHelper.unmask(mEventId);
+
+	    Map<Long, Double> score1 = new HashMap<>();
+	    Map<Long, Double> score2 = new HashMap<>();
+	    Map<Long, Double> score3 = new HashMap<>();
+
+	    params.forEach((key, value) -> {
+
+	        if (value == null || value.isBlank()) {
+	            return;
+	        }
+
+	        if (key.startsWith("score1[")) {
+
+	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+	            score1.put(meiId, Double.valueOf(value));
+
+	        } else if (key.startsWith("score2[")) {
+
+	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+	            score2.put(meiId, Double.valueOf(value));
+
+	        } else if (key.startsWith("score3[")) {
+
+	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+	            score3.put(meiId, Double.valueOf(value));
+	        }
+	    });
+
+	    memberEventItemService.updateJudgeScores(score1, score2, score3);
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("message", "Judge scores updated successfully");
+	    body.put("status", "success");
+
+	    body.put(
+	            "loadnext",
+	            "champ_judge_score/" +
+	                    mEventId +
+	                    (pageParams != null ? "?" + pageParams : "")
+	    );
+
+	    body.put("target", "modal2");
+
+	    return ResponseEntity.ok(body);
 	}
 }

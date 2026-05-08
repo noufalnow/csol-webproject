@@ -257,6 +257,11 @@
 	.modal-backdrop.show:not(:first-of-type) {
 	    opacity: 0.8; /* Darker backdrop for nested modals */
 	}
+	
+	
+	.modal-dimmed {
+	    opacity: 0.5 !important;
+	}
     
 </style>
 
@@ -412,6 +417,15 @@ if (isPWA) {
   });
 }
 
+
+
+$('#nestedModal').on('show.bs.modal', function () {
+    $('#dynamicModal').addClass('modal-dimmed');
+});
+
+$('#nestedModal').on('hidden.bs.modal', function () {
+    $('#dynamicModal').removeClass('modal-dimmed');
+});
 
 
 </script>

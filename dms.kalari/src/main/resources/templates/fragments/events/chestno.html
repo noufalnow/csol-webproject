@@ -1,0 +1,167 @@
+<div class="container-fluid">
+
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title" th:text="${pageTitle}">
+            Chest Number Configuration
+        </h5>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal">
+        </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+
+        <form id="chestConfigForm"
+              method="post"
+              th:action="@{/champ_participants_chestno/{eventId}(eventId=${eventId})}">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
+
+            <!-- EMPTY -->
+            <div th:if="${matrix == null or #maps.isEmpty(matrix)}">
+                <div class="alert alert-info">
+                    No chest configuration found.
+                </div>
+            </div>
+
+            <!-- MATRIX -->
+            <div class="card shadow-sm border-0"
+                 th:if="${matrix != null and !#maps.isEmpty(matrix)}">
+
+                <div class="table-responsive">
+
+					<table class="table table-bordered">
+
+					    <thead class="table-dark">
+					        <tr>
+					            <th>Item / Category</th>
+					            <th>Male</th>
+					            <th>Female</th>
+					        </tr>
+					    </thead>
+
+					    <tbody>
+
+							<tbody>
+
+							    <!-- ITEM -->
+							    <th:block th:each="itemEntry : ${matrix}">
+
+							        <!-- ITEM HEADER -->
+							        <tr class="table-dark">
+
+							            <td colspan="3"
+							                class="fw-bold text-uppercase">
+
+							                <i class="fas fa-trophy me-2"></i>
+
+							                <span th:text="${itemEntry.key}"></span>
+
+							            </td>
+
+							        </tr>
+
+							        <!-- CATEGORY -->
+							        <tr th:each="catEntry : ${itemEntry.value}">
+
+							            <!-- CATEGORY -->
+							            <td class="fw-bold">
+
+							                <span class="badge bg-primary"
+							                      th:text="${catEntry.key}">
+							                </span>
+
+							            </td>
+
+							            <!-- MALE -->
+							            <td>
+
+							                <th:block th:if="${catEntry.value['MALE'] != null}">
+
+							                    <input type="text"
+							                           class="form-control"
+
+							                           th:name="${'maleChest[' + catEntry.value['MALE'].eventItemMapId + ']'}"
+
+							                           th:value="${catEntry.value['MALE'].currentNo}"
+
+							                           placeholder="Male Chest No" />
+
+							                </th:block>
+
+							            </td>
+
+							            <!-- FEMALE -->
+							            <td>
+
+							                <th:block th:if="${catEntry.value['FEMALE'] != null}">
+
+							                    <input type="text"
+							                           class="form-control"
+
+							                           th:name="${'femaleChest[' + catEntry.value['FEMALE'].eventItemMapId + ']'}"
+
+							                           th:value="${catEntry.value['FEMALE'].currentNo}"
+
+							                           placeholder="Female Chest No" />
+
+							                </th:block>
+
+							            </td>
+
+							        </tr>
+
+							    </th:block>
+
+							</tbody>
+
+					    </tbody>
+
+					</table>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Close
+        </button>
+
+        <button type="button"
+                class="btn btn-primary"
+                onclick="submitHtmlForm('chestConfigForm')">
+
+            <i class="fas fa-save me-1"></i>
+            Save Configuration
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<style>
+	
+	
+	
+	
+	#nestedModal .modal-dialog {
+		max-width: 40% !important;
+	}
+
+</style>

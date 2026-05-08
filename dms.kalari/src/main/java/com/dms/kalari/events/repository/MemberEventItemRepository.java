@@ -1,6 +1,7 @@
 package com.dms.kalari.events.repository;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseRepository;
 import com.dms.kalari.events.entity.Event;
@@ -171,9 +172,27 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		        @Param("nodeId") Long nodeId,
 		        @Param("hostType") Event.Type hostType
 		);
+	
+	
+	
+	
+	@Query("SELECT m FROM MemberEventItem m " + "WHERE m.memberEvent.eventId = :eventId "
+		 + "AND m.deleted = false")
+	List<MemberEventItem> findByEventId(@Param("eventId") Long eventId);
 
-
-
+	
+	@Query("""
+		    SELECT mei
+		    FROM MemberEventItem mei
+		    WHERE mei.deleted = false
+		      AND mei.memberEventMap.eimId = :eimId
+		      AND mei.memberEventGender = :gender
+		    ORDER BY mei.meiId ASC
+		""")
+		List<MemberEventItem> findAllByEventItemAndGender(
+		        @Param("eimId") Long eimId,
+		        @Param("gender") Gender gender
+		);
 
 
 

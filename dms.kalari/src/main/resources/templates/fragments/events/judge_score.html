@@ -1,0 +1,468 @@
+<div class="container-fluid">
+	<!-- Modal Header -->
+	<div class="modal-header">
+		<h5 class="modal-title" id="addEventModalLabel" th:text="${pageTitle}">Score
+			Card</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal"
+			aria-label="Close"></button>
+	</div>
+
+	<!-- Modal Body -->
+	<div class="modal-body">
+
+		<!-- Filter Section -->
+		<div class="card shadow-sm border-0 mb-4 no-print" id="filter_section">
+			<form id="search-form" method="GET"
+				th:action="@{/champ_judge_score/{eventId}(eventId=${eventId})}">
+				<div class="row g-1 align-items-end">
+					<!-- Item filter -->
+					<div class="col-12 col-md-4">
+						<label class="form-label">Item</label> <select name="itemId"
+							class="form-select">
+							<option value="">-- Select Item --</option>
+							<option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+								th:text="${entry.value}"
+								th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+						</select>
+					</div>
+
+					<!-- Gender filter -->
+					<div class="col-12 col-md-4">
+						<label class="form-label">Gender</label> <select name="gender"
+							class="form-select">
+							<option value="">-- Select Gender --</option>
+							<option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+								th:selected="${paramx['gender']} == ${g.name()}"></option>
+						</select>
+					</div>
+
+					<!-- Category filter -->
+					<div class="col-12 col-md-4">
+						<label class="form-label">Category</label> <select name="category"
+							class="form-select">
+							<option value="">-- Select Category --</option>
+							<option th:each="c : ${categories}" th:value="${c}"
+								th:text="${c}"
+								th:selected="${paramx['category']} == ${c.name()}"></option>
+						</select>
+					</div>
+
+					<!-- Action buttons -->
+					<div class="col-12">
+						<div
+							class="d-flex flex-column flex-md-row gap-2 justify-content-end">
+							<!--<button type=button  onclick="searchRequest('search-form')" class="btn btn-sm btn-outline-primary btn-sm">
+									<i class="fas fa-search me-1"></i> Search
+								</button>
+								  <button type="button" class="btn btn-secondary btn-sm"
+									onclick="showAll()">
+									<i class="fas fa-list me-1"></i> Show All
+								</button>-->
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+
+
+		<!-- Main Content -->
+		<form
+			th:action="@{/champ_judge_score/{eventId}(eventId=${eventId})}"
+			method="post" id="scoreGradeform" style="padding: 6px;">
+			<input type="hidden" th:name="${_csrf.parameterName}"
+				th:value="${_csrf.token}" />
+
+			<div th:if="${matrix == null or #maps.isEmpty(matrix)}">
+				<div class="alert alert-info">No -- items found.</div>
+			</div>
+
+
+			<div th:each="itemEntry : ${matrix}">
+				<div class="item-heading">
+					<i class="fas fa-trophy me-2"></i>Item: <span
+						th:text="${itemEntry.key}"></span>
+				</div>
+
+				<div th:each="genderEntry : ${itemEntry.value}">
+					<div class="gender-heading" th:text="${genderEntry.key}"></div>
+
+					<div th:each="catEntry : ${genderEntry.value}"
+						class="category-section">
+						<div class="category-heading">
+							<i class="fas fa-tag me-2"></i>Category: <span
+								th:text="${catEntry.key}"></span>
+						</div>
+
+						<div th:each="mei : ${catEntry.value}" class="participant-card">
+
+							<div class="row g-3 align-items-center">
+
+							    <!-- Chest Number -->
+							    <div class="col-12 col-md-3 text-center">
+
+							        <div class="chest-box">
+							            <span th:text="${mei.memberChestNo}"></span>
+							        </div>
+
+							    </div>
+
+							    <!-- Judge Scores -->
+							    <div class="col-12 col-md-9">
+
+							        <div class="score-panel">
+
+										<div class="judge-wrapper d-flex flex-wrap gap-1 align-items-center">
+
+										    <!-- GENERATED -->
+										    <div th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+										         class="d-flex flex-wrap align-items-center gap-2">
+
+										        <div class="avg-box">
+										            <span class="avg-score"
+										                  th:text="${mei.memberEventScore}">
+										                0.00
+										            </span>
+										        </div>
+
+										        <span class="badge bg-secondary">
+										            J1:
+										            <span th:text="${mei.memberScore1}"></span>
+										        </span>
+
+										        <span class="badge bg-secondary">
+										            J2:
+										            <span th:text="${mei.memberScore2}"></span>
+										        </span>
+
+										        <span class="badge bg-secondary">
+										            J3:
+										            <span th:text="${mei.memberScore3}"></span>
+										        </span>
+
+										        <span class="badge bg-dark"
+										              th:text="${mei.memberEventGrade?.name()}">
+										        </span>
+
+										        <a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+										           download
+										           class="badge bg-warning text-dark text-decoration-none">
+
+										            <i class="fas fa-download me-1"></i>
+										            Download
+
+										        </a>
+
+										    </div>
+
+										    <!-- APPROVED -->
+										    <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
+										                 and mei.certificateStatus?.name() != 'GENERATED'}"
+										         class="d-flex flex-wrap align-items-center gap-2">
+
+										        <div class="avg-box">
+										            <span class="avg-score"
+										                  th:text="${mei.memberEventScore}">
+										                0.00
+										            </span>
+										        </div>
+
+										        <span class="badge bg-secondary">
+										            J1:
+										            <span th:text="${mei.memberScore1}"></span>
+										        </span>
+
+										        <span class="badge bg-secondary">
+										            J2:
+										            <span th:text="${mei.memberScore2}"></span>
+										        </span>
+
+										        <span class="badge bg-secondary">
+										            J3:
+										            <span th:text="${mei.memberScore3}"></span>
+										        </span>
+
+										        <span class="badge bg-success">
+										            Approved
+										        </span>
+
+										    </div>
+
+										    <!-- EDITABLE -->
+										    <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
+										         class="d-flex flex-wrap gap-1 align-items-center">
+
+										        <input type="text"
+										               class="form-control judge-score"
+										               th:name="${'score1[' + mei.meiId + ']'}"
+										               th:value="${mei.memberScore1}"
+										               placeholder="Judge 1"
+										               onblur="calculateAverage(this)" />
+
+										        <input type="text"
+										               class="form-control judge-score"
+										               th:name="${'score2[' + mei.meiId + ']'}"
+										               th:value="${mei.memberScore2}"
+										               placeholder="Judge 2"
+										               onblur="calculateAverage(this)" />
+
+										        <input type="text"
+										               class="form-control judge-score"
+										               th:name="${'score3[' + mei.meiId + ']'}"
+										               th:value="${mei.memberScore3}"
+										               placeholder="Judge 3"
+										               onblur="calculateAverage(this)" />
+
+										        <div class="avg-box">
+
+										            <span class="avg-score"
+										                  th:text="${mei.memberEventScore}">
+										                0.00
+										            </span>
+
+										        </div>
+
+										    </div>
+
+										</div>
+
+							        </div>
+
+							    </div>
+
+							    <!-- Participant Info -->
+							    <div class="col-12">
+
+							        <div class="participant-info">
+
+							            <span class="label-text">Participant:</span>
+
+							            <span class="participant-name"
+							                  th:text="${mei.memberEventMember.userFname}">
+							            </span>
+
+							            <span class="separator">|</span>
+
+							            <span class="label-text">Kalari:</span>
+
+							            <span th:text="${mei.memberEventNode.nodeName}"></span>
+
+							        </div>
+
+							    </div>
+
+							</div>
+							
+							
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div id="error-messages" class="text-danger mt-2"></div>
+		</form>
+	</div>
+
+	<!-- Modal Footer -->
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary"
+			data-bs-dismiss="modal">Close</button>
+		<button type="button" class="btn btn-primary"
+			onclick="submitHtmlForm('scoreGradeform')">Update Score</button>
+	</div>
+</div>
+
+<script>
+        function validateScore(input) {
+            let value = input.value;
+            
+            // Remove any non-digit or non-dot characters
+            value = value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Limit decimal places to 2
+            if (parts.length === 2 && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            
+            input.value = value;
+            
+            // Visual feedback
+            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            } else {
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+            }
+        }
+
+        // Show all participants
+        function showAll() {
+        	var form = document.getElementById('search-form');
+        	var url = form.getAttribute('action'); // <-- use getAttribute
+        	form.querySelectorAll('select').forEach(select => {
+        	    select.value = ''; // reset all selects
+        	});
+            loadContent(url,'modal2',form);;
+        }
+
+    </script>
+
+<script>
+    
+
+    function searchRequest(formId) {
+        var form = $('#' + formId); // jQuery form object
+        var url = form.attr('action'); // action with eventId/nodeId
+
+        // get selected values
+        var itemVal = form.find('select[name="itemId"]').val();
+        var genderVal = form.find('select[name="gender"]').val();
+        var categoryVal = form.find('select[name="category"]').val();
+
+        console.log("Item:", itemVal, "Gender:", genderVal, "Category:", categoryVal);
+
+        // validate: all must be non-empty
+        if (itemVal && genderVal && categoryVal) {
+            loadContent(url, 'modal2', form); 
+        } 
+    }
+    
+    
+    $(document).ready(function() {
+        // call searchRequest whenever any select changes
+        $('#search-form select').on('change', function() {
+            searchRequest('search-form');
+        });
+
+        // optional: call it once on page load if selects have values
+        // searchRequest('search-form');
+    });
+
+    
+</script>
+
+<script>
+
+function calculateAverage(input) {
+
+    // parent wrapper
+    const wrapper = input.closest('.d-flex');
+
+    // all judge inputs inside same row
+    const inputs = wrapper.querySelectorAll('.judge-score');
+
+    let sum = 0;
+    let count = 0;
+
+    inputs.forEach(field => {
+
+        const value = parseFloat(field.value);
+
+        if (!isNaN(value)) {
+            sum += value;
+            count++;
+        }
+
+    });
+
+    const average = count > 0
+        ? (sum / count).toFixed(2)
+        : "0.00";
+
+    // update UI
+    wrapper.querySelector('.avg-score').textContent = average;
+}
+
+</script>
+
+
+<style>
+
+.chest-box {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+    border: 2px solid #dee2e6;
+}
+
+.score-panel {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 4px;
+    border: 2px solid #dee2e6;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.judge-score {
+    max-width: 100px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.avg-box {
+    min-width: 100px;
+    text-align: center;
+    background: #198754;
+    color: #fff;
+    border-radius: 10px;
+    padding: 3px 14px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.participant-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.participant-name {
+    color: #0d6efd;
+}
+
+.label-text,
+.separator {
+    color: #6c757d;
+}
+
+</style>
+
+<style>
+
+	#nestedModal .modal-dialog {
+	    max-width: 40% !important;
+	    min-height: 90vh !important;
+	}
+
+	#nestedModal .modal-content {
+	    min-height: 90vh !important;
+	}
+	
+	#nestedModal .modal-content {
+	    display: flex;
+	    flex-direction: column;
+	    min-height: 90vh;
+	}
+
+
+	#nestedModal .modal-footer {
+	    margin-top: auto;
+	}
+
+</style>

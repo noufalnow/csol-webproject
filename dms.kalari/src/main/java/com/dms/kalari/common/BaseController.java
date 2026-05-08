@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public abstract class BaseController<DTO, S extends BaseService<DTO>> {
 
     protected final S service;
-    private final Logger logger = LoggerFactory.getLogger(BaseController.class);
+    protected final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
     protected BaseController(S service) {
         this.service = service;

@@ -161,7 +161,7 @@ public class MemberEventItemService {
 	        item.setMemberEventCategory(s.category);
 	        item.setMemberEventGender(s.gender);
 	        item.setMemberEventItemName(map.getItem().getEvitemName());
-	        item.setMemberEventScore(0);
+	        item.setMemberEventScore(0.00);
 	        item.setMemberEventYear(event.getEventYear());
 	        item.setMemberHostType(event.getEventHost());
 	        
@@ -241,7 +241,7 @@ public class MemberEventItemService {
 			item.setMemberEventCategory(category);
 			item.setMemberEventGender(gender);
 			item.setMemberEventItemName(eventItemMap.getItem().getEvitemName());
-			item.setMemberEventScore(0);
+			item.setMemberEventScore(0.00);
 			item.setMemberEventGrade(null);
 			item.setScoreEntryBy(null);
 			item.setApproveDateTime(null);
@@ -343,7 +343,7 @@ public class MemberEventItemService {
 	
 	
 	@Transactional
-	public void updateScores(Map<Long, Integer> scores,
+	public void updateScores(Map<Long, Double> scores,
 	                         Map<Long, MemberEventItem.Grade> grades) {
 
 	    if (scores.isEmpty() && grades.isEmpty()) return;
@@ -367,7 +367,7 @@ public class MemberEventItemService {
 	        boolean changed = false;
 
 	        // Update score
-	        Integer newScore = scores.get(meiId);
+	        Double newScore = scores.get(meiId);
 	        if (!Objects.equals(mei.getMemberEventScore(), newScore)) {
 	            mei.setMemberEventScore(newScore);
 	            changed = true;
@@ -456,7 +456,7 @@ public class MemberEventItemService {
 	            mei.setApproveDateTime(LocalDateTime.now());
 
 	            // 🧾 Prepare approval history JSON entry
-	            Integer currentScore = mei.getMemberEventScore();
+	            Double currentScore = mei.getMemberEventScore();
 	            MemberEventItem.Grade currentGrade = mei.getMemberEventGrade();
 
 	            String newEntry = String.format(
@@ -473,6 +473,107 @@ public class MemberEventItemService {
 	                    oldHistory == null || oldHistory.isBlank()
 	                            ? "[" + newEntry + "]"
 	                            : oldHistory.replaceAll("]$", ", " + newEntry + "]")
+	            );
+
+	            toUpdate.add(mei);
+	        }
+	    }
+
+	    if (!toUpdate.isEmpty()) {
+	        memberEventItemRepository.saveAll(toUpdate);
+	    }
+	}
+	
+	
+	
+	
+	@Transactional
+	public void updateJudgeScores(
+	        Map<Long, Double> score1,
+	        Map<Long, Double> score2,
+	        Map<Long, Double> score3) {
+
+	    Set<Long> meiIds = new HashSet<>();
+
+	    meiIds.addAll(score1.keySet());
+	    meiIds.addAll(score2.keySet());
+	    meiIds.addAll(score3.keySet());
+
+	    if (meiIds.isEmpty()) {
+	        return;
+	    }
+
+	    List<MemberEventItem> allMei =
+	            memberEventItemRepository.findAllById(meiIds);
+
+	    List<MemberEventItem> toUpdate = new ArrayList<>();
+
+	    for (MemberEventItem mei : allMei) {
+
+	        if (mei.getVerificationStatus()
+	                == MemberEventItem.VerificationStatus.APPROVED) {
+	            continue;
+	        }
+
+	        boolean changed = false;
+
+	        Long meiId = mei.getMeiId();
+
+	        Double s1 = score1.get(meiId);
+	        Double s2 = score2.get(meiId);
+	        Double s3 = score3.get(meiId);
+
+	        if (!Objects.equals(mei.getMemberScore1(), s1)) {
+	            mei.setMemberScore1(s1);
+	            changed = true;
+	        }
+
+	        if (!Objects.equals(mei.getMemberScore2(), s2)) {
+	            mei.setMemberScore2(s2);
+	            changed = true;
+	        }
+
+	        if (!Objects.equals(mei.getMemberScore3(), s3)) {
+	            mei.setMemberScore3(s3);
+	            changed = true;
+	        }
+
+	        // calculate average
+	        int count = 0;
+	        double sum = 0.0;
+
+	        if (s1 != null) {
+	            sum += s1;
+	            count++;
+	        }
+
+	        if (s2 != null) {
+	            sum += s2;
+	            count++;
+	        }
+
+	        if (s3 != null) {
+	            sum += s3;
+	            count++;
+	        }
+
+	        Double average = count > 0
+	                ? Math.round((sum / count) * 100.0) / 100.0
+	                : 0.0;
+
+	        if (!Objects.equals(mei.getMemberEventScore(), average)) {
+	            mei.setMemberEventScore(average);
+	            changed = true;
+	        }
+
+	        if (changed) {
+
+	            mei.setCertificateStatus(
+	                    MemberEventItem.CertificateStatus.PENDING
+	            );
+
+	            mei.setVerificationStatus(
+	                    MemberEventItem.VerificationStatus.PENDING
 	            );
 
 	            toUpdate.add(mei);

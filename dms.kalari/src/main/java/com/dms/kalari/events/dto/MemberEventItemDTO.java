@@ -38,7 +38,7 @@ public class MemberEventItemDTO extends BaseDTO {
 
     private String memberEventItemName;         // Item name
 
-    private Integer memberEventScore;           // Score
+    private Double memberEventScore;           // Score
 
     private Grade memberEventGrade;          // Grade
 
@@ -48,4 +48,13 @@ public class MemberEventItemDTO extends BaseDTO {
     private LocalDateTime approveDateTime;      // Approval datetime
 
     private CoreUser approvedBy;                // User who approved
+    
+    
+    private Long memberChestNo;           // Chest No
+    
+    private Double memberScore1;           // Score
+    
+    private Double memberScore2;           // Score
+    
+    private Double memberScore3;           // Score
 }

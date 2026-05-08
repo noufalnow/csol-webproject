@@ -584,7 +584,25 @@ public class NodeService implements BaseService<NodeDTO> {
 
 
 
+/*
+ select count(*) ,date(t_created) from nodes 
+group by date(t_created), date(t_created)
+order by date(t_created);
 
 
+select count(*) ,date(t_created) from core_users 
+group by date(t_created), date(t_created)
+order by date(t_created);
+
+
+SELECT n.node_id, n.node_name, n.node_type, parent.node_name
+FROM nodes n
+LEFT JOIN nodes  as parent ON parent.node_id = n.parent_id
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM core_users u
+  WHERE u.user_node_id = n.node_id
+) order by n.node_type,parent.node_name,n.node_name;
+*/
 
 }

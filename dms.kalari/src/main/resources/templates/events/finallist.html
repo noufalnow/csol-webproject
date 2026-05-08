@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<title>Chest Number List</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+<style>
+/* ── Base ── */
+body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; background: #f5f5f5; }
+
+.page-wrapper { max-width: 900px; margin: 0 auto; padding: 12px 16px; }
+
+/* ── Page title ── */
+h2 { font-size: 15pt; font-weight: 700; margin: 0 0 10px; color: #1a1a2e; letter-spacing: .3px; }
+
+/* ── Event header ── */
+.event-header {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 14px 16px 10px;
+  margin-bottom: 10px;
+}
+.event-header .event-name {
+  font-size: 16pt; font-weight: 800; color: #1a1a2e;
+  margin: 0 0 2px; letter-spacing: .3px;
+  text-align: center;
+}
+.event-header .event-host {
+  font-size: 10.5pt; color: #444; margin: 0 0 8px;
+}
+.event-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  font-size: 9pt; color: #555;
+  border-top: 1px solid #e0e0e0; padding-top: 8px;
+}
+.event-meta span i { margin-right: 4px; opacity: .7; }
+
+/* ── Filter card ── */
+.filter-card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; }
+.filter-card .form-select, .filter-card .form-control { font-size: 9pt; padding: 4px 8px; height: 30px; border-radius: 4px; }
+.filter-card .btn { font-size: 9pt; padding: 4px 12px; height: 30px; border-radius: 4px; }
+.filter-card .row { --bs-gutter-x: 8px; --bs-gutter-y: 6px; }
+
+/* ── Print button ── */
+.btn-print { font-size: 9pt; padding: 4px 14px; margin-bottom: 8px; border-radius: 4px; }
+
+/* ── Item block ── */
+.item-block { background: #fff; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 12px; overflow: hidden; }
+
+.item-heading {
+  color: #1a1a2e; background : #fff;
+  font-size: 11pt; font-weight: 700;
+  padding: 6px 12px;
+  letter-spacing: .2px;
+}
+
+.gender-block { padding: 0 12px 8px; }
+
+.gender-heading {
+  font-size: 10pt; font-weight: 700; color: #1a1a2e;
+  padding: 6px 0 2px;
+  border-bottom: 1.5px solid #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.category-heading {
+  font-size: 9.5pt; font-weight: 700; color: #444;
+  margin: 6px 0 3px;
+}
+
+/* ── Tables ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  margin-bottom: 4px;
+  table-layout: fixed;
+}
+
+th, td { border: 1px solid #bbb; padding: 3px 8px; text-align: left; vertical-align: middle; }
+th { background: #eef0f5; font-weight: 700; color: #1a1a2e; font-size: 8.5pt; padding: 4px 8px; }
+
+td.chest-no { width: 90px; text-align: center; font-size: 13pt; font-weight: 800; color: #1a1a2e; }
+td.participant { width: 45%; }
+
+tbody tr:nth-child(even) { background: #f9f9fc; }
+tbody tr:hover { background: #eef2ff; }
+
+/* ── Print ── */
+.print-only { display: none; }
+
+@media print {
+  @page { margin: 0.4in; size: letter; }
+
+  * { overflow: visible !important; }
+
+  body { background: #fff !important; font-size: 9pt; color: #000; }
+  .page-wrapper { padding: 0; max-width: 100%; }
+  .no-print, #filter_section { display: none !important; }
+
+  /* ── Event header print ── */
+  .event-header {
+    background: none !important;
+    border: none !important;
+    border-bottom: 2px solid #000 !important;
+    border-radius: 0 !important;
+    padding: 0 0 8px !important;
+    margin-bottom: 10px;
+  }
+  .event-header .event-name { font-size: 15pt; color: #000 !important; }
+  .event-header .event-host { color: #333 !important; }
+  .event-meta { border-top: 1px solid #999; color: #333 !important; }
+
+  /* strip all box model that causes stacking context */
+  .item-block {
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    margin-bottom: 4px;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .item-heading {
+    background: none !important;
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+    padding-left: 0 !important;
+    break-after: avoid;
+    page-break-after: avoid;
+    border-radius: 0 !important;
+  }
+
+  .gender-block {
+    overflow: visible !important;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .gender-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .category-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  table {
+    font-size: 8.5pt;
+    border-collapse: collapse !important;
+    break-inside: auto;
+    page-break-inside: auto;
+    width: 100%;
+  }
+
+  th {
+    background: #e0e0e0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  thead { display: table-header-group; }
+
+  tbody {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  td, th {
+    overflow: visible !important;
+  }
+
+  .print-only { display: block; margin-top: 16px; text-align: center; font-size: 9pt; color: #666; }
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 8.8pt;
+    margin-bottom: 18px;
+}
+
+.result-table th,
+.result-table td {
+    border: 1px solid #888;
+    padding: 6px 8px;
+    vertical-align: middle;
+}
+
+.result-table th {
+    background: #ececec;
+    text-align: center;
+    font-size: 8.3pt;
+    font-weight: 700;
+}
+
+.result-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.chest-no {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: 800;
+}
+
+.score-col,
+.final-score,
+.grade-col {
+    text-align: center;
+    font-weight: 700;
+}
+
+.final-score {
+    font-size: 11pt;
+    color: #0d6efd;
+}
+
+
+.participant-details {
+    line-height: 1.35;
+}
+
+.participant-name {
+    font-weight: 700;
+    font-size: 9pt;
+    margin-bottom: 2px;
+}
+
+.participant-meta {
+    font-size: 8pt;
+    color: #555;
+}
+
+.judge-stack {
+    font-size: 8.5pt;
+    line-height: 1.45;
+    text-align: center;
+    font-weight: 600;
+}
+
+.final-score {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: 800;
+    color: #0d6efd;
+}
+
+.grade-col {
+    text-align: center;
+    font-weight: 700;
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .filter-card .col-md-3 { flex: 0 0 100%; max-width: 100%; }
+  td.chest-no { font-size: 11pt; }
+  .event-meta { flex-direction: column; gap: 4px; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrapper mt-3">
+
+  <!-- ── Event Header ── -->
+  <div class="event-header">
+	<div class="event-name">TABULATION SHEET</div>
+    <div class="event-name" th:text="${eventRecord.eventName}">Event Name</div>
+    <div class="event-host" th:text="${eventRecord.hostNodeName}">Host Organisation</div>
+    <div class="event-meta">
+      <span>
+        <i class="fas fa-calendar-alt"></i>
+        <span th:text="${#temporals.format(eventRecord.eventPeriodStart,'dd MMM yyyy')}"></span>
+        &nbsp;–&nbsp;
+        <span th:text="${#temporals.format(eventRecord.eventPeriodEnd,'dd MMM yyyy')}"></span>
+      </span>
+      <span>
+        <i class="fas fa-map-marker-alt"></i>
+        <span th:text="${eventRecord.eventVenue}"></span>
+      </span>
+      <span>
+        <i class="fas fa-phone"></i>
+        <span th:text="${eventRecord.eventOfficialPhone}"></span>
+      </span>
+      <span>
+        <i class="fas fa-hashtag"></i>
+        Year&nbsp;<span th:text="${eventRecord.eventYear}"></span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-card" id="filter_section">
+    <form id="search-form" method="GET">
+      <div class="row align-items-end">
+        <div class="col-12 col-md-3">
+          <select name="itemId" class="form-select">
+            <option value="">-- Item --</option>
+            <option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+              th:text="${entry.value}"
+              th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <select name="gender" class="form-select">
+            <option value="">-- Gender --</option>
+            <option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+              th:selected="${paramx['gender']} == ${g.name()}"></option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <select name="category" class="form-select">
+            <option value="">-- Category --</option>
+            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+              th:selected="${paramx['category']} == ${c.name()}"></option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">
+              <i class="fas fa-search me-1"></i> Search
+            </button>
+            <button type="button" class="btn btn-secondary flex-fill" onclick="showAll()">
+              <i class="fas fa-list me-1"></i> All
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Print button -->
+  <div class="no-print">
+    <button class="btn btn-outline-dark btn-print" onclick="window.print()">
+      <i class="fas fa-print me-1"></i> Print Report
+    </button>
+  </div>
+
+  <!-- Data -->
+  <div th:each="itemEntry : ${matrix}" class="item-block">
+    <div class="item-heading">
+      <i class="fas fa-tag me-1" style="font-size:9pt;opacity:.8;"></i>
+      <span th:text="${itemEntry.key}"></span>
+    </div>
+
+    <div class="gender-block" th:each="genderEntry : ${itemEntry.value}">
+      <div class="gender-heading" th:text="${genderEntry.key}"></div>
+
+      <div th:each="catEntry : ${genderEntry.value}">
+        <div class="category-heading">
+          <i class="fas fa-layer-group me-1" style="font-size:8pt;opacity:.7;"></i>
+          <span th:text="${catEntry.key}"></span>
+        </div>
+
+		<table class="result-table">
+
+		    <thead>
+		        <tr>
+
+		            <th style="width:90px;">
+		                Chest No.
+		            </th>
+
+		            <th style="width:280px;">
+		                Participant Details
+		            </th>
+
+		            <th style="width:160px;">
+		                Judge Scores
+		            </th>
+
+		            <th style="width:90px;">
+		                Final
+		            </th>
+
+		            <th style="width:110px;">
+		                Grade
+		            </th>
+
+		            <th style="width:110px;">
+		                Status
+		            </th>
+
+		            <th style="width:120px;">
+		                Certificate
+		            </th>
+
+		        </tr>
+		    </thead>
+
+		    <tbody>
+
+		        <tr th:each="mei : ${catEntry.value}">
+
+		            <!-- Chest -->
+		            <td class="chest-no"
+		                th:text="${mei.memberChestNo}">
+		            </td>
+
+		            <!-- Participant Details -->
+		            <td class="participant-details">
+
+		                <div class="participant-name">
+
+		                    <span th:text="${mei.memberEventMember.userFname}"></span>
+
+		                    <span th:text="${mei.memberEventMember.userLname}"></span>
+
+		                </div>
+
+		                <div class="participant-meta">
+
+		                    DOB:
+		                    <span th:text="${#temporals.format(mei.memberEventMember.userDob, 'dd-MM-yyyy')}">
+		                    </span>
+
+		                </div>
+
+		                <div class="participant-meta">
+
+		                    Kalari:
+		                    <span th:text="${mei.memberEventNode.nodeName}">
+		                    </span>
+
+		                </div>
+
+		            </td>
+
+		            <!-- Judge Scores -->
+		            <td class="judge-stack">
+
+		                <div>
+		                    J1:
+		                    <span th:text="${mei.memberScore1}"></span>
+		                </div>
+
+		                <div>
+		                    J2:
+		                    <span th:text="${mei.memberScore2}"></span>
+		                </div>
+
+		                <div>
+		                    J3:
+		                    <span th:text="${mei.memberScore3}"></span>
+		                </div>
+
+		            </td>
+
+		            <!-- Final -->
+		            <td class="final-score"
+		                th:text="${mei.memberEventScore}">
+		            </td>
+
+		            <!-- Grade -->
+		            <td class="grade-col"
+		                th:text="${mei.memberEventGrade}">
+		            </td>
+
+		            <!-- Status -->
+		            <td class="text-center">
+
+		                <span th:if="${mei.verificationStatus?.name() == 'APPROVED'}"
+		                      class="badge bg-success">
+
+		                    Approved
+
+		                </span>
+
+		                <span th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
+		                      class="badge bg-warning text-dark">
+
+		                    Pending
+
+		                </span>
+
+		            </td>
+
+		            <!-- Certificate -->
+		            <td class="text-center">
+
+		                <span th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+		                      class="badge bg-primary">
+
+		                    Generated
+
+		                </span>
+
+		                <span th:if="${mei.certificateStatus?.name() != 'GENERATED'}"
+		                      class="badge bg-secondary">
+
+		                    Pending
+
+		                </span>
+
+		            </td>
+
+		        </tr>
+
+		    </tbody>
+
+		</table>
+
+		<!-- Footer -->
+		<div class="tab-footer">
+
+		    <div class="footer-box">
+
+		        <div class="sign-line"></div>
+
+		        <div class="sign-label">
+		            Tabulation Officer Signature
+		        </div>
+
+		    </div>
+
+		    <div class="footer-box">
+
+		        <div class="sign-line"></div>
+
+		        <div class="sign-label">
+		            Chief Judge Signature
+		        </div>
+
+		    </div>
+
+		</div>
+
+		<div class="print-time">
+
+		    Printed on:
+		    <span th:text="${#temporals.format(#temporals.createNow(), 'dd-MM-yyyy hh:mm a')}">
+		    </span>
+
+		</div>
+		
+		
+      </div>
+    </div>
+  </div>
+
+  <div class="print-time">
+    Printed on:
+    <span th:text="${#temporals.format(#temporals.createNow(), 'dd-MM-yyyy hh:mm a')}"></span>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const first = document.querySelector('.item-block');
+  if (first) first.classList.add('first-item');
+});
+
+function showAll() {
+  const form = document.getElementById('search-form');
+  form.querySelectorAll('input, select').forEach(el => el.value = '');
+  form.submit();
+}
+</script>
+</body>
+</html>
