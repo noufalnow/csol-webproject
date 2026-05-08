@@ -222,19 +222,23 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	 * Senior
 	 */
 	private String computeCategory(CoreUser user) {
-	    if (user.getUserDob() == null)
+	    if (user.getUserDob() == null) {
 	        return "UNKNOWN";
+	    }
 
 	    int age = Period.between(user.getUserDob(), LocalDate.now()).getYears();
 
-	    if (age >= 18)
-	        return "SENIOR";
-	    if (age >= 10 && age < 18)
-	        return "SUBJUNIOR";
-	    if (age < 10)
-	        return "JUNIOR";
+	    if (age < 0) {
+	        return "UNKNOWN";
+	    }
 
-	    return "UNKNOWN";
+	    if (age >= 18) {
+	        return "SENIOR";
+	    } else if (age >= 14) {
+	        return "JUNIOR";
+	    } else {
+	        return "SUBJUNIOR";
+	    }
 	}
 
 
