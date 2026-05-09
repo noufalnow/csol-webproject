@@ -10,10 +10,12 @@ import com.dms.kalari.admin.repository.CoreUserRepository;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.events.entity.Event;
+import com.dms.kalari.events.entity.EventChestConfig;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEvent;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.repository.EventChestConfigRepository;
 import com.dms.kalari.events.repository.EventItemMapRepository;
 import com.dms.kalari.events.repository.EventItemRepository;
 import com.dms.kalari.events.repository.EventRepository;
@@ -44,11 +46,13 @@ public class MemberEventItemService {
 	private final NodeRepository nodeRepository;
 	private final EventItemMapRepository eventItemMapRepository;
 	private final EventRepository eventRepository;
+	private final EventChestConfigRepository eventChestConfigRepository;
 
 	public MemberEventItemService(MemberEventItemRepository memberEventItemRepository,
 			MemberEventRepository memberEventRepository, EventItemRepository eventItemRepository,
 			CoreUserRepository coreUserRepository, NodeRepository nodeRepository,
-			EventItemMapRepository eventItemMapRepository, EventRepository eventRepository) {
+			EventItemMapRepository eventItemMapRepository, EventRepository eventRepository,
+			EventChestConfigRepository eventChestConfigRepository) {
 		this.memberEventItemRepository = memberEventItemRepository;
 		this.memberEventRepository = memberEventRepository;
 		this.eventItemRepository = eventItemRepository;
@@ -56,6 +60,7 @@ public class MemberEventItemService {
 		this.nodeRepository = nodeRepository;
 		this.eventItemMapRepository = eventItemMapRepository;
 		this.eventRepository = eventRepository;
+		this.eventChestConfigRepository = eventChestConfigRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -325,21 +330,66 @@ public class MemberEventItemService {
 	            .findByEventIdWithFilters(eventId, itemId, fGender, fCategory);
 
         Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = new LinkedHashMap<>();
+        
+        //Map<String, String> judgeKeys = new HashMap<>();
+        Map<String, EventChestConfig> judgeConfigs =
+                new HashMap<>();
+        
+        
+        List<EventChestConfig> configs =
+                eventChestConfigRepository.findByEventId(eventId);
+
+        Map<String, EventChestConfig> configLookup =
+                new HashMap<>();
+
+        for (EventChestConfig cfg : configs) {
+
+            String key =
+                    cfg.getEventItemMap().getEimId()
+                    + "_"
+                    + cfg.getGender().name();
+
+            configLookup.put(key, cfg);
+        }
 
         for (MemberEventItem mei : items) {
-            String itemName = mei.getMemberEventItem().getEvitemName();
-            String gender = mei.getMemberEventGender().name();
-            String category = mei.getMemberEventCategory().name();
 
+            String itemName =
+                    mei.getMemberEventItem().getEvitemName();
+
+            String gender =
+                    mei.getMemberEventGender().name();
+
+            String category =
+                    mei.getMemberEventCategory().name();
+
+            String judgeKey =
+        	        mei.getMemberEventMap().getEimId()
+        	        + "_"
+        	        + mei.getMemberEventGender().name();
+
+            // preserve existing matrix
             matrix
                 .computeIfAbsent(itemName, k -> new LinkedHashMap<>())
                 .computeIfAbsent(gender, k -> new LinkedHashMap<>())
                 .computeIfAbsent(category, k -> new ArrayList<>())
                 .add(mei);
+
+            // metadata branch
+            String matrixKey =
+        	        itemName + "::" + gender + "::" + category;
+
+        	judgeConfigs.put(
+        	        matrixKey,
+        	        configLookup.get(judgeKey)
+        	);
         }
 
         return matrix;
     }
+	
+	
+	
 	
 	
 	@Transactional

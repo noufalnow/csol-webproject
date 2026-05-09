@@ -48,5 +48,15 @@ public class EventChestConfig extends BaseEntity {
 
     @Column(name = "ecc_suffix")
     private String suffix;
+    
+    
+    @Column(name = "ecc_judge1", length = 100)
+    private String judge1;
+    
+    @Column(name = "ecc_judge2", length = 100)
+    private String judge2;
+    
+    @Column(name = "ecc_judge3", length = 100)
+    private String judge3;
 
 }

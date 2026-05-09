@@ -42,6 +42,16 @@ public class EventChestConfigDTO extends BaseDTO {
 
     @Size(max = 20)
     private String suffix;
+    
+    @Size(max = 100)
+    private String judge1;
+    
+    @Size(max = 100)
+    private String judge2;
+    
+    @Size(max = 100)
+    private String judge3;
+    
 
     public EventChestConfigDTO(
             Long chestConfigId,

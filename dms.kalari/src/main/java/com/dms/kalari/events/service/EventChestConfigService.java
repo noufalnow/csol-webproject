@@ -2,11 +2,15 @@ package com.dms.kalari.events.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -263,37 +267,16 @@ public class EventChestConfigService {
     @Transactional
     public void regenerateChestNumbers(Long eventId) {
 
-	    System.out.printf("\n===== REGENERATE CHEST NUMBERS : EVENT %d =====\n", eventId);
-
 	    List<EventChestConfig> configs =
 	            eventChestConfigRepository.findByEventId(eventId);
 
-	    System.out.printf("Total Configs Found : %d\n", configs.size());
-
 	    for (EventChestConfig config : configs) {
 
-	        System.out.printf(
-	                "\nProcessing Config -> EIM ID : %d | Gender : %s\n",
-	                config.getEventItemMap().getEimId(),
-	                config.getGender()
-	        );
-
 	        if (config.getStartNo() == null) {
-
-	            System.out.printf(
-	                    "Skipped : Start Number is NULL for Config ID %d\n",
-	                    config.getChestConfigId()
-	            );
-
 	            continue;
 	        }
 
 	        Long currentNo = config.getStartNo();
-
-	        System.out.printf(
-	                "Starting Chest Number : %d\n",
-	                currentNo
-	        );
 
 	        List<MemberEventItem> members =
 	                memberEventItemRepository
@@ -302,46 +285,144 @@ public class EventChestConfigService {
 	                                config.getGender()
 	                        );
 
-	        System.out.printf(
-	                "Members Found : %d\n",
-	                members.size()
-	        );
+	        // reserve already-used chest numbers
+	        Set<Long> usedNumbers = members.stream()
+	                .filter(this::hasScores)
+	                .map(MemberEventItem::getMemberChestNo)
+	                .filter(Objects::nonNull)
+	                .collect(Collectors.toSet());
+
+	        List<MemberEventItem> toUpdate = new ArrayList<>();
 
 	        for (MemberEventItem member : members) {
 
-	            System.out.printf(
-	                    "Assigning Chest No %d -> MEI ID : %d | Member : %s\n",
-	                    currentNo,
-	                    member.getMeiId(),
-	                    member.getMemberEventMember() != null
-	                            ? member.getMemberEventMember().getUserFname()
-	                            : "UNKNOWN"
-	            );
+	            // skip scored participants
+	            if (hasScores(member)) {
+	                continue;
+	            }
+
+	            // find next free number
+	            while (usedNumbers.contains(currentNo)) {
+	                currentNo++;
+	            }
 
 	            member.setMemberChestNo(currentNo);
+
+	            usedNumbers.add(currentNo);
+
+	            toUpdate.add(member);
 
 	            currentNo++;
 	        }
 
-	        //config.setCurrentNo(currentNo);
+	        if (!toUpdate.isEmpty()) {
+	            memberEventItemRepository.saveAll(toUpdate);
+	        }
+	    }
+	}
+    
+    private boolean hasScores(MemberEventItem member) {
 
-	        System.out.printf(
-	                "Next Available Chest Number Saved : %d\n",
-	                currentNo
-	        );
+	    return
 
-	        memberEventItemRepository.saveAll(members);
+	        (member.getMemberEventScore() != null
+	                && member.getMemberEventScore() > 0)
 
-	        //eventChestConfigRepository.save(config);
+	        ||
 
-	        System.out.printf(
-	                "Config Saved Successfully : %d\n",
-	                config.getChestConfigId()
-	        );
+	        (member.getMemberScore1() != null
+	                && member.getMemberScore1() > 0)
+
+	        ||
+
+	        (member.getMemberScore2() != null
+	                && member.getMemberScore2() > 0)
+
+	        ||
+
+	        (member.getMemberScore3() != null
+	                && member.getMemberScore3() > 0);
+	}
+    
+    
+    
+    public Map<String, EventChestConfig> getJudgeConfigsByEvent(Long eventId) {
+
+	    List<EventChestConfig> configs =
+	            eventChestConfigRepository.findByEventId(eventId);
+
+	    Map<String, EventChestConfig> map = new HashMap<>();
+
+	    for (EventChestConfig config : configs) {
+
+	        String key =
+	                config.getEventItemMap().getEimId()
+	                + "_"
+	                + config.getGender().name();
+
+	        map.put(key, config);
 	    }
 
-	    System.out.printf(
-	            "\n===== CHEST NUMBER REGENERATION COMPLETED =====\n"
-	    );
+	    return map;
 	}
+    
+    
+    @Transactional
+    public void updateJudgeNames(
+            Map<String, String> judge1Map,
+            Map<String, String> judge2Map,
+            Map<String, String> judge3Map) {
+
+        Set<String> keys = new HashSet<>();
+
+        keys.addAll(judge1Map.keySet());
+        keys.addAll(judge2Map.keySet());
+        keys.addAll(judge3Map.keySet());
+
+        if (keys.isEmpty()) {
+            return;
+        }
+
+        List<EventChestConfig> toUpdate =
+                new ArrayList<>();
+
+        for (String key : keys) {
+
+            String[] parts = key.split("_");
+
+            Long eimId =
+                    Long.valueOf(parts[0]);
+
+            CoreUser.Gender gender =
+                    CoreUser.Gender.valueOf(parts[1]);
+
+            Optional<EventChestConfig> optional =
+                    repository.findByEimIdAndGender(
+                            eimId,
+                            gender
+                    );
+
+            if (optional.isEmpty()) {
+                continue;
+            }
+
+            EventChestConfig config =
+                    optional.get();
+
+            config.setJudge1(
+                    judge1Map.get(key));
+
+            config.setJudge2(
+                    judge2Map.get(key));
+
+            config.setJudge3(
+                    judge3Map.get(key));
+
+            toUpdate.add(config);
+        }
+
+        if (!toUpdate.isEmpty()) {
+            repository.saveAll(toUpdate);
+        }
+    }
 }

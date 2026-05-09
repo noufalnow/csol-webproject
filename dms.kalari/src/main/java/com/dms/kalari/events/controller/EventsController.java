@@ -439,7 +439,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 		// Safe fetch of members
 		Map<String, Map<String, List<CoreUser>>> memberMatrix = Objects
-				.requireNonNullElse(memberUserService.getMembersMatrix(nodeId), Collections.emptyMap());
+				.requireNonNullElse(memberUserService.getMembersMatrix(nodeId,eventRecord), Collections.emptyMap());
 
 		// Fetch all EventItemMap for the event safely
 		Map<EventItemMap.Category, List<EventItemMap>> eventItemsByCategory = Objects
@@ -1088,7 +1088,17 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	                );
 
 	        model.addAttribute("matrix", matrix);
+	        
+	        System.out.println("===== MATRIX =====");
+	        matrix.forEach((item, genderMap) -> {});
+	        System.out.println("==================");
 	    }
+	    
+	    Map<String, EventChestConfig> judgeConfigs =
+		        eventChestConfigService
+		                .getJudgeConfigsByEvent(eventId);
+
+	    model.addAttribute("judgeConfigs", judgeConfigs);
 
 	    Map<String, String> paramx = new HashMap<>();
 	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
@@ -1117,6 +1127,10 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    Map<Long, Double> score1 = new HashMap<>();
 	    Map<Long, Double> score2 = new HashMap<>();
 	    Map<Long, Double> score3 = new HashMap<>();
+	    
+	    Map<String, String> judge1Map = new HashMap<>();
+	    Map<String, String> judge2Map = new HashMap<>();
+	    Map<String, String> judge3Map = new HashMap<>();
 
 	    params.forEach((key, value) -> {
 
@@ -1139,9 +1153,42 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
 	            score3.put(meiId, Double.valueOf(value));
 	        }
+	        
+	        else if (key.startsWith("judge1[")) {
+
+	            String judgeKey =
+	                    key.substring(7, key.length() - 1);
+
+	            judge1Map.put(judgeKey, value);
+	        }
+
+	        // JUDGE 2
+	        else if (key.startsWith("judge2[")) {
+
+	            String judgeKey =
+	                    key.substring(7, key.length() - 1);
+
+	            judge2Map.put(judgeKey, value);
+	        }
+
+	        // JUDGE 3
+	        else if (key.startsWith("judge3[")) {
+
+	            String judgeKey =
+	                    key.substring(7, key.length() - 1);
+
+	            judge3Map.put(judgeKey, value);
+	        }
+	        
 	    });
 
 	    memberEventItemService.updateJudgeScores(score1, score2, score3);
+	    eventChestConfigService.updateJudgeNames(
+		        judge1Map,
+		        judge2Map,
+		        judge3Map
+		);
+	    
 
 	    Map<String, Object> body = new HashMap<>();
 	    body.put("message", "Judge scores updated successfully");

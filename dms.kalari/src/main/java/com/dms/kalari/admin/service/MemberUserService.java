@@ -12,6 +12,7 @@ import com.dms.kalari.admin.repository.MisDesignationRepository;
 import com.dms.kalari.common.BaseService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
+import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -221,12 +222,15 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	 * Compute category based on DOB: 8-15 -> Junior 12-15 -> Sub-Junior 22+ ->
 	 * Senior
 	 */
-	private String computeCategory(CoreUser user) {
-	    if (user.getUserDob() == null) {
+	private String computeCategory(CoreUser user, EventDTO eventRecord) {
+
+	    if (user.getUserDob() == null || eventRecord == null || eventRecord.getEventPeriodStart() == null) {
 	        return "UNKNOWN";
 	    }
 
-	    int age = Period.between(user.getUserDob(), LocalDate.now()).getYears();
+	    LocalDate evalDate = eventRecord.getEventPeriodStart();
+
+	    int age = Period.between(user.getUserDob(), evalDate).getYears();
 
 	    if (age < 0) {
 	        return "UNKNOWN";
@@ -245,25 +249,42 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	/**
 	 * Build matrix: Category -> Gender -> List<CoreUser>
 	 */
-	public Map<String, Map<String, List<CoreUser>>> getMembersMatrix(Long nodeId) {
-	    List<CoreUser> members = coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(nodeId,CoreUser.UserType.MEMBER);
+	/**
+	 * Build matrix: Category -> Gender -> List<CoreUser>
+	 */
+	public Map<String, Map<String, List<CoreUser>>> getMembersMatrix(Long nodeId, EventDTO eventRecord) {
+
+	    List<CoreUser> members =
+	            coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(
+	                    nodeId,
+	                    CoreUser.UserType.MEMBER
+	            );
 
 	    Map<String, Map<String, List<CoreUser>>> matrix = new HashMap<>();
+
 	    List<String> categories = List.of("JUNIOR", "SUBJUNIOR", "SENIOR");
 
 	    for (String cat : categories) {
+
 	        Map<String, List<CoreUser>> genderMap = new HashMap<>();
-	        genderMap.put("MALE",
-	            members.stream()
-	                   .filter(u -> u.getGender() == Gender.MALE && cat.equals(computeCategory(u)))
-	                   .collect(Collectors.toList()));
 
-	        genderMap.put("FEMALE",
-	            members.stream()
-	                   .filter(u -> u.getGender() == Gender.FEMALE && cat.equals(computeCategory(u)))
-	                   .collect(Collectors.toList()));
+	        genderMap.put(
+	                "MALE",
+	                members.stream()
+	                        .filter(u -> u.getGender() == Gender.MALE)
+	                        .filter(u -> cat.equals(computeCategory(u, eventRecord)))
+	                        .collect(Collectors.toList())
+	        );
 
-	        matrix.put(cat, genderMap); // <-- missing line
+	        genderMap.put(
+	                "FEMALE",
+	                members.stream()
+	                        .filter(u -> u.getGender() == Gender.FEMALE)
+	                        .filter(u -> cat.equals(computeCategory(u, eventRecord)))
+	                        .collect(Collectors.toList())
+	        );
+
+	        matrix.put(cat, genderMap);
 	    }
 
 	    return matrix;
