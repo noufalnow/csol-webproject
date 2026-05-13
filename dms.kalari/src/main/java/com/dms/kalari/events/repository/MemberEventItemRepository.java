@@ -193,6 +193,32 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		        @Param("eimId") Long eimId,
 		        @Param("gender") Gender gender
 		);
+	
+	
+	@Query("""
+		    SELECT m
+		    FROM MemberEventItem m
+		    WHERE m.memberEventMap.eimId = :eimId
+		    AND m.memberEventMember.userId = :userId
+		    AND m.deleted = false
+		""")
+		Optional<MemberEventItem> findByEventMapAndUser(
+		        @Param("eimId") Long eimId,
+		        @Param("userId") Long userId
+		);
+	
+	
+	@Query("""
+		    SELECT m
+		    FROM MemberEventItem m
+		    WHERE m.memberEvent.eventId = :eventId
+		    AND m.memberEventItem.evitemId <> :itemId
+		    AND m.deleted = false
+		""")
+		List<MemberEventItem> findByEventExcludingItem(
+		        @Param("eventId") Long eventId,
+		        @Param("itemId") Long itemId
+		);
 
 
 

@@ -94,7 +94,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler(CustomValidationException.class)
+    /*@ExceptionHandler(CustomValidationException.class)
     public ResponseEntity<ValidationErrorResponse> handleCustomValidationException(CustomValidationException ex) {
         log.error("Custom validation failed: {}", ex.getMessage(), ex);
         
@@ -111,6 +111,25 @@ public class GlobalExceptionHandler {
             ex.getErrors() != null ? ex.getErrors() : new HashMap<>()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }*/
+    
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleCustomValidationException(CustomValidationException ex) {
+        log.error("Custom validation failed: {}", ex.getMessage(), ex);
+
+        if (shouldSendEmailNotification()) {
+            sendErrorEmail("Custom Validation Failed - 400 Error",
+                buildDetailedEmailContent("CustomValidationException", ex, HttpStatus.BAD_REQUEST));
+        }
+
+        String userMessage = isProduction() ? GENERIC_VALIDATION_MESSAGE : ex.getMessage();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "error");
+        response.put("message", userMessage);
+        response.put("error", ex.getErrors() != null ? ex.getErrors() : new HashMap<>());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // ===================== SECURITY & AUTHENTICATION EXCEPTIONS ========================= //

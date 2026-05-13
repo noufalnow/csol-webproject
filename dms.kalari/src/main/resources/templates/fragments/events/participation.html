@@ -80,18 +80,74 @@
 
 													<!-- iterate users (same as original) -->
 													<div th:each="user : ${memberMatrix[catEntry.key].MALE}">
-													<div th:if="${#lists.isEmpty(eligibleMeids) or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
-     													class="form-check">
-														<input class="form-check-input" type="checkbox"
-															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
-															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][MALE]'"
-															th:value="${itemInCategory.eimId}"
-															th:some="${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId}"	
-															th:checked="${selectedKeys != null and selectedKeys.contains(itemInCategory.eimId + '-' + user.userId)}" />
-														<label class="form-check-label"
-															th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
-															th:text="${user.userFname + ' ' + user.userLname}"></label>
-													</div>
+
+													    <div th:if="${#lists.isEmpty(eligibleMeids) 
+													        or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
+													        th:attr="data-item-type=${uniqueItem.evitemType.name()}" 
+															class="participant-row border rounded p-2 mb-2 bg-white">
+
+													        <div class="d-flex justify-content-between align-items-center gap-2">
+
+													            <!-- CHECK -->
+													            <div class="form-check m-0">
+
+													                <input class="form-check-input"
+													                       type="checkbox"
+
+													                       th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
+
+													                       th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][MALE]'"
+
+													                       th:value="${itemInCategory.eimId}"
+
+													                       th:checked="${selectedKeys != null 
+													                           and selectedKeys.contains(itemInCategory.eimId + '-' + user.userId)}" />
+
+													                <label class="form-check-label fw-semibold"
+													                       th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
+													                       th:text="${user.userFname + ' ' + user.userLname}">
+													                </label>
+
+													            </div>
+
+													            <!-- TEAM SELECT -->
+													            <div th:if="${uniqueItem.evitemType.name() == 'T'}"
+													                 style="min-width:180px;">
+
+													                <select class="form-select form-select-sm"
+
+													                        th:name="'teamSelections[' 
+													                            + ${user.userId} + '][' 
+													                            + ${itemInCategory.eimId} + ']'">
+
+													                    <option value="">
+													                        Select Team
+													                    </option>
+
+																		<option th:each="team : ${teamOptions[
+																		            uniqueItem.evitemCode 
+																		            + '-' 
+																		            + catEntry.key 
+																		            + '-MALE'
+																		        ]}"
+
+																		        th:value="${team.code}"
+
+																		        th:selected="${selectedTeams[
+																		            user.userId + '-' + itemInCategory.eimId
+																		        ] == team.code}"
+
+																		        th:text="${team.code}">
+																		</option>
+
+													                </select>
+
+													            </div>
+
+													        </div>
+
+													    </div>
+
 													</div>
 												</div>
 											</div>
@@ -106,17 +162,74 @@
 
 													<!-- iterate users (same as original) -->
 													<div th:each="user : ${memberMatrix[catEntry.key].FEMALE}">
-													<div th:if="${#lists.isEmpty(eligibleMeids) or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
-     													class="form-check">	
-														<input class="form-check-input" type="checkbox"
-															th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_g'"
-															th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][FEMALE]'"
-															th:value="${itemInCategory.eimId}"
-															th:checked="${selectedKeys != null and selectedKeys.contains(itemInCategory.eimId + '-' + user.userId)}" />
-														<label class="form-check-label"
-															th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_g'"
-															th:text="${user.userFname + ' ' + user.userLname}"></label>
-															</div>
+
+													    <div th:if="${#lists.isEmpty(eligibleMeids) 
+													        or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
+															th:attr="data-item-type=${uniqueItem.evitemType.name()}"
+															class="participant-row border rounded p-2 mb-2 bg-white">
+
+													        <div class="d-flex justify-content-between align-items-center gap-2">
+
+													            <!-- CHECK -->
+													            <div class="form-check m-0">
+
+													                <input class="form-check-input"
+													                       type="checkbox"
+
+													                       th:id="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
+
+													                       th:name="'selectedUsers[' + ${user.userId} + '][' + ${catEntry.key} + '][FEMALE]'"
+
+													                       th:value="${itemInCategory.eimId}"
+
+													                       th:checked="${selectedKeys != null 
+													                           and selectedKeys.contains(itemInCategory.eimId + '-' + user.userId)}" />
+
+													                <label class="form-check-label fw-semibold"
+													                       th:for="'chk_' + ${itemInCategory.eimId} + '_' + ${catEntry.key} + '_' + ${user.userId} + '_b'"
+													                       th:text="${user.userFname + ' ' + user.userLname}">
+													                </label>
+
+													            </div>
+
+													            <!-- TEAM SELECT -->
+													            <div th:if="${uniqueItem.evitemType.name() == 'T'}"
+													                 style="min-width:180px;">
+
+													                <select class="form-select form-select-sm"
+
+													                        th:name="'teamSelections[' 
+													                            + ${user.userId} + '][' 
+													                            + ${itemInCategory.eimId} + ']'">
+
+													                    <option value="">
+													                        Select Team
+													                    </option>
+
+																		<option th:each="team : ${teamOptions[
+																		            uniqueItem.evitemCode 
+																		            + '-' 
+																		            + catEntry.key 
+																		            + '-FEMALE'
+																		        ]}"
+
+																		        th:value="${team.code}"
+
+																		        th:selected="${selectedTeams[
+																		            user.userId + '-' + itemInCategory.eimId
+																		        ] == team.code}"
+
+																		        th:text="${team.code}">
+																		</option>
+
+													                </select>
+
+													            </div>
+
+													        </div>
+
+													    </div>
+
 													</div>
 												</div>
 											</div>
@@ -140,18 +253,17 @@
 								th:onclick="'validateAndSubmit(\'participationForm_' + ${uniqueItem.evitemId} + '\')'">
 								Save Selections</button>
 						</div>
-						<div id="error-messages" class="text-danger mt-2"></div>
+						
 					</form>
 				</div>
 			</div>
 		</div>
 
-		<div id="error-messages" class="text-danger mt-2"></div>
 
 
 
 	</div>
-
+	<div id="error-messages" class="text-danger mt-2"></div>
 
 
 
@@ -264,7 +376,7 @@ form-check-label {
 }
 
 .modal-body {
-  max-height: 100%;
+  max-height: fit-content;
 }
 
 </style>
@@ -295,23 +407,120 @@ closeBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('change', function (e) {
-    if (e.target && e.target.matches('.form-check-input')) {
-        // Find the nearest parent section (Boys or Girls)
-        const section = e.target.closest('.col-sm-6');  
+
+    // ── CHECKBOX ──────────────────────────────────────
+	if (e.target.matches('.form-check-input')) {
+
+	    const checkbox = e.target;
+
+	    const section =
+	        checkbox.closest('.col-sm-6');
+
+	    if (!section) return;
+
+	    const row =
+	        checkbox.closest('.participant-row');
+
+	    if (!row) return;
+
+	    /*
+	     * ITEM TYPE
+	     */
+	    const itemType =
+	        row.dataset.itemType;
+
+	    /*
+	     * LIMIT
+	     * I = 3 participants
+	     * T = 6 participants
+	     */
+	    const maxAllowed =
+	        itemType === 'T'
+	            ? 6
+	            : 3;
+
+	    if (checkbox.checked) {
+
+	        const checkedCount =
+	            section.querySelectorAll(
+	                '.form-check-input:checked'
+	            ).length;
+
+	        if (checkedCount > maxAllowed) {
+
+	            checkbox.checked = false;
+
+	            Swal.fire({
+	                icon: 'warning',
+	                title: 'Limit Reached',
+	                text:
+	                    itemType === 'T'
+	                    ? 'Maximum 6 participants allowed (3 teams × 2).'
+	                    : 'Maximum 3 participants allowed.',
+	                confirmButtonText: 'OK'
+	            });
+
+	            return;
+	        }
+	    }
+
+	    /*
+	     * TEAM SELECT ENABLE
+	     */
+	    const select =
+	        row.querySelector(
+	            'select.form-select'
+	        );
+
+	    if (select) {
+
+	        select.disabled =
+	            !checkbox.checked;
+
+	        if (!checkbox.checked) {
+	            select.value = '';
+	        }
+	    }
+	}
+
+    // ── TEAM SELECT ───────────────────────────────────
+    if (e.target.matches('select.form-select')) {
+        const currentSelect = e.target;
+        const selectedTeam  = currentSelect.value;
+        if (!selectedTeam) return;
+
+        const section = currentSelect.closest('.col-sm-6');
         if (!section) return;
 
-        // Count how many are checked in this section
-        const checkboxes = section.querySelectorAll('input[type="checkbox"]');
-        const checkedCount = Array.from(checkboxes).filter(c => c.checked).length;
+        // Count how many OTHER checked rows already have this team —
+        // excluding the row that just changed, so we don't double-count it.
+        let existingCount = 0;
+        section.querySelectorAll('.participant-row').forEach(row => {
+            const cb  = row.querySelector('.form-check-input');
+            const sel = row.querySelector('select.form-select');
+            if (!cb || !sel || sel === currentSelect) return;
+            if (cb.checked && sel.value === selectedTeam) existingCount++;
+        });
 
-        // Limit to 3 selections
-        if (checkedCount > 3) {
-            e.target.checked = false;
-            document.getElementById('limitDialog').showModal();
-        }
+        // If 2 others already have this team, the current pick would make 3 — reject.
+		if (existingCount >= 2) {
+		    currentSelect.value = '';
+		    Swal.fire({
+		        icon: 'warning',
+		        title: 'Team Full',
+		        text: `${selectedTeam} already has 2 participants.`,
+		        confirmButtonText: 'OK'
+		    });
+		}
     }
 });
 
+// ── INITIAL STATE ─────────────────────────────────────
+document.querySelectorAll('.participant-row').forEach(row => {
+    const cb  = row.querySelector('.form-check-input');
+    const sel = row.querySelector('select.form-select');
+    if (cb && sel) sel.disabled = !cb.checked;
+});
 
 
 </script>

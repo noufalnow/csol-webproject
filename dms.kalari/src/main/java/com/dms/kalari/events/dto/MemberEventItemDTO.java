@@ -57,4 +57,8 @@ public class MemberEventItemDTO extends BaseDTO {
     private Double memberScore2;           // Score
     
     private Double memberScore3;           // Score
+    
+    
+    private String memberEventTeamCode;    
+    
 }

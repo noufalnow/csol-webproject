@@ -7,7 +7,12 @@ public class CustomValidationException extends RuntimeException {
     private final Map<String, String> errors;
 
     public CustomValidationException(Map<String, String> errors) {
-        super("Validation failed with errors: " + errors.toString());
+        super("Validation failed");
+        this.errors = errors;
+    }
+
+    public CustomValidationException(String message, Map<String, String> errors) {
+        super(message);
         this.errors = errors;
     }
 

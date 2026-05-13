@@ -1,7 +1,11 @@
 package com.dms.kalari.events.dto;
 
 import com.dms.kalari.common.BaseDTO;
+import com.dms.kalari.events.entity.EventItem.EventItemType;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,4 +33,6 @@ public class EventItemDTO extends BaseDTO {
 
     @Size(max = 200, message = "Criteria must be less than 200 characters")
     private String evitemCriteria;
+    
+    private EventItemType evitemType = EventItemType.I;
 }

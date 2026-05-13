@@ -21,6 +21,7 @@ import com.dms.kalari.events.repository.EventItemRepository;
 import com.dms.kalari.events.repository.EventRepository;
 import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.repository.MemberEventRepository;
+import com.dms.kalari.exception.CustomValidationException;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
@@ -38,6 +39,35 @@ import java.util.stream.Collectors;
 
 @Service
 public class MemberEventItemService {
+    
+    
+    private static class Submission {
+
+	    final Long eventItemId;
+
+	    final Long userId;
+
+	    final EventItemMap.Category category;
+
+	    final CoreUser.Gender gender;
+
+	    final String teamCode;
+
+	    Submission(
+	            Long e,
+	            Long u,
+	            EventItemMap.Category c,
+	            CoreUser.Gender g,
+	            String t
+	    ) {
+
+	        this.eventItemId = e;
+	        this.userId = u;
+	        this.category = c;
+	        this.gender = g;
+	        this.teamCode = t;
+	    }
+	}
 
 	private final MemberEventItemRepository memberEventItemRepository;
 	private final MemberEventRepository memberEventRepository;
@@ -87,6 +117,8 @@ public class MemberEventItemService {
 			return memberEventItemRepository.save(item);
 		}).orElseThrow(() -> new ResourceNotFoundException("MemberEventItem not found with id: " + id, id));
 	}
+	
+	
 
 	
 	@Transactional
@@ -104,15 +136,32 @@ public class MemberEventItemService {
 	            // FROM MemberEventItem m WHERE m.memberEvent.id=:eventId AND m.memberEventNode.id=:nodeId
 
 	    // 2) SUBMITTED keys + details from request
-	    class Submission {
-	        final Long eventItemId;
-	        final Long userId;
-	        final EventItemMap.Category category;
-	        final CoreUser.Gender gender;
-	        Submission(Long e, Long u, EventItemMap.Category c, CoreUser.Gender g) {
-	            this.eventItemId = e; this.userId = u; this.category = c; this.gender = g;
-	        }
-	    }
+	    /*class Submission {
+
+		    final Long eventItemId;
+		    final Long userId;
+
+		    final EventItemMap.Category category;
+
+		    final CoreUser.Gender gender;
+
+		    final String teamCode;
+
+		    Submission(
+		            Long e,
+		            Long u,
+		            EventItemMap.Category c,
+		            CoreUser.Gender g,
+		            String t
+		    ) {
+
+		        this.eventItemId = e;
+		        this.userId = u;
+		        this.category = c;
+		        this.gender = g;
+		        this.teamCode = t;
+		    }
+		}*/
 
 	    Map<String, Submission> submitted = new HashMap<>();
 
@@ -129,9 +178,37 @@ public class MemberEventItemService {
 	        CoreUser.Gender gender = CoreUser.Gender.valueOf(parts[2].toUpperCase());
 	        Long eventItemId = Long.valueOf(value);
 
-	        String k = eventItemId + "-" + userId;
-	        submitted.put(k, new Submission(eventItemId, userId, category, gender));
+	        String teamKey =
+	                "teamSelections[" +
+	                userId +
+	                "][" +
+	                eventItemId +
+	                "]";
+
+	        String teamCode =
+	                requestParams.get(teamKey);
+
+	        String k =
+	                eventItemId + "-" + userId;
+
+	        submitted.put(
+	                k,
+	                new Submission(
+	                        eventItemId,
+	                        userId,
+	                        category,
+	                        gender,
+	                        teamCode
+	                )
+	        );
 	    });
+	    
+	    
+	    validateParticipationLimits(
+		        eventId,
+		        itemId,
+		        submitted
+		);
 
 	    // 3) Determine changes
 	    Set<String> toInsertKeys = new HashSet<>(submitted.keySet());
@@ -144,6 +221,46 @@ public class MemberEventItemService {
 	    if (!toDeleteKeys.isEmpty()) {
 	        memberEventItemRepository.deleteByKeys(toDeleteKeys,itemId);
 	        // implement query using keys or (eventItemId,userId) pair
+	    }
+	    
+	    /*
+	     * 5) UPDATE EXISTING TEAM CODES
+	     */
+	    Set<String> toUpdateKeys = new HashSet<>(submitted.keySet());
+
+	    toUpdateKeys.retainAll(existingKeys);
+
+	    for (String k : toUpdateKeys) {
+
+	        Submission s = submitted.get(k);
+
+	        MemberEventItem existing =
+	                memberEventItemRepository
+	                        .findByEventMapAndUser(
+	                                s.eventItemId,
+	                                s.userId
+	                        )
+	                        .orElse(null);
+
+	        if (existing == null) {
+	            continue;
+	        }
+
+	        /*
+	         * ONLY TEAM ITEMS
+	         */
+	        if (
+	            existing.getMemberEventItem()
+	                    .getEvitemType()
+	            == EventItem.EventItemType.T
+	        ) {
+
+	            existing.setMemberEventTeamCode(
+	                    s.teamCode
+	            );
+
+	            memberEventItemRepository.save(existing);
+	        }
 	    }
 
 	    // 5) Insert new
@@ -169,10 +286,191 @@ public class MemberEventItemService {
 	        item.setMemberEventScore(0.00);
 	        item.setMemberEventYear(event.getEventYear());
 	        item.setMemberHostType(event.getEventHost());
-	        
+
+	        if (
+	            map.getItem().getEvitemType()
+	            == EventItem.EventItemType.T
+	        ) {
+
+	            item.setMemberEventTeamCode(
+	                    s.teamCode
+	            );
+	        }
+
 	        
 	        memberEventItemRepository.save(item);
 	    }
+	}
+	
+	
+	private void validateParticipationLimits(
+	        Long eventId,
+	        Long currentItemId,
+	        Map<String, Submission> submitted
+	) {
+
+	    /*
+	     * EXISTING DB RECORDS
+	     * EXCLUDING CURRENT ITEM
+	     */
+	    List<MemberEventItem> existingItems =
+	            memberEventItemRepository
+	                    .findByEventExcludingItem(
+	                            eventId,
+	                            currentItemId
+	                    );
+
+	    /*
+	     * COUNTS
+	     */
+	    Map<Long, Integer> individualCount =
+	            new HashMap<>();
+
+	    Map<Long, Integer> teamCount =
+	            new HashMap<>();
+
+	    Map<Long, Integer> totalCount =
+	            new HashMap<>();
+
+	    /*
+	     * EXISTING DB COUNTS
+	     */
+	    for (MemberEventItem item : existingItems) {
+
+	        Long userId =
+	                item.getMemberEventMember()
+	                        .getUserId();
+
+	        EventItem.EventItemType type =
+	                item.getMemberEventItem()
+	                        .getEvitemType();
+
+	        totalCount.merge(
+	                userId,
+	                1,
+	                Integer::sum
+	        );
+
+	        if (type == EventItem.EventItemType.I) {
+
+	            individualCount.merge(
+	                    userId,
+	                    1,
+	                    Integer::sum
+	            );
+
+	        } else {
+
+	            teamCount.merge(
+	                    userId,
+	                    1,
+	                    Integer::sum
+	            );
+	        }
+	    }
+
+	    /*
+	     * CURRENT SUBMISSION COUNTS
+	     */
+	    for (Submission s : submitted.values()) {
+
+	        EventItemMap map =
+	                eventItemMapRepository
+	                        .findById(s.eventItemId)
+	                        .orElse(null);
+
+	        if (map == null) {
+	            continue;
+	        }
+
+	        Long userId = s.userId;
+
+	        EventItem.EventItemType type =
+	                map.getItem()
+	                        .getEvitemType();
+
+	        totalCount.merge(
+	                userId,
+	                1,
+	                Integer::sum
+	        );
+
+	        if (type == EventItem.EventItemType.I) {
+
+	            individualCount.merge(
+	                    userId,
+	                    1,
+	                    Integer::sum
+	            );
+
+	        } else {
+
+	            teamCount.merge(
+	                    userId,
+	                    1,
+	                    Integer::sum
+	            );
+	        }
+	    }
+
+	    /*
+	     * FINAL VALIDATION
+	     */
+	    for (Long userId : totalCount.keySet()) {
+
+		    int individual =
+		            individualCount.getOrDefault(
+		                    userId,
+		                    0
+		            );
+
+		    int team =
+		            teamCount.getOrDefault(
+		                    userId,
+		                    0
+		            );
+
+		    int total =
+		            totalCount.getOrDefault(
+		                    userId,
+		                    0
+		            );
+
+		    CoreUser user =
+		            coreUserRepository
+		                    .findById(userId)
+		                    .orElse(null);
+
+		    String fullName =
+		            user != null
+		            ? (
+		                user.getUserFname()
+		                + " "
+		                + user.getUserLname()
+		              ).trim()
+		            : ("User #" + userId);
+
+		    if (individual > 2) {
+			    throw new CustomValidationException(
+			        fullName + " exceeds maximum 2 individual items.",
+			        Map.of("individual", fullName + " exceeds maximum 2 individual items.")
+			    );
+			}
+
+			if (team > 2) {
+			    throw new CustomValidationException(
+			        fullName + " exceeds maximum 2 team items.",
+			        Map.of("team", fullName + " exceeds maximum 2 team items.")
+			    );
+			}
+
+			if (total > 4) {
+			    throw new CustomValidationException(
+			        fullName + " exceeds maximum 4 total items.",
+			        Map.of("total", fullName + " exceeds maximum 4 total items.")
+			    );
+			}
+		}
 	}
 
 
@@ -316,6 +614,46 @@ public class MemberEventItemService {
 				.collect(Collectors.toSet());
 
 		return selectedKeys;
+	}
+	
+	
+	public Map<String, String> getSelectedTeams(
+	        Long eventId,
+	        Long nodeId
+	) {
+
+	    List<MemberEventItem> existingItems =
+	            memberEventItemRepository
+	                    .findByEventAndNode(
+	                            eventId,
+	                            nodeId
+	                    );
+
+	    Map<String, String> selectedTeams =
+	            new HashMap<>();
+
+	    existingItems.forEach(item -> {
+
+	        if (
+	            item.getMemberEventTeamCode()
+	            != null
+	        ) {
+
+	            String key =
+	                    item.getMemberEventMember()
+	                            .getUserId()
+	                    + "-"
+	                    + item.getMemberEventMap()
+	                            .getEimId();
+
+	            selectedTeams.put(
+	                    key,
+	                    item.getMemberEventTeamCode()
+	            );
+	        }
+	    });
+
+	    return selectedTeams;
 	}
 	
 	

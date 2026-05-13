@@ -183,9 +183,18 @@ $(document).ready(function() {
 	    $('input, select, textarea').removeClass('has-error'); // Remove error classes
 
 	    // Display the general error message
-	    if (response.message) {
-	        $('#error-messages').append('<p class="error-message" style="color:red;">' + response.message + '</p>');
-	    }
+		if (response.message) {
+		    $('#error-messages').append(
+		        '<p class="error-message" style="color:red;">' + response.message + '</p>'
+		    );
+
+		    Swal.fire({
+		        icon: 'error',
+		        title: 'Error',
+		        text: response.message,
+		        confirmButtonText: 'OK'
+		    });
+		}
 
 	    // Iterate through each error in the response
 	    $.each(response.errors, function(field, error) {

@@ -13,6 +13,10 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventItem extends BaseEntity {
+    
+    public enum EventItemType {
+	    I, T
+	}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +34,10 @@ public class EventItem extends BaseEntity {
 
     @Column(name = "evitem_criteria")
     private String evitemCriteria;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evitem_type", nullable = false, length = 1)
+    private EventItemType evitemType = EventItemType.I;
+    
+    
 }

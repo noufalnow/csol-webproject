@@ -22,11 +22,13 @@ import com.dms.kalari.events.dto.EventChestConfigDTO;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
+import com.dms.kalari.events.dto.TeamOptionDTO;
 import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventChestConfig;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
 import com.dms.kalari.events.entity.MemberEventItem;
+import com.dms.kalari.events.helper.TeamBuilderHelper;
 import com.dms.kalari.events.repository.EventChestConfigRepository;
 import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.CertificateBatchService;
@@ -50,7 +52,9 @@ import org.springframework.http.MediaType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -446,12 +450,37 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 				.requireNonNullElse(eventItemMapService.getEventItemMatrix(eventId), Collections.emptyMap());
 
 		// Flatten list safely
+		// Flatten list safely with stable ordering
 		List<EventItemMap> allItems = eventItemsByCategory.values().stream()
-				.flatMap(list -> list.stream().filter(Objects::nonNull)).distinct().collect(Collectors.toList());
+		        .filter(Objects::nonNull)
+		        .flatMap(Collection::stream)
+		        .filter(Objects::nonNull)
+		        .sorted(Comparator.comparing(
+		                e -> e.getItem().getEvitemName(),
+		                String.CASE_INSENSITIVE_ORDER
+		        ))
+		        .distinct()
+		        .collect(Collectors.toList());
 
+		Map<String, List<TeamOptionDTO>> teamOptions =
+		        TeamBuilderHelper.buildTeamOptions(
+		                memberMatrix,
+		                allItems
+		        );
+		
+		model.addAttribute("teamOptions", teamOptions);
+		
+		
 		// Unique EventItems
-		List<EventItem> uniqueEventItems = allItems.stream().map(EventItemMap::getItem).filter(Objects::nonNull)
-				.distinct().collect(Collectors.toList());
+		List<EventItem> uniqueEventItems = allItems.stream()
+		        .map(EventItemMap::getItem)
+		        .filter(Objects::nonNull)
+		        .distinct()
+		        .sorted(Comparator.comparing(
+		                EventItem::getEvitemName,
+		                String.CASE_INSENSITIVE_ORDER
+		        ))
+		        .collect(Collectors.toList());
 
 		// Category as string map for template
 		Map<String, List<EventItemMap>> eventItemsByCategoryStrKey = new HashMap<>();
@@ -472,6 +501,18 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		}
 
 		Set<String> selectedKeys = memberEventItemService.getSelectedKeys(eventId, nodeId);
+		
+		Map<String, String> selectedTeams =
+		        memberEventItemService.getSelectedTeams(
+		                eventId,
+		                nodeId
+		        );
+
+		model.addAttribute(
+		        "selectedTeams",
+		        selectedTeams
+		);
+		
 		model.addAttribute("selectedKeys", selectedKeys);
 
 		// Add attributes safely
@@ -522,8 +563,69 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		// Page reload target
 		Map<String, Object> extra = new HashMap<>();
 		extra.put("loadnext", "participation/" + eventId + "/" + nodeId + (pageParams != null ? "?" + pageParams : ""));
+		
+		
+		Map<String, String> teamSelections = new HashMap<>();
+		
+		requestParams.forEach((key, value) -> {
 
-		memberEventItemService.saveParticipation(eventId, nodeId, requestParams);
+		    /*
+		     * selectedUsers[1932][SUBJUNIOR][MALE]
+		     */
+		    if (key.startsWith("selectedUsers[")) {
+
+		        try {
+
+		            // USER ID
+		            String userId =
+		                    key.substring(
+		                            key.indexOf('[') + 1,
+		                            key.indexOf(']')
+		                    );
+
+		            // eimId
+		            String eimId = value;
+
+		            /*
+		             * Matching:
+		             * teamSelections[1932][380]
+		             */
+		            String teamKey =
+		                    "teamSelections[" +
+		                    userId +
+		                    "][" +
+		                    eimId +
+		                    "]";
+
+		            String teamCode =
+		                    requestParams.get(teamKey);
+
+		            System.out.println(
+		                    "USER : " + userId
+		            );
+
+		            System.out.println(
+		                    "EIM  : " + eimId
+		            );
+
+		            System.out.println(
+		                    "TEAM : " + teamCode
+		            );
+
+		        } catch (Exception ex) {
+
+		            ex.printStackTrace();
+		        }
+		    }
+		});
+		
+		
+
+		memberEventItemService.saveParticipation(
+		        eventId,
+		        nodeId,
+		        requestParams
+		);
 		Map<String, Object> body = new HashMap<>();
 		body.put("message", "Participation saved successfully");
 		body.put("status", "success");
