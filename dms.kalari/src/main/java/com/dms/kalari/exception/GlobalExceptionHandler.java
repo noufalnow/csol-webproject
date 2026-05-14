@@ -117,10 +117,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleCustomValidationException(CustomValidationException ex) {
         log.error("Custom validation failed: {}", ex.getMessage(), ex);
 
-        if (shouldSendEmailNotification()) {
+        /*if (shouldSendEmailNotification()) {
             sendErrorEmail("Custom Validation Failed - 400 Error",
                 buildDetailedEmailContent("CustomValidationException", ex, HttpStatus.BAD_REQUEST));
-        }
+        }*/
 
         String userMessage = isProduction() ? GENERIC_VALIDATION_MESSAGE : ex.getMessage();
 

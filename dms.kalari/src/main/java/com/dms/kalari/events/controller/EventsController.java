@@ -659,7 +659,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	    // default view
 	    if (viewType == null || viewType.isBlank()) {
-	        viewType = "summary";
+	        viewType = "participants";
 	    }
 
 	    model.addAttribute("eventId", mEventId);
