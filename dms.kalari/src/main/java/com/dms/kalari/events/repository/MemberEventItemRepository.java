@@ -213,11 +213,13 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		    FROM MemberEventItem m
 		    WHERE m.memberEvent.eventId = :eventId
 		    AND m.memberEventItem.evitemId <> :itemId
+		    AND m.memberEventNode.nodeId = :nodeId
 		    AND m.deleted = false
 		""")
 		List<MemberEventItem> findByEventExcludingItem(
 		        @Param("eventId") Long eventId,
-		        @Param("itemId") Long itemId
+		        @Param("itemId") Long itemId,
+		        @Param("nodeId") Long nodeId
 		);
 
 

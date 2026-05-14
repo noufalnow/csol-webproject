@@ -207,7 +207,8 @@ public class MemberEventItemService {
 	    validateParticipationLimits(
 		        eventId,
 		        itemId,
-		        submitted
+		        submitted,
+		        branchNode.getNodeId()
 		);
 
 	    // 3) Determine changes
@@ -306,7 +307,8 @@ public class MemberEventItemService {
 	private void validateParticipationLimits(
 	        Long eventId,
 	        Long currentItemId,
-	        Map<String, Submission> submitted
+	        Map<String, Submission> submitted,
+	        Long nodeId
 	) {
 
 	    /*
@@ -317,7 +319,8 @@ public class MemberEventItemService {
 	            memberEventItemRepository
 	                    .findByEventExcludingItem(
 	                            eventId,
-	                            currentItemId
+	                            currentItemId,
+	                            nodeId
 	                    );
 
 	    /*
