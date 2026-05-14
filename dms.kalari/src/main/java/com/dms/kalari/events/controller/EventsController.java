@@ -42,6 +42,7 @@ import com.dms.kalari.events.service.MemberEventService;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -725,6 +726,50 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	            
 	            
 	        default:
+	            
+	         // Build summary stats
+	            int totalParticipations = 0;
+	            Set<Long> uniqueParticipants = new LinkedHashSet<>();
+	            Set<Long> uniqueMales = new LinkedHashSet<>();
+	            Set<Long> uniqueFemales = new LinkedHashSet<>();
+
+	            Map<String, Integer> itemTotals = new LinkedHashMap<>();           // item -> count
+	            Map<String, Integer> itemCatTotals = new LinkedHashMap<>();        // item|cat -> count
+	            Map<String, Integer> itemGenderTotals = new LinkedHashMap<>();     // item|gender -> count
+
+	            for (var itemEntry : matrix.entrySet()) {
+	                String itemName = itemEntry.getKey();
+	                for (var genderEntry : itemEntry.getValue().entrySet()) {
+	                    String gender_d = genderEntry.getKey();
+	                    for (var catEntry : genderEntry.getValue().entrySet()) {
+	                        String cat = catEntry.getKey();
+	                        List<MemberEventItem> meis = catEntry.getValue();
+
+	                        totalParticipations += meis.size();
+
+	                        itemTotals.merge(itemName, meis.size(), Integer::sum);
+	                        itemCatTotals.merge(itemName + " | " + cat, meis.size(), Integer::sum);
+	                        itemGenderTotals.merge(itemName + " | " + gender_d, meis.size(), Integer::sum);
+
+	                        for (MemberEventItem mei : meis) {
+	                            Long userId = mei.getMemberEventMember().getUserId();
+	                            uniqueParticipants.add(userId);
+	                            if ("MALE".equals(gender_d))   uniqueMales.add(userId);
+	                            if ("FEMALE".equals(gender_d)) uniqueFemales.add(userId);
+	                        }
+	                    }
+	                }
+	            }
+
+	            model.addAttribute("totalParticipations",  totalParticipations);
+	            model.addAttribute("uniqueParticipants",   uniqueParticipants.size());
+	            model.addAttribute("uniqueMales",          uniqueMales.size());
+	            model.addAttribute("uniqueFemales",        uniqueFemales.size());
+	            model.addAttribute("itemTotals",           itemTotals);
+	            model.addAttribute("itemCatTotals",        itemCatTotals);
+	            model.addAttribute("itemGenderTotals",     itemGenderTotals);
+	            
+	            
 	            model.addAttribute("pageTitle", "Add Event Participants");
 	            return "events/participants";
 	    }
