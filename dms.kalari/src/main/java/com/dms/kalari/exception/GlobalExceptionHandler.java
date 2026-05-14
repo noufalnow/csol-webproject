@@ -122,12 +122,10 @@ public class GlobalExceptionHandler {
                 buildDetailedEmailContent("CustomValidationException", ex, HttpStatus.BAD_REQUEST));
         }*/
 
-        String userMessage = isProduction() ? GENERIC_VALIDATION_MESSAGE : ex.getMessage();
-
         Map<String, Object> response = new HashMap<>();
         response.put("status", "error");
-        response.put("message", userMessage);
-        response.put("error", ex.getErrors() != null ? ex.getErrors() : new HashMap<>());
+        response.put("message", ex.getMessage()); // ✅ always use actual message, it's user-safe
+        response.put("errors", ex.getErrors() != null ? ex.getErrors() : new HashMap<>());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }

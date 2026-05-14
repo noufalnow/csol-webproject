@@ -184,9 +184,9 @@ $(document).ready(function() {
 
 	    // Display the general error message
 		if (response.message) {
-		    $('#error-messages').append(
+		    /*$('#error-messages').append(
 		        '<p class="error-message" style="color:red;">' + response.message + '</p>'
-		    );
+		    );*/
 
 		    Swal.fire({
 		        icon: 'error',
