@@ -195,7 +195,7 @@ tbody tr:nth-child(even) { background: #f9f9fc; }
   </div>
 
   <!-- ── Data ── -->
-  <div th:each="itemEntry : ${matrix}" class="item-block">
+  <div th:each="itemEntry : ${distinctMatrix}" class="item-block">
     <div class="item-heading">
       <i class="fas fa-tag me-1" style="font-size:9pt;opacity:.7;"></i>
       <span th:text="${itemEntry.key}"></span>

@@ -1,11 +1,13 @@
 package com.dms.kalari.events.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -267,59 +269,126 @@ public class EventChestConfigService {
     @Transactional
     public void regenerateChestNumbers(Long eventId) {
 
-	    List<EventChestConfig> configs =
-	            eventChestConfigRepository.findByEventId(eventId);
+        List<EventChestConfig> configs =
+                eventChestConfigRepository.findByEventId(eventId);
 
-	    for (EventChestConfig config : configs) {
+        for (EventChestConfig config : configs) {
 
-	        if (config.getStartNo() == null) {
-	            continue;
-	        }
+            if (config.getStartNo() == null) {
+                continue;
+            }
 
-	        Long currentNo = config.getStartNo();
+            Long currentNo = config.getStartNo();
 
-	        List<MemberEventItem> members =
-	                memberEventItemRepository
-	                        .findAllByEventItemAndGender(
-	                                config.getEventItemMap().getEimId(),
-	                                config.getGender()
-	                        );
+            List<MemberEventItem> members =
+                    memberEventItemRepository
+                            .findAllByEventItemAndGender(
+                                    config.getEventItemMap().getEimId(),
+                                    config.getGender()
+                            );
 
-	        // reserve already-used chest numbers
-	        Set<Long> usedNumbers = members.stream()
-	                .filter(this::hasScores)
-	                .map(MemberEventItem::getMemberChestNo)
-	                .filter(Objects::nonNull)
-	                .collect(Collectors.toSet());
+            /*
+             * Reserve already used chest numbers
+             * (only from scored participants)
+             */
+            Set<Long> usedNumbers = members.stream()
+                    .filter(this::hasScores)
+                    .map(MemberEventItem::getMemberChestNo)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
 
-	        List<MemberEventItem> toUpdate = new ArrayList<>();
+            List<MemberEventItem> toUpdate = new ArrayList<>();
 
-	        for (MemberEventItem member : members) {
+            /*
+             * GROUP TEAM MEMBERS
+             */
+            Map<Object, List<MemberEventItem>> groupedTeams =
+        	        members.stream()
 
-	            // skip scored participants
-	            if (hasScores(member)) {
-	                continue;
-	            }
+        	                .filter(m -> !hasScores(m))
 
-	            // find next free number
-	            while (usedNumbers.contains(currentNo)) {
-	                currentNo++;
-	            }
+        	                .filter(m ->
+        	                        m.getMemberEventTeamCode() != null
+        	                        && !m.getMemberEventTeamCode().trim().isEmpty()
+        	                )
 
-	            member.setMemberChestNo(currentNo);
+        	                /*
+        	                 * UNIQUE TEAM KEY
+        	                 * nodeId + teamCode
+        	                 */
+        	                .sorted(Comparator.comparing(m ->
 
-	            usedNumbers.add(currentNo);
+        	                	m.getMemberEventNode().getNodeId()
+        	                        + "-"
+        	                        + m.getMemberEventTeamCode()
+        	                ))
 
-	            toUpdate.add(member);
+        	                .collect(Collectors.groupingBy(
 
-	            currentNo++;
-	        }
+        	                        m ->
+        	                                m.getMemberEventMember().getUserNode().getNodeId()
+        	                                + "-"
+        	                                + m.getMemberEventTeamCode(),
 
-	        if (!toUpdate.isEmpty()) {
-	            memberEventItemRepository.saveAll(toUpdate);
-	        }
-	    }
-	}
+        	                        LinkedHashMap::new,
+
+        	                        Collectors.toList()
+        	                ));
+
+            /*
+             * ASSIGN ONE NUMBER PER TEAM
+             */
+            for (Entry<Object, List<MemberEventItem>> entry
+                    : groupedTeams.entrySet()) {
+
+                while (usedNumbers.contains(currentNo)) {
+                    currentNo++;
+                }
+
+                Long teamChestNo = currentNo;
+
+                for (MemberEventItem member : entry.getValue()) {
+
+                    member.setMemberChestNo(teamChestNo);
+
+                    toUpdate.add(member);
+                }
+
+                usedNumbers.add(teamChestNo);
+
+                currentNo++;
+            }
+
+            /*
+             * INDIVIDUAL ITEMS
+             */
+            List<MemberEventItem> individualMembers =
+                    members.stream()
+                            .filter(m -> !hasScores(m))
+                            .filter(m -> m.getMemberEventTeamCode() == null
+                                    || m.getMemberEventTeamCode().trim().isEmpty())
+                            .toList();
+
+            for (MemberEventItem member : individualMembers) {
+
+                while (usedNumbers.contains(currentNo)) {
+                    currentNo++;
+                }
+
+                member.setMemberChestNo(currentNo);
+
+                usedNumbers.add(currentNo);
+
+                toUpdate.add(member);
+
+                currentNo++;
+            }
+
+            if (!toUpdate.isEmpty()) {
+                memberEventItemRepository.saveAll(toUpdate);
+            }
+        }
+    }
     
     private boolean hasScores(MemberEventItem member) {
 

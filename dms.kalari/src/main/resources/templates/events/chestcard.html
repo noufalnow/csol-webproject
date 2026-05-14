@@ -303,6 +303,7 @@ tbody tr:hover { background: #eef2ff; }
               <td class="participant">
                 <span th:text="${mei.memberEventMember.userFname}"></span>
                 <span th:text="${mei.memberEventMember.userLname}"></span>
+				(<span th:text="${mei.memberEventTeamCode}"></span>)
               </td>
               <td>
                 <span th:text="${#temporals.format(mei.memberEventMember.userDob, 'dd-MM-yyyy')}"></span>

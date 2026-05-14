@@ -81,12 +81,13 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 			      AND (:itemId IS NULL OR ei.evitemId = :itemId)
 			      AND (:gender IS NULL OR mei.memberEventGender = :gender)
 			      AND (:category IS NULL OR mei.memberEventCategory = :category)
-			    ORDER BY
-			        ei.evitemName ASC,
-			        mei.memberEventGender ASC,
-			        mei.memberEventCategory ASC,
-			        n.nodeName ASC,
-			        cu.userFname ASC
+                            ORDER BY
+                                n.nodeName ASC,
+                                ei.evitemName ASC,
+                                mei.memberEventCategory ASC,
+                                mei.memberEventGender ASC,
+                                mei.memberEventTeamCode ASC,
+                                cu.userFname ASC
 			""")
 	List<MemberEventItem> findByEventIdWithFilters(@Param("eventId") Long eventId, @Param("itemId") Long itemId,
 			@Param("gender") CoreUser.Gender gender, @Param("category") EventItemMap.Category category);

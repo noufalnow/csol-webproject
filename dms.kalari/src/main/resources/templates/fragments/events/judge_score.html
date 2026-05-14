@@ -82,157 +82,94 @@
 						</div>
 
 
-							<div th:each="mei : ${catEntry.value}" class="participant-card">
+						<div th:each="chestEntry : ${chestGroups[itemEntry.key][genderEntry.key][catEntry.key]}"
+						     class="participant-card">
 
-								<div class="row g-3 align-items-center">
+						    <div th:with="mei=${chestEntry.value[0]}">
 
-									<!-- Chest Number -->
-									<div class="col-12 col-md-3 text-center">
+						        <div class="row g-3 align-items-center">
 
-										<div class="chest-box">
-											<span th:text="${mei.memberChestNo}"></span>
-										</div>
+						            <!-- Chest Number -->
+						            <div class="col-12 col-md-3 text-center">
+						                <div class="chest-box">
+						                    <span th:text="${chestEntry.key}"></span>
+						                </div>
+						            </div>
 
-									</div>
+						            <!-- Judge Scores -->
+						            <div class="col-12 col-md-9">
+						                <div class="score-panel">
+						                    <div class="judge-wrapper d-flex flex-wrap gap-1 align-items-center">
 
-									<!-- Judge Scores -->
-									<div class="col-12 col-md-9">
+						                        <!-- GENERATED -->
+						                        <div th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+						                            class="d-flex flex-wrap align-items-center gap-2">
+						                            <div class="avg-box">
+						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+						                            </div>
+						                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
+						                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
+						                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
+						                            <span class="badge bg-dark" th:text="${mei.memberEventGrade?.name()}"></span>
+						                            <a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+						                               download class="badge bg-warning text-dark text-decoration-none">
+						                                <i class="fas fa-download me-1"></i> Download
+						                            </a>
+						                        </div>
 
-										<div class="score-panel">
+						                        <!-- APPROVED -->
+						                        <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
+						                                     and mei.certificateStatus?.name() != 'GENERATED'}"
+						                            class="d-flex flex-wrap align-items-center gap-2">
+						                            <div class="avg-box">
+						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+						                            </div>
+						                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
+						                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
+						                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
+						                            <span class="badge bg-success">Approved</span>
+						                        </div>
 
-											<div class="judge-wrapper d-flex flex-wrap gap-1 align-items-center">
+						                        <!-- EDITABLE -->
+						                        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
+						                            class="d-flex flex-wrap gap-1 align-items-center">
 
-												<!-- GENERATED -->
-												<div th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
-													class="d-flex flex-wrap align-items-center gap-2">
+						                            <input type="text" class="form-control judge-score"
+						                                   th:name="${'score1[' + mei.meiId + ']'}"
+						                                   th:value="${mei.memberScore1}"
+						                                   placeholder="Judge 1" onblur="calculateAverage(this)" />
 
-													<div class="avg-box">
-														<span class="avg-score" th:text="${mei.memberEventScore}">
-															0.00
-														</span>
-													</div>
+						                            <input type="text" class="form-control judge-score"
+						                                   th:name="${'score2[' + mei.meiId + ']'}"
+						                                   th:value="${mei.memberScore2}"
+						                                   placeholder="Judge 2" onblur="calculateAverage(this)" />
 
-													<span class="badge bg-secondary">
-														J1:
-														<span th:text="${mei.memberScore1}"></span>
-													</span>
+						                            <input type="text" class="form-control judge-score"
+						                                   th:name="${'score3[' + mei.meiId + ']'}"
+						                                   th:value="${mei.memberScore3}"
+						                                   placeholder="Judge 3" onblur="calculateAverage(this)" />
 
-													<span class="badge bg-secondary">
-														J2:
-														<span th:text="${mei.memberScore2}"></span>
-													</span>
+						                            <!-- Hidden inputs for remaining members sharing same chest number -->
+						                            <th:block th:each="extraMei, iterStat : ${chestEntry.value}"
+						                                      th:if="${iterStat.index > 0}">
+						                                <input type="hidden" th:name="${'score1[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore1}" />
+						                                <input type="hidden" th:name="${'score2[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore2}" />
+						                                <input type="hidden" th:name="${'score3[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore3}" />
+						                            </th:block>
 
-													<span class="badge bg-secondary">
-														J3:
-														<span th:text="${mei.memberScore3}"></span>
-													</span>
+						                            <div class="avg-box">
+						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+						                            </div>
+						                        </div>
 
-													<span class="badge bg-dark"
-														th:text="${mei.memberEventGrade?.name()}">
-													</span>
-
-													<a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
-														download
-														class="badge bg-warning text-dark text-decoration-none">
-
-														<i class="fas fa-download me-1"></i>
-														Download
-
-													</a>
-
-												</div>
-
-												<!-- APPROVED -->
-												<div th:if="${mei.verificationStatus?.name() == 'APPROVED'
-										                 and mei.certificateStatus?.name() != 'GENERATED'}"
-													class="d-flex flex-wrap align-items-center gap-2">
-
-													<div class="avg-box">
-														<span class="avg-score" th:text="${mei.memberEventScore}">
-															0.00
-														</span>
-													</div>
-
-													<span class="badge bg-secondary">
-														J1:
-														<span th:text="${mei.memberScore1}"></span>
-													</span>
-
-													<span class="badge bg-secondary">
-														J2:
-														<span th:text="${mei.memberScore2}"></span>
-													</span>
-
-													<span class="badge bg-secondary">
-														J3:
-														<span th:text="${mei.memberScore3}"></span>
-													</span>
-
-													<span class="badge bg-success">
-														Approved
-													</span>
-
-												</div>
-
-												<!-- EDITABLE -->
-												<div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
-													class="d-flex flex-wrap gap-1 align-items-center">
-
-													<input type="text" class="form-control judge-score"
-														th:name="${'score1[' + mei.meiId + ']'}"
-														th:value="${mei.memberScore1}" placeholder="Judge 1"
-														onblur="calculateAverage(this)" />
-
-													<input type="text" class="form-control judge-score"
-														th:name="${'score2[' + mei.meiId + ']'}"
-														th:value="${mei.memberScore2}" placeholder="Judge 2"
-														onblur="calculateAverage(this)" />
-
-													<input type="text" class="form-control judge-score"
-														th:name="${'score3[' + mei.meiId + ']'}"
-														th:value="${mei.memberScore3}" placeholder="Judge 3"
-														onblur="calculateAverage(this)" />
-
-													<div class="avg-box">
-
-														<span class="avg-score" th:text="${mei.memberEventScore}">
-															0.00
-														</span>
-
-													</div>
-
-												</div>
-
-											</div>
-
-										</div>
-
-									</div>
-
-									<!-- Participant Info -->
-									<div class="col-12">
-
-										<div class="participant-info">
-
-											<span class="label-text">Participant:</span>
-
-											<span class="participant-name" th:text="${mei.memberEventMember.userFname}">
-											</span>
-
-											<span class="separator">|</span>
-
-											<span class="label-text">Kalari:</span>
-
-											<span th:text="${mei.memberEventNode.nodeName}"></span>
-
-										</div>
-
-									</div>
-
-								</div>
+						                    </div>
+						                </div>
+						            </div>
 
 
-							</div>
+						        </div>
+						    </div>
+						</div>
 
 							<div th:with="
 							    firstMei=${catEntry.value[0]},
@@ -315,11 +252,37 @@
 	<!-- Modal Footer -->
 	<div class="modal-footer">
 		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-		<button type="button" class="btn btn-primary" onclick="submitHtmlForm('scoreGradeform')">Update Score</button>
+		<button type="button" class="btn btn-primary" onclick="submitJudgeForm('scoreGradeform')">Update Score</button>
 	</div>
 </div>
 
+
+
+
+
 <script>
+	
+
+	function submitJudgeForm(){
+		$('.participant-card').each(function () {
+
+		    const card = $(this);
+
+		    // get value from visible text inputs only
+		    const s1 = card.find('input[type="text"][name^="score1"]').val();
+		    const s2 = card.find('input[type="text"][name^="score2"]').val();
+		    const s3 = card.find('input[type="text"][name^="score3"]').val();
+
+		    // push to hidden inputs only
+		    card.find('input[type="hidden"][name^="score1"]').val(s1);
+		    card.find('input[type="hidden"][name^="score2"]').val(s2);
+		    card.find('input[type="hidden"][name^="score3"]').val(s3);
+		});
+		
+		submitHtmlForm('scoreGradeform');
+	}
+
+
 	function validateScore(input) {
 		let value = input.value;
 

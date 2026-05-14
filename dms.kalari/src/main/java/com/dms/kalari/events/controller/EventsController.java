@@ -41,6 +41,11 @@ import com.dms.kalari.events.service.MemberEventItemService;
 import com.dms.kalari.events.service.MemberEventService;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
+import java.util.LinkedHashMap;
+import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -701,10 +706,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	        case "judgecard":
 	            model.addAttribute("pageTitle", "Judge Card");
+	            model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
 	            return "events/judgecard";
 
 	        case "tabsheet":
 	            model.addAttribute("pageTitle", "Tab Sheet");
+	            model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
 	            return "events/tabsheet";
 	            
 	            
@@ -721,6 +728,35 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	            model.addAttribute("pageTitle", "Add Event Participants");
 	            return "events/participants";
 	    }
+	}
+	
+	
+	private Map<String, Map<String, Map<String, List<MemberEventItem>>>> deduplicateMatrix(
+	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
+
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> result = new LinkedHashMap<>();
+
+	    matrix.forEach((gender, categories) -> {
+	        Map<String, Map<String, List<MemberEventItem>>> catMap = new LinkedHashMap<>();
+	        categories.forEach((category, items) -> {
+	            Map<String, List<MemberEventItem>> itemMap = new LinkedHashMap<>();
+	            items.forEach((itemName, meiList) -> {
+	                List<MemberEventItem> distinct = meiList.stream()
+	                    .filter(mei -> mei.getMemberChestNo() != null)
+	                    .collect(Collectors.collectingAndThen(
+	                        Collectors.toCollection(() -> new TreeSet<>(
+	                            Comparator.comparing(MemberEventItem::getMemberChestNo)
+	                        )),
+	                        ArrayList::new
+	                    ));
+	                itemMap.put(itemName, distinct);
+	            });
+	            catMap.put(category, itemMap);
+	        });
+	        result.put(gender, catMap);
+	    });
+
+	    return result;
 	}
 
 	@GetMapping("/participants_score/{eventid}")
@@ -1190,6 +1226,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	                );
 
 	        model.addAttribute("matrix", matrix);
+	        model.addAttribute("chestGroups", buildChestGroups(matrix));
 	        
 	        System.out.println("===== MATRIX =====");
 	        matrix.forEach((item, genderMap) -> {});
@@ -1214,6 +1251,36 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    model.addAttribute("categories", EventItemMap.Category.values());
 
 	    return "fragments/events/judge_score";
+	}
+	
+	
+	private Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> buildChestGroups(
+	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
+
+	    // item -> gender -> category -> chestNo -> List<MemberEventItem>
+	    Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> result = new LinkedHashMap<>();
+
+	    matrix.forEach((item, genderMap) -> {
+	        result.put(item, new LinkedHashMap<>());
+	        genderMap.forEach((gender, categoryMap) -> {
+	            result.get(item).put(gender, new LinkedHashMap<>());
+	            categoryMap.forEach((category, meiList) -> {
+	                Map<String, List<MemberEventItem>> byChest = new LinkedHashMap<>();
+	                meiList.forEach(mei -> {
+	                    Long chestNo = mei.getMemberChestNo();
+	                    if (chestNo != null) {
+	                        byChest.computeIfAbsent(
+	                            String.valueOf(chestNo),
+	                            k -> new ArrayList<>()
+	                        ).add(mei);
+	                    }
+	                });
+	                result.get(item).get(gender).put(category, byChest);
+	            });
+	        });
+	    });
+
+	    return result;
 	}
 	
 	

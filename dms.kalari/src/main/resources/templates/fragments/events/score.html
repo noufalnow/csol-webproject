@@ -95,72 +95,94 @@
 						</div>
 
 						<div th:each="mei : ${catEntry.value}" class="participant-card">
-							<div class="row g-3 align-items-center">
+							<div class="row g-3 align-items-start">
 
-								<!-- Participant Name -->
-								<div class="col-12 col-sm-6 col-md-3">
-									<label class="form-label">Participant</label>
+							    <!-- Chest No -->
+							    <div class="col-12 col-sm-6 col-md-2">
+							        <label class="form-label">Chest No.</label>
+							        <div class="fw-bold text-primary"
+							             th:text="${mei.memberChestNo}"></div>
+							    </div>
+
+							    <!-- Participant -->
+							    <div class="col-12 col-sm-6 col-md-3">
+							        <label class="form-label">Participant</label>
 									<div class="fw-bold text-primary"
-										th:text="${mei.memberEventMember.userFname}"></div>
-								</div>
-
-								<!-- Kalari -->
-								<div class="col-12 col-sm-6 col-md-3">
-									<label class="form-label">Kalari</label>
-									<div th:text="${mei.memberEventNode.nodeName}"></div>
-								</div>
-
-								<!-- Score & Grade -->
-								<div class="col-12 col-sm-6 col-md-6"
-									style="padding-left: 1rem;">
-									<label class="form-label d-block mb-1">Score & Grade</label>
-
-									<!-- Case 1: Certificate GENERATED -->
-									<div th:if="${mei.certificateStatus?.name() == 'GENERATED'}">
-										<div class="d-flex align-items-center gap-3">
-											<span class="fw-bold" th:text="${mei.memberEventScore}">0.00</span>
-											<span th:text="${mei.memberEventGrade?.name()}">Grade</span>
-											<a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
-												download class="badge bg-warning align-items-center"> <i
-												class="fas fa-download me-1"></i> Download
-											</a>
-										</div>
+									     th:text="${mei.memberEventMember.userFname + (mei.memberEventMember.userLname != null ? ' ' + mei.memberEventMember.userLname : '')}">
 									</div>
+										 
 
-									<!-- Case 2: APPROVED but not GENERATED -->
-									<div
-										th:if="${mei.verificationStatus?.name() == 'APPROVED' and mei.certificateStatus?.name() != 'GENERATED'}">
-										<div class="d-flex align-items-center gap-3">
-											<span class="fw-bold" th:text="${mei.memberEventScore}">0.00</span>
-											<span th:text="${mei.memberEventGrade?.name()}">Grade</span>
-											<span class="badge bg-success">Approved</span>
-										</div>
-									</div>
+							    </div>
 
-									<!-- Case 3: Editable input -->
-									<div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
-										class="d-flex align-items-center gap-2">
-										<!-- Score -->
-										<input type="text" class="form-control"
-											th:name="${'scores[' + mei.meiId + ']'}"
-											th:value="${mei.memberEventScore}" pattern="^\d*\.?\d*$"
-											inputmode="decimal" placeholder="0.00"
-											oninput="validateScore(this)" style="max-width: 90px;" />
+							    <!-- Kalari -->
+							    <div class="col-12 col-sm-6 col-md-3">
+							        <label class="form-label">Kalari</label>
+							        <div th:text="${mei.memberEventNode.nodeName}"></div>
+							    </div>
 
-										<!-- Grade -->
-										<select class="form-select flex-fill"
-											th:name="${'grades[' + mei.meiId + ']'}"
-											style="padding-left: 1rem;">
-											<option value="">-- Select Grade --</option>
-											<option
-												th:each="g : ${T(com.dms.kalari.events.entity.MemberEventItem.Grade).values()}"
-												th:value="${g.name()}" th:text="${g.name()}"
-												th:selected="${(mei.memberEventGrade != null and mei.memberEventGrade.name() == g.name())}">
-											</option>
-										</select>
-									</div>
+							    <!-- Score & Grade -->
+							    <div class="col-12 col-sm-6 col-md-4">
+							        <label class="form-label d-block mb-1">Score & Grade</label>
 
-								</div>
+							        <!-- GENERATED -->
+							        <div th:if="${mei.certificateStatus?.name() == 'GENERATED'}">
+							            <div class="d-flex align-items-center gap-3 flex-wrap">
+							                <span class="fw-bold"
+							                      th:text="${mei.memberEventScore}">0.00</span>
+
+							                <span th:text="${mei.memberEventGrade?.name()}">Grade</span>
+
+							                <a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+							                   download
+							                   class="badge bg-warning text-decoration-none">
+							                    <i class="fas fa-download me-1"></i> Download
+							                </a>
+							            </div>
+							        </div>
+
+							        <!-- APPROVED -->
+							        <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
+							                     and mei.certificateStatus?.name() != 'GENERATED'}">
+
+							            <div class="d-flex align-items-center gap-3 flex-wrap">
+							                <span class="fw-bold"
+							                      th:text="${mei.memberEventScore}">0.00</span>
+
+							                <span th:text="${mei.memberEventGrade?.name()}">Grade</span>
+
+							                <span class="badge bg-success">Approved</span>
+							            </div>
+							        </div>
+
+							        <!-- EDITABLE -->
+							        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
+							             class="d-flex align-items-center gap-2">
+
+							            <input type="text"
+							                   class="form-control"
+							                   th:name="${'scores[' + mei.meiId + ']'}"
+							                   th:value="${mei.memberEventScore}"
+							                   pattern="^\d*\.?\d*$"
+							                   inputmode="decimal"
+							                   placeholder="0.00"
+							                   oninput="validateScore(this)"
+							                   style="max-width: 90px;" />
+
+							            <select class="form-select"
+							                    th:name="${'grades[' + mei.meiId + ']'}">
+
+							                <option value="">-- Select Grade --</option>
+
+							                <option th:each="g : ${T(com.dms.kalari.events.entity.MemberEventItem.Grade).values()}"
+							                        th:value="${g.name()}"
+							                        th:text="${g.name()}"
+							                        th:selected="${(mei.memberEventGrade != null and mei.memberEventGrade.name() == g.name())}">
+							                </option>
+
+							            </select>
+							        </div>
+
+							    </div>
 
 							</div>
 						</div>
@@ -272,7 +294,7 @@
 <style>
 
 	#nestedModal .modal-dialog {
-		max-width: 40% !important;
+		max-width: 60% !important;
 		max-height: 90vh !important;
 		min-height: 90vh !important;
 	}
