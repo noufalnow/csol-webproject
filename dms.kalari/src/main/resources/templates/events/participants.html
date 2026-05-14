@@ -516,105 +516,66 @@ tbody tr:hover { background: #eef2ff; }
   <!-- ═══════════════════════════════════════════ -->
   <!-- COMPREHENSIVE SUMMARY                        -->
   <!-- ═══════════════════════════════════════════ -->
-  <div class="card mt-5 border-0 shadow-sm">
-      <div class="card-header bg-dark text-white fw-bold">
+  <div class="card mt-4 border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-bold py-2">
           <i class="fas fa-chart-bar me-2"></i> Participation Summary
       </div>
-      <div class="card-body">
+      <div class="card-body p-3">
 
           <!-- TOP METRICS -->
-          <div class="row g-3 mb-4">
-
+          <div class="row g-2 mb-3">
               <div class="col-6 col-md-3">
-                  <div class="summary-tile bg-primary text-white rounded p-3 text-center">
+                  <div class="summary-tile bg-primary text-white rounded p-2 text-center">
                       <div class="tile-label">Total Participations</div>
                       <div class="tile-value" th:text="${totalParticipations}"></div>
                   </div>
               </div>
-
               <div class="col-6 col-md-3">
-                  <div class="summary-tile bg-success text-white rounded p-3 text-center">
+                  <div class="summary-tile bg-success text-white rounded p-2 text-center">
                       <div class="tile-label">Unique Participants</div>
                       <div class="tile-value" th:text="${uniqueParticipants}"></div>
                   </div>
               </div>
-
               <div class="col-6 col-md-3">
-                  <div class="summary-tile bg-info text-white rounded p-3 text-center">
+                  <div class="summary-tile bg-info text-white rounded p-2 text-center">
                       <div class="tile-label">Unique Males</div>
                       <div class="tile-value" th:text="${uniqueMales}"></div>
                   </div>
               </div>
-
               <div class="col-6 col-md-3">
-                  <div class="summary-tile bg-warning text-dark rounded p-3 text-center">
+                  <div class="summary-tile bg-warning text-dark rounded p-2 text-center">
                       <div class="tile-label">Unique Females</div>
                       <div class="tile-value" th:text="${uniqueFemales}"></div>
                   </div>
               </div>
-
           </div>
 
-          <!-- PER ITEM -->
-          <h6 class="fw-bold text-muted mb-2">
-              <i class="fas fa-tag me-1"></i> Per Item
-          </h6>
-          <div class="table-responsive mb-4">
-              <table class="table table-sm table-bordered">
-                  <thead class="table-light">
+          <!-- BREAKDOWN TABLE -->
+          <div class="table-responsive">
+              <table class="table table-sm table-bordered mb-0" style="font-size:11px; line-height:1.3;">
+                  <thead class="table-dark">
                       <tr>
                           <th>Item</th>
-                          <th class="text-center">Participations</th>
+                          <th>Gender</th>
+                          <th>Category</th>
+                          <th class="text-center">Count</th>
                       </tr>
                   </thead>
                   <tbody>
-                      <tr th:each="entry : ${itemTotals}">
-                          <td th:text="${entry.key}"></td>
-                          <td class="text-center fw-bold" th:text="${entry.value}"></td>
+                      <tr th:each="row : ${breakdownRows}"
+                          th:classappend="${row['subtotal']} ? 'table-secondary fw-bold' : ''">
+                          <td th:text="${row['item']}"></td>
+                          <td th:text="${row['gender']}"></td>
+                          <td th:text="${row['category']}"></td>
+                          <td class="text-center fw-bold" th:text="${row['count']}"></td>
                       </tr>
                   </tbody>
-              </table>
-          </div>
-
-          <!-- PER ITEM + CATEGORY -->
-          <h6 class="fw-bold text-muted mb-2">
-              <i class="fas fa-layer-group me-1"></i> Per Item — Category
-          </h6>
-          <div class="table-responsive mb-4">
-              <table class="table table-sm table-bordered">
-                  <thead class="table-light">
+                  <tfoot class="table-dark">
                       <tr>
-                          <th>Item | Category</th>
-                          <th class="text-center">Participations</th>
+                          <td colspan="3" class="fw-bold text-end pe-3">Grand Total</td>
+                          <td class="text-center fw-bold" th:text="${totalParticipations}"></td>
                       </tr>
-                  </thead>
-                  <tbody>
-                      <tr th:each="entry : ${itemCatTotals}">
-                          <td th:text="${entry.key}"></td>
-                          <td class="text-center fw-bold" th:text="${entry.value}"></td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-
-          <!-- PER ITEM + GENDER -->
-          <h6 class="fw-bold text-muted mb-2">
-              <i class="fas fa-venus-mars me-1"></i> Per Item — Gender
-          </h6>
-          <div class="table-responsive">
-              <table class="table table-sm table-bordered">
-                  <thead class="table-light">
-                      <tr>
-                          <th>Item | Gender</th>
-                          <th class="text-center">Participations</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr th:each="entry : ${itemGenderTotals}">
-                          <td th:text="${entry.key}"></td>
-                          <td class="text-center fw-bold" th:text="${entry.value}"></td>
-                      </tr>
-                  </tbody>
+                  </tfoot>
               </table>
           </div>
 
