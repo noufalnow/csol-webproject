@@ -72,8 +72,28 @@ public class CoreUser extends BaseEntity {
     private LocalDate userDob;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_member_category")
-    private MemberCategory userMemberCategory = MemberCategory.JUNIOR;
+    @Column(name = "user_member_category", nullable = false)
+    private MemberCategory userMemberCategory = MemberCategory.UNDEFINED;
+    
+    /*
+     * 
+     * 
+     * ALTER TABLE core_users
+DROP CONSTRAINT core_users_user_member_category_check;
+
+ALTER TABLE core_users
+ADD CONSTRAINT core_users_user_member_category_check
+CHECK (
+    user_member_category IN (
+        'UNDEFINED',
+        'SUBJUNIOR',
+        'JUNIOR',
+        'SENIOR'
+    )
+);
+
+UPDATE "core_users" SET "user_member_category" = 'UNDEFINED' WHERE "user_type" = 'MEMBER';
+     */
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_gender")
@@ -134,11 +154,12 @@ public class CoreUser extends BaseEntity {
     }
 
     public enum MemberCategory {
-        SUB_JUNIOR,
-        JUNIOR,
-        SENIOR
+	    UNDEFINED,
+	    SUBJUNIOR,
+	    JUNIOR,
+	    SENIOR
     }
-
+    
     public enum Gender {
         MALE,
         FEMALE

@@ -5,6 +5,7 @@ import com.dms.kalari.admin.dto.MemberUpdateDTO;
 import com.dms.kalari.admin.entity.CoreUser;
 import com.dms.kalari.admin.entity.MisDesignation;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
+import com.dms.kalari.admin.entity.CoreUser.MemberCategory;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.mapper.CoreUserMapper;
 import com.dms.kalari.admin.repository.CoreUserRepository;
@@ -13,6 +14,9 @@ import com.dms.kalari.common.BaseService;
 import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.events.dto.EventDTO;
+import com.dms.kalari.events.entity.EventItemMap;
+import com.dms.kalari.events.entity.MemberCatShift;
+import com.dms.kalari.events.repository.MemberCatShiftRepository;
 import com.dms.kalari.exception.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.dms.kalari.events.dto.MemberCatShiftDTO;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +37,7 @@ import java.time.Period;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -42,14 +49,18 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	private final CoreUserMapper coreUserMapper;
 	private final MisDesignationRepository misDesignationRepository;
 	private final CoreFileRepository coreFileRepository;
+	private final MemberCatShiftRepository memberCatShiftRepository;
+	
+	
 
 	@Autowired
 	public MemberUserService(CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper,
-			MisDesignationRepository misDesignationRepository, CoreFileRepository coreFileRepository) {
+			MisDesignationRepository misDesignationRepository, CoreFileRepository coreFileRepository, MemberCatShiftRepository memberCatShiftRepository) {
 		this.coreUserRepository = coreUserRepository;
 		this.coreUserMapper = coreUserMapper;
 		this.misDesignationRepository = misDesignationRepository;
 		this.coreFileRepository = coreFileRepository;
+		this.memberCatShiftRepository = memberCatShiftRepository;
 	}
 
 	/** BaseService.save — delegates to saveMamber */
@@ -222,15 +233,24 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	 * Compute category based on DOB: 8-15 -> Junior 12-15 -> Sub-Junior 22+ ->
 	 * Senior
 	 */
-	private String computeCategory(CoreUser user, EventDTO eventRecord) {
+	private String calculateAgeCategory(
+	        CoreUser user,
+	        EventDTO eventRecord
+	) {
 
-	    if (user.getUserDob() == null || eventRecord == null || eventRecord.getEventPeriodStart() == null) {
+	    if (user.getUserDob() == null
+	            || eventRecord == null
+	            || eventRecord.getEventPeriodStart() == null) {
+
 	        return "UNKNOWN";
 	    }
 
 	    LocalDate evalDate = eventRecord.getEventPeriodStart();
 
-	    int age = Period.between(user.getUserDob(), evalDate).getYears();
+	    int age = Period.between(
+	            user.getUserDob(),
+	            evalDate
+	    ).getYears();
 
 	    if (age < 0) {
 	        return "UNKNOWN";
@@ -243,6 +263,55 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	    } else {
 	        return "SUBJUNIOR";
 	    }
+	}
+	
+	
+	private String computeCategory(
+	        CoreUser user,
+	        EventDTO eventRecord,
+	        EventItemMap eventItemMap
+	) {
+
+	    // Base category from DOB
+	    String calculatedCategory =
+	            calculateAgeCategory(
+	                    user,
+	                    eventRecord
+	            );
+
+	 // Find any shift for this member + original EIM
+	    Optional<MemberCatShift> shiftOpt =
+	            memberCatShiftRepository
+	                    .findByMemCatShifMemIdAndMemCatShifOrgEim(
+	                            user,
+	                            eventItemMap
+	                    );
+
+	    // If current category is shifted OUT
+	    if (shiftOpt.isPresent()) {
+
+	        return "SHIFTED_OUT";
+	    }
+
+	    // Find if current EIM is shifted target
+	    Optional<MemberCatShift> shiftedOpt =
+	            memberCatShiftRepository
+	                    .findByMemCatShifMemIdAndMemCatShifEim(
+	                            user,
+	                            eventItemMap
+	                    );
+
+	    if (shiftedOpt.isPresent()
+	            && shiftedOpt.get().getMemCatShifCategory() != null) {
+
+	        return shiftedOpt
+	                .get()
+	                .getMemCatShifCategory()
+	                .name();
+	    }
+
+	    // Default category
+	    return calculatedCategory;
 	}
 
 
@@ -272,7 +341,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	                "MALE",
 	                members.stream()
 	                        .filter(u -> u.getGender() == Gender.MALE)
-	                        .filter(u -> cat.equals(computeCategory(u, eventRecord)))
+	                        .filter(u -> cat.equals(calculateAgeCategory(u, eventRecord)))
 	                        .collect(Collectors.toList())
 	        );
 
@@ -280,7 +349,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	                "FEMALE",
 	                members.stream()
 	                        .filter(u -> u.getGender() == Gender.FEMALE)
-	                        .filter(u -> cat.equals(computeCategory(u, eventRecord)))
+	                        .filter(u -> cat.equals(calculateAgeCategory(u, eventRecord)))
 	                        .collect(Collectors.toList())
 	        );
 
@@ -289,6 +358,26 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 
 	    return matrix;
 	}
+	
+	    public Map<String, List<CoreUser>> getMembersMatrix(Long nodeId, EventDTO eventRecord, EventItemMap eventItemMap) {
+
+		List<CoreUser> members = coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(nodeId,
+			CoreUser.UserType.MEMBER);
+
+		Map<String, List<CoreUser>> genderMap = new HashMap<>();
+
+		genderMap.put("MALE",
+			members.stream().filter(u -> u.getGender() == Gender.MALE).filter(
+				u -> eventItemMap.getCategory().name().equals(computeCategory(u, eventRecord, eventItemMap)))
+				.collect(Collectors.toList()));
+
+		genderMap.put("FEMALE",
+			members.stream().filter(u -> u.getGender() == Gender.FEMALE).filter(
+				u -> eventItemMap.getCategory().name().equals(computeCategory(u, eventRecord, eventItemMap)))
+				.collect(Collectors.toList()));
+
+		return genderMap;
+	    }
 
 
 }

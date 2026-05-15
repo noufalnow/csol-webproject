@@ -1,0 +1,108 @@
+<!-- fragments/add_event_item.html -->
+<div th:fragment="content" class="container-fluid">
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title" id="addEventItemModalLabel" th:text="${pageTitle}">Add Event Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+			  
+		<form
+		    th:action="@{/champ_category_shift/{eventId}/{nodeId}(eventId=${eventId}, nodeId=${nodeId})}"
+		    method="post"
+		    th:object="${dto}"
+		    th:id="addShiftCatForm">
+
+            <!-- CSRF Token -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+
+			    <!-- Member -->
+			    <div class="form-group mb-3">
+
+			        <label>Member</label>
+
+			        <select th:field="*{memCatShifMemId}"
+			                class="form-control"
+			                required>
+
+			            <option value="">
+			                Select Member
+			            </option>
+
+						<option th:each="m : ${members}"
+						        th:value="${m.userId}"
+						        th:text="${m.userFname + ' ' + m.userLname}">
+						</option>
+
+			        </select>
+
+			    </div>
+
+			    <!-- Item -->
+			    <div class="form-group mb-3">
+
+			        <label>Competition Item</label>
+
+			        <select th:field="*{itemId}"
+			                class="form-control"
+			                required>
+
+			            <option value="">
+			                Select Item
+			            </option>
+
+			            <option th:each="i : ${items}"
+			                    th:value="${i.evitemId}"
+			                    th:text="${i.evitemName}">
+			            </option>
+
+			        </select>
+
+			    </div>
+
+			    <!-- Shift Category -->
+			    <div class="form-group mb-3">
+
+			        <label>Shift To Category</label>
+
+			        <select th:field="*{memCatShifCategory}"
+			                class="form-control"
+			                required>
+
+			            <option value="">
+			                Select Category
+			            </option>
+
+			            <option th:each="c : ${categories}"
+			                    th:value="${c}"
+			                    th:text="${c}">
+			            </option>
+
+			        </select>
+
+			    </div>
+
+
+            <div id="error-messages" class="text-danger small mt-1"></div>
+        </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitHtmlForm('addShiftCatForm')">Add Event Item</button>
+    </div>
+</div>
+
+<style>
+/* Match the style of designation add modal */
+#addEventItemForm { max-width: 100%; }
+.modal-dialog { max-width: 60% !important; }
+@media (max-width: 768px) {
+    .modal-dialog { max-width: 100% !important; margin: 10px; }
+}
+
+</style>

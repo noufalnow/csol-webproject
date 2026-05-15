@@ -120,6 +120,28 @@
 							th:text="${designation.desigName}"></option>
 					</select>
 				</div>
+				
+				<div class="col-12 col-lg-3">
+				    <label for="user_member_category" class="form-label">
+				        Member Category
+				    </label>
+
+					<select id="user_member_category"
+					        th:field="*{userMemberCategory}"
+					        class="form-select">
+
+					    <option th:each="category : ${T(com.dms.kalari.admin.entity.CoreUser.MemberCategory).values()}"
+					            th:value="${category}"
+					            th:text="${#strings.capitalizeWords(
+					                #strings.replace(category.name(), '_', ' ').toLowerCase()
+					            )}">
+					    </option>
+
+					</select>
+					
+					
+				</div>
+				
 				<div class="col-12 col-lg-3">
 					<label class="form-label d-block">Status</label>
 					<div class="form-check form-check-inline">

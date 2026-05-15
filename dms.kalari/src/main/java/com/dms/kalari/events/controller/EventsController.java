@@ -11,8 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.dms.kalari.admin.entity.CoreUser;
+import com.dms.kalari.admin.repository.CoreUserRepository;
 import com.dms.kalari.admin.service.MemberUserService;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
@@ -21,15 +23,20 @@ import com.dms.kalari.common.BaseController;
 import com.dms.kalari.events.dto.EventChestConfigDTO;
 import com.dms.kalari.events.dto.EventDTO;
 import com.dms.kalari.events.dto.EventItemDTO;
+import com.dms.kalari.events.dto.MemberCatShiftDTO;
 import com.dms.kalari.events.dto.MemberEventDTO;
 import com.dms.kalari.events.dto.TeamOptionDTO;
 import com.dms.kalari.events.entity.Event;
 import com.dms.kalari.events.entity.EventChestConfig;
 import com.dms.kalari.events.entity.EventItem;
 import com.dms.kalari.events.entity.EventItemMap;
+import com.dms.kalari.events.entity.MemberCatShift;
 import com.dms.kalari.events.entity.MemberEventItem;
 import com.dms.kalari.events.helper.TeamBuilderHelper;
 import com.dms.kalari.events.repository.EventChestConfigRepository;
+import com.dms.kalari.events.repository.EventItemMapRepository;
+import com.dms.kalari.events.repository.EventItemRepository;
+import com.dms.kalari.events.repository.MemberCatShiftRepository;
 import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.CertificateBatchService;
 import com.dms.kalari.events.service.CertificateService;
@@ -39,6 +46,7 @@ import com.dms.kalari.events.service.EventItemService;
 import com.dms.kalari.events.service.EventService;
 import com.dms.kalari.events.service.MemberEventItemService;
 import com.dms.kalari.events.service.MemberEventService;
+import com.dms.kalari.exception.CustomValidationException;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 import java.util.LinkedHashMap;
@@ -57,6 +65,7 @@ import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import com.itextpdf.kernel.pdf.CompressionConstants;
@@ -83,1367 +93,1615 @@ import java.time.Year;
 @RequestMapping("/champ/events")
 public class EventsController extends BaseController<EventDTO, EventService> {
 
-	private final NodeService nodeService;
-	private final MemberEventService memberEventService;
-	private final EventItemService eventItemService;
-	private final EventItemMapService eventItemMapService;
-	private final MemberUserService memberUserService;
-	private final MemberEventItemService memberEventItemService;
-	private final CertificateService certificateService;
-	private final CertificateBatchService certificateBatchService;
-	private final MemberEventItemRepository memberEventItemRepository;
-	private final EventChestConfigService eventChestConfigService;
-	private final EventChestConfigRepository eventChestConfigRepository;
+    private final NodeService nodeService;
+    private final MemberEventService memberEventService;
+    private final EventItemService eventItemService;
+    private final EventItemMapService eventItemMapService;
+    private final MemberUserService memberUserService;
+    private final MemberEventItemService memberEventItemService;
+    private final CertificateService certificateService;
+    private final CertificateBatchService certificateBatchService;
+    private final MemberEventItemRepository memberEventItemRepository;
+    private final EventChestConfigService eventChestConfigService;
+    private final EventItemRepository eventItemRepository;
+    private final CoreUserRepository coreUserRepository;
+    private final EventItemMapRepository eventItemMapRepository;
+    private final MemberCatShiftRepository memberCatShiftRepository;
+
+    public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
+	    EventItemService eventItemService, MemberUserService memberUserService,
+	    EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService,
+	    CertificateService certificateService, CertificateBatchService certificateBatchService,
+	    MemberEventItemRepository memberEventItemRepository, EventChestConfigService eventChestConfigService,
+	    EventItemRepository eventItemRepository, CoreUserRepository coreUserRepository,
+	    MemberCatShiftRepository memberCatShiftRepository, EventItemMapRepository eventItemMapRepository) {
+	super(eventService);
+	this.nodeService = nodeService;
+	this.memberEventService = memberEventService;
+	this.eventItemService = eventItemService;
+	this.memberUserService = memberUserService;
+	this.eventItemMapService = eventItemMapService;
+	this.memberEventItemService = memberEventItemService;
+	this.certificateService = certificateService;
+	this.certificateBatchService = certificateBatchService;
+	this.memberEventItemRepository = memberEventItemRepository;
+	this.eventChestConfigService = eventChestConfigService;
+	this.eventItemRepository = eventItemRepository;
+	this.coreUserRepository = coreUserRepository;
+	this.eventItemMapRepository = eventItemMapRepository;
+	this.memberCatShiftRepository = memberCatShiftRepository;
+
+    }
+
+    @GetMapping("/")
+    public String listEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+	    @RequestParam(defaultValue = "eventPeriodStart") String sortField,
+	    @RequestParam(defaultValue = "desc") String sortDir, @RequestParam(required = false) String search,
+	    Model model) {
+
+	// Construct the Pageable object
+	Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
+
+	logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}", page, size,
+		sortField, sortDir, search);
+
+	Page<EventDTO> eventPage = service.findAllPaginate(pageable, search);
+
+	logInfo("Event Page - Total Elements: {}, Total Pages: {}", eventPage.getTotalElements(),
+		eventPage.getTotalPages());
+
+	// Use the reusable method for setting up pagination
+	setupPagination(model, eventPage, sortField, sortDir);
+
+	model.addAttribute("search", search);
+	model.addAttribute("pageTitle", "Event List");
+	model.addAttribute("pageUrl", "/events");
+	model.addAttribute("today", LocalDate.now());
+
+	return "fragments/manage/events/list";
+    }
+
+    @GetMapping({ "/bynode/", "/bynode/{id}" })
+    public String listEventsByNode(@PathVariable(value = "id", required = false) Long nodeId, Model model,
+	    Authentication authentication, HttpSession session) {
+
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+	if (nodeId == null) {
+	    nodeId = principal.getInstId();
+	} else {
+	    nodeId = XorMaskHelper.unmask(nodeId);
+	}
+
+	// Store in session for data entry
+	session.setAttribute("ParentId", nodeId);
+
+	// Check if viewing child node
+	if (principal.getInstId() != nodeId) {
+	    model.addAttribute("isChild", true);
+	} else {
+	    model.addAttribute("isChild", false);
+	}
+
+	NodeDTO node = nodeService.findById(nodeId);
+	Node.Type nodeType = node.getNodeType();
+	Node.Type userNodeType = principal.getNodeType();
+
+	logInfo("Node Type: {}, User Node Type: {}, Selected Node: {}", nodeType.getLevel(), userNodeType.getLevel(),
+		nodeId);
+
+	// Check if user can add events (similar to officials logic)
+	if (nodeType.getLevel() >= userNodeType.getLevel()) {
+	    model.addAttribute("allowAddEvent", true);
+	} else if (userNodeType == nodeType && node.getNodeId().equals(principal.getInstId())) {
+	    model.addAttribute("allowAddEvent", true);
+	}
+
+	List<EventDTO> events = service.findByHostNode(nodeId);
+	model.addAttribute("nodeName", node.getNodeName());
+	model.addAttribute("nodeType", nodeType.name());
+	model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+	model.addAttribute("events", events);
+	model.addAttribute("target", "events_target");
+
+	return "fragments/events/events";
+    }
+
+    @GetMapping("/all/{id}")
+    public String listAllEvents(@PathVariable(value = "id", required = false) Long nodeId, Model model,
+	    Authentication authentication, HttpSession session) {
+
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+	if (nodeId == null) {
+	    nodeId = principal.getInstId();
+	} else {
+	    nodeId = XorMaskHelper.unmask(nodeId);
+	}
+
+	List<Object[]> eventList = service.findAllEventsApplicable(nodeId);
+	NodeDTO node = nodeService.findById(nodeId);
+	Node.Type userNodeType = principal.getNodeType();
+	model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
+
+	model.addAttribute("nodeType", userNodeType.name());
+	model.addAttribute("linkNodeType", node.getNodeType().name());
+	model.addAttribute("nodeName", node.getNodeName());
+	model.addAttribute("eventList", eventList);
+
+	return "fragments/events/allevents";
+    }
+
+    @GetMapping("/details/{id}")
+    public String viewEventById(@PathVariable(value = "id", required = false) Long maskedId, Model model) {
+
+	Long eventId = XorMaskHelper.unmask(maskedId);
+
+	EventDTO event = service.findById(eventId);
+	model.addAttribute("event", event);
+
+	Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
+		.findItemsByEventIdGroupedByCategory(eventId);
+	model.addAttribute("seniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.SENIOR, Collections.emptyList()));
+	model.addAttribute("juniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
+	model.addAttribute("subjuniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
+
+	// ✅ Add this line — required for the <th:each="item : ${eventItems}">
+	model.addAttribute("eventItems", eventItemService.findAll());
+	model.addAttribute("categories", EventItemMap.Category.values());
+	model.addAttribute("genders", CoreUser.Gender.values());
+
+	model.addAttribute("pageTitle", "Event Details");
+	return "fragments/events/view";
+    }
+
+    @GetMapping("/add/{id}")
+    public String showAddEventForm(@PathVariable(value = "id") Long mNodeId, Model model) {
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	model.addAttribute("event", new EventDTO());
+	model.addAttribute("currentYear", Year.now().getValue());
+
+	model.addAttribute("pageTitle", "Add Event");
+
+	if (nodeId != null) {
+	    NodeDTO node = nodeService.findById(nodeId);
+	    model.addAttribute("hostNode", node);
+	    model.addAttribute("hostNodeId", mNodeId); // Pass masked ID
+	}
+
+	List<EventItemDTO> allItems = eventItemService.findAll();
+	model.addAttribute("eventItems", allItems);
+
+	return "fragments/events/add";
+    }
+
+    @PostMapping("/add/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addEvent(@PathVariable(value = "id") Long mNodeId,
+	    @Valid @ModelAttribute EventDTO eventDTO, BindingResult result,
+	    @RequestParam(value = "seniorItemIds", required = false) List<Long> seniorItemIds,
+	    @RequestParam(value = "juniorItemIds", required = false) List<Long> juniorItemIds,
+	    @RequestParam(value = "subjuniorItemIds", required = false) List<Long> subjuniorItemIds,
+	    Authentication authentication, HttpServletRequest request) {
+
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	// Validate that at least one item is selected
+	if ((seniorItemIds == null || seniorItemIds.isEmpty()) && (juniorItemIds == null || juniorItemIds.isEmpty())
+		&& (subjuniorItemIds == null || subjuniorItemIds.isEmpty())
+
+	) {
+	    result.rejectValue("eventItems", "error.event", "Please select at least one item from catogories");
+	}
+
+	// Set host information
+	NodeDTO node = nodeService.findById(nodeId);
+	if (node != null) {
+	    eventDTO.setEventHost(node.getNodeType());
+	    eventDTO.setEventHostId(nodeId);
+	}
+
+	// Validate allowed node IDs (security check similar to officials)
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
+	if (!allowedNodeIds.contains(nodeId)) {
+	    throw new SecurityException("Invalid node submitted!");
+	}
+
+	Map<String, Object> additionalData = new HashMap<>();
+	additionalData.put("loadnext", "champ_eventbynode/" + mNodeId);
+	additionalData.put("target", "events_target");
+
+	return handleRequest(result, () -> {
+	    // Save the event first
+	    EventDTO savedEvent = service.save(eventDTO);
+
+	    // Save item mappings if provided
+	    if (seniorItemIds != null && !seniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(savedEvent.getEventId(), seniorItemIds, EventItemMap.Category.SENIOR);
+	    }
+	    if (juniorItemIds != null && !juniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(savedEvent.getEventId(), juniorItemIds, EventItemMap.Category.JUNIOR);
+	    }
+	    if (subjuniorItemIds != null && !subjuniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(savedEvent.getEventId(), subjuniorItemIds,
+			EventItemMap.Category.SUBJUNIOR);
+	    }
+
+	    return savedEvent;
+	}, "Event added successfully", additionalData);
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editEventForm(@PathVariable Long id, Model model, Authentication authentication) {
+	Long eventId = XorMaskHelper.unmask(id);
+
+	// Get the event with security check
+	EventDTO event = service.findById(eventId);
+
+	// Security validation - ensure user has access to this event's node
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
+	if (!allowedNodeIds.contains(event.getEventHostId())) {
+	    throw new SecurityException("Access denied to this event!");
+	}
+
+	model.addAttribute("event", event);
+	model.addAttribute("pageTitle", "Edit Event");
+	model.addAttribute("eventId", id); // Pass masked ID
+
+	// Get all available items
+	List<EventItemDTO> allItems = eventItemService.findAll();
+	model.addAttribute("eventItems", allItems);
+
+	// Get currently selected items
+	Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
+		.findItemsByEventIdGroupedByCategory(eventId);
+	model.addAttribute("seniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.SENIOR, Collections.emptyList()));
+	model.addAttribute("juniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
+	model.addAttribute("subjuniorItemIds",
+		selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
+
+	return "fragments/events/edit";
+    }
+
+    @PostMapping("/edit/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateEvent(@PathVariable("id") Long mEventId,
+	    @Valid @ModelAttribute EventDTO eventDTO, BindingResult result,
+	    @RequestParam(value = "seniorItemIds", required = false) List<Long> seniorItemIds,
+	    @RequestParam(value = "juniorItemIds", required = false) List<Long> juniorItemIds,
+	    @RequestParam(value = "subjuniorItemIds", required = false) List<Long> subjuniorItemIds,
+	    Authentication authentication) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	// Validate that at least one item is selected
+	if ((seniorItemIds == null || seniorItemIds.isEmpty()) && (juniorItemIds == null || juniorItemIds.isEmpty())
+		&& (subjuniorItemIds == null || subjuniorItemIds.isEmpty())
+
+	) {
+	    result.rejectValue("eventItems", "error.event", "Please select at least one item from catogories");
+	}
+
+	// Security validation
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	EventDTO existingEvent = service.findById(eventId);
+	List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
+	if (!allowedNodeIds.contains(existingEvent.getEventHostId())) {
+	    throw new SecurityException("Access denied to this event!");
+	}
+
+	Map<String, Object> additionalData = new HashMap<>();
+	additionalData.put("loadnext", "champ_eventbynode/" + XorMaskHelper.mask(existingEvent.getEventHostId()));
+	additionalData.put("target", "events_target");
+
+	return handleRequest(result, () -> {
+	    // Update the event first
+	    EventDTO updatedEvent = service.update(eventId, eventDTO);
+
+	    // First delete all existing mappings for this event
+	    // eventItemMapService.deleteByEventId(eventId);
+
+	    eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.SENIOR, seniorItemIds);
+	    eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.JUNIOR, juniorItemIds);
+	    eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.SUBJUNIOR, subjuniorItemIds);
+
+	    if (seniorItemIds != null && !seniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(eventId, seniorItemIds, EventItemMap.Category.SENIOR);
+	    }
+	    if (juniorItemIds != null && !juniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(eventId, juniorItemIds, EventItemMap.Category.JUNIOR);
+	    }
+	    if (subjuniorItemIds != null && !subjuniorItemIds.isEmpty()) {
+		eventItemMapService.saveMappings(eventId, subjuniorItemIds, EventItemMap.Category.SUBJUNIOR);
+	    }
+
+	    return updatedEvent;
+	}, "Event updated successfully", additionalData);
+    }
+
+    @GetMapping("/participation/{eventid}/{nodeid}")
+    public String participationForm(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
+	    Model model) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	EventDTO eventRecord = service.findById(eventId);
+
+	model.addAttribute("eventId", mEventId);
+
+	model.addAttribute("nodeId", mNodeId);
+
+	model.addAttribute("pageTitle", "Add Event Participants");
+
+	List<String> eligibleMeids = new ArrayList<>();
+
+	if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
+
+	    eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(eventRecord.getEventYear(), nodeId,
+		    this.getPreviousLevel(eventRecord.getEventHost()));
+
+	    if (eligibleMeids == null) {
+
+		eligibleMeids = new ArrayList<>();
+	    }
+
+	    System.out.println("Eligible MEI IDs: " + eligibleMeids);
+
+	    if (eligibleMeids.isEmpty()) {
+
+		System.out.println("No eligible MEI IDs found for national/state level.");
+	    }
+	}
+
+	// =====================================================
+	// ALWAYS ADD
+	// =====================================================
+
+	model.addAttribute("eligibleMeids", eligibleMeids);
+
+	// =====================================================
+	// FETCH EVENT ITEM MAPS
+	// =====================================================
+
+	Map<EventItemMap.Category, List<EventItemMap>> eventItemsByCategory = Objects
+		.requireNonNullElse(eventItemMapService.getEventItemMatrix(eventId), Collections.emptyMap());
+
+	// =====================================================
+	// FLATTEN ITEMS
+	// =====================================================
+
+	List<EventItemMap> allItems = eventItemsByCategory.values().stream().filter(Objects::nonNull)
+		.flatMap(Collection::stream).filter(Objects::nonNull)
+		.sorted(Comparator.comparing(e -> e.getItem().getEvitemName(), String.CASE_INSENSITIVE_ORDER))
+		.distinct().collect(Collectors.toList());
+
+	// =====================================================
+	// GLOBAL MEMBER MATRIX (LEGACY)
+	// =====================================================
+
+	Map<String, Map<String, List<CoreUser>>> memberMatrix = Objects
+		.requireNonNullElse(memberUserService.getMembersMatrix(nodeId, eventRecord), Collections.emptyMap());
+
+	// =====================================================
+	// ITEM-SPECIFIC MEMBER MATRIX (OVERRIDE-AWARE)
+	// =====================================================
+
+	Map<Long, Map<String, List<CoreUser>>> itemMemberMatrix = new HashMap<>();
+
+	for (EventItemMap eventItemMap : allItems) {
+
+	    itemMemberMatrix.put(eventItemMap.getEimId(),
+		    memberUserService.getMembersMatrix(nodeId, eventRecord, eventItemMap));
+	}
+
+	// =====================================================
+	// TEAM OPTIONS
+	// =====================================================
+
+	Map<String, List<TeamOptionDTO>> teamOptions = TeamBuilderHelper.buildTeamOptions(memberMatrix, allItems);
+
+	model.addAttribute("teamOptions", teamOptions);
+
+	// =====================================================
+	// UNIQUE EVENT ITEMS
+	// =====================================================
+
+	List<EventItem> uniqueEventItems = allItems.stream().map(EventItemMap::getItem).filter(Objects::nonNull)
+		.distinct().sorted(Comparator.comparing(EventItem::getEvitemName, String.CASE_INSENSITIVE_ORDER))
+		.collect(Collectors.toList());
+
+	// =====================================================
+	// CATEGORY STRING MAP
+	// =====================================================
+
+	Map<String, List<EventItemMap>> eventItemsByCategoryStrKey = new HashMap<>();
+
+	eventItemsByCategory.forEach((cat, list) -> eventItemsByCategoryStrKey.put(cat.name(), list));
+
+	// =====================================================
+	// ITEM -> CATEGORY MAP
+	// =====================================================
+
+	Map<Long, Map<String, List<EventItemMap>>> itemCategoryMap = new HashMap<>();
+
+	for (EventItem uniqueItem : uniqueEventItems) {
+
+	    Map<String, List<EventItemMap>> catMap = new HashMap<>();
+
+	    for (Map.Entry<EventItemMap.Category, List<EventItemMap>> entry : eventItemsByCategory.entrySet()) {
+
+		List<EventItemMap> filtered = entry.getValue().stream().filter(Objects::nonNull).filter(
+			eim -> eim.getItem() != null && eim.getItem().getEvitemId().equals(uniqueItem.getEvitemId()))
+			.toList();
+
+		if (!filtered.isEmpty()) {
+
+		    catMap.put(entry.getKey().name(), filtered);
+		}
+	    }
+
+	    itemCategoryMap.put(uniqueItem.getEvitemId(), catMap);
+	}
+
+	// =====================================================
+	// SELECTED KEYS
+	// =====================================================
+
+	Set<String> selectedKeys = memberEventItemService.getSelectedKeys(eventId, nodeId);
+
+	Map<String, String> selectedTeams = memberEventItemService.getSelectedTeams(eventId, nodeId);
+
+	model.addAttribute("selectedTeams", selectedTeams);
+
+	model.addAttribute("selectedKeys", selectedKeys);
+
+	// =====================================================
+	// MODEL ATTRIBUTES
+	// =====================================================
+
+	model.addAttribute("itemCategoryMap", itemCategoryMap);
+
+	model.addAttribute("eventItemsByCategoryStrKey", eventItemsByCategoryStrKey);
+
+	model.addAttribute("memberMatrix", memberMatrix);
+
+	model.addAttribute("itemMemberMatrix", itemMemberMatrix);
 	
+	
+	System.out.println("\n================ GLOBAL MEMBER MATRIX ================\n");
 
-	public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
-			EventItemService eventItemService, MemberUserService memberUserService,
-			EventItemMapService eventItemMapService, MemberEventItemService memberEventItemService,
-			CertificateService certificateService, CertificateBatchService certificateBatchService, MemberEventItemRepository memberEventItemRepository, 
-			EventChestConfigService eventChestConfigService, EventChestConfigRepository eventChestConfigRepository) {
-		super(eventService);
-		this.nodeService = nodeService;
-		this.memberEventService = memberEventService;
-		this.eventItemService = eventItemService;
-		this.memberUserService = memberUserService;
-		this.eventItemMapService = eventItemMapService;
-		this.memberEventItemService = memberEventItemService;
-		this.certificateService = certificateService;
-		this.certificateBatchService = certificateBatchService;
-		this.memberEventItemRepository = memberEventItemRepository;
-		this.eventChestConfigService = eventChestConfigService;
-		this.eventChestConfigRepository = eventChestConfigRepository;
-	}
-
-	@GetMapping("/")
-	public String listEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-			@RequestParam(defaultValue = "eventPeriodStart") String sortField,
-			@RequestParam(defaultValue = "desc") String sortDir, @RequestParam(required = false) String search,
-			Model model) {
-
-		// Construct the Pageable object
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
-
-		logInfo("Request Parameters - Page: {}, Size: {}, SortField: {}, SortDir: {}, Search: {}", page, size,
-				sortField, sortDir, search);
-
-		Page<EventDTO> eventPage = service.findAllPaginate(pageable, search);
-
-		logInfo("Event Page - Total Elements: {}, Total Pages: {}", eventPage.getTotalElements(),
-				eventPage.getTotalPages());
-
-		// Use the reusable method for setting up pagination
-		setupPagination(model, eventPage, sortField, sortDir);
-
-		model.addAttribute("search", search);
-		model.addAttribute("pageTitle", "Event List");
-		model.addAttribute("pageUrl", "/events");
-		model.addAttribute("today", LocalDate.now());
-
-		return "fragments/manage/events/list";
-	}
-
-	@GetMapping({ "/bynode/", "/bynode/{id}" })
-	public String listEventsByNode(@PathVariable(value = "id", required = false) Long nodeId, Model model,
-			Authentication authentication, HttpSession session) {
-
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-
-		if (nodeId == null) {
-			nodeId = principal.getInstId();
-		} else {
-			nodeId = XorMaskHelper.unmask(nodeId);
-		}
-
-		// Store in session for data entry
-		session.setAttribute("ParentId", nodeId);
-
-		// Check if viewing child node
-		if (principal.getInstId() != nodeId) {
-			model.addAttribute("isChild", true);
-		} else {
-			model.addAttribute("isChild", false);
-		}
-
-		NodeDTO node = nodeService.findById(nodeId);
-		Node.Type nodeType = node.getNodeType();
-		Node.Type userNodeType = principal.getNodeType();
-
-		logInfo("Node Type: {}, User Node Type: {}, Selected Node: {}", nodeType.getLevel(), userNodeType.getLevel(),
-				nodeId);
-
-		// Check if user can add events (similar to officials logic)
-		if (nodeType.getLevel() >= userNodeType.getLevel()) {
-			model.addAttribute("allowAddEvent", true);
-		} else if (userNodeType == nodeType && node.getNodeId().equals(principal.getInstId())) {
-			model.addAttribute("allowAddEvent", true);
-		}
-
-		List<EventDTO> events = service.findByHostNode(nodeId);
-		model.addAttribute("nodeName", node.getNodeName());
-		model.addAttribute("nodeType", nodeType.name());
-		model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
-		model.addAttribute("events", events);
-		model.addAttribute("target", "events_target");
-
-		return "fragments/events/events";
-	}
-
-	@GetMapping("/all/{id}")
-	public String listAllEvents(@PathVariable(value = "id", required = false) Long nodeId, Model model,
-			Authentication authentication, HttpSession session) {
-
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-
-		if (nodeId == null) {
-			nodeId = principal.getInstId();
-		} else {
-			nodeId = XorMaskHelper.unmask(nodeId);
-		}
-
-		List<Object[]> eventList = service.findAllEventsApplicable(nodeId);
-		NodeDTO node = nodeService.findById(nodeId);
-		Node.Type userNodeType = principal.getNodeType();
-		model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
-
-		model.addAttribute("nodeType", userNodeType.name());
-		model.addAttribute("linkNodeType", node.getNodeType().name());
-		model.addAttribute("nodeName", node.getNodeName());
-		model.addAttribute("eventList", eventList);
-
-		return "fragments/events/allevents";
-	}
-
-	@GetMapping("/details/{id}")
-	public String viewEventById(@PathVariable(value = "id", required = false) Long maskedId, Model model) {
-
-		Long eventId = XorMaskHelper.unmask(maskedId);
-
-		EventDTO event = service.findById(eventId);
-		model.addAttribute("event", event);
-
-		Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
-				.findItemsByEventIdGroupedByCategory(eventId);
-		model.addAttribute("seniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.SENIOR, Collections.emptyList()));
-		model.addAttribute("juniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
-		model.addAttribute("subjuniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
-		
-		
-
-
-		// ✅ Add this line — required for the <th:each="item : ${eventItems}">
-		model.addAttribute("eventItems", eventItemService.findAll());
-	    model.addAttribute("categories", EventItemMap.Category.values());
-	    model.addAttribute("genders", CoreUser.Gender.values());
-
-		model.addAttribute("pageTitle", "Event Details");
-		return "fragments/events/view";
-	}
-
-	@GetMapping("/add/{id}")
-	public String showAddEventForm(@PathVariable(value = "id") Long mNodeId, Model model) {
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		model.addAttribute("event", new EventDTO());
-		model.addAttribute("currentYear", Year.now().getValue());
-		
-		model.addAttribute("pageTitle", "Add Event");
-
-		if (nodeId != null) {
-			NodeDTO node = nodeService.findById(nodeId);
-			model.addAttribute("hostNode", node);
-			model.addAttribute("hostNodeId", mNodeId); // Pass masked ID
-		}
-
-		List<EventItemDTO> allItems = eventItemService.findAll();
-		model.addAttribute("eventItems", allItems);
-
-		return "fragments/events/add";
-	}
-
-	@PostMapping("/add/{id}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addEvent(@PathVariable(value = "id") Long mNodeId,
-			@Valid @ModelAttribute EventDTO eventDTO, BindingResult result,
-			@RequestParam(value = "seniorItemIds", required = false) List<Long> seniorItemIds,
-			@RequestParam(value = "juniorItemIds", required = false) List<Long> juniorItemIds,
-			@RequestParam(value = "subjuniorItemIds", required = false) List<Long> subjuniorItemIds,
-			Authentication authentication, HttpServletRequest request) {
-
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		// Validate that at least one item is selected
-		if ((seniorItemIds == null || seniorItemIds.isEmpty()) && (juniorItemIds == null || juniorItemIds.isEmpty())
-				&& (subjuniorItemIds == null || subjuniorItemIds.isEmpty())
-
-		) {
-			result.rejectValue("eventItems", "error.event", "Please select at least one item from catogories");
-		}
-
-		// Set host information
-		NodeDTO node = nodeService.findById(nodeId);
-		if (node != null) {
-			eventDTO.setEventHost(node.getNodeType());
-			eventDTO.setEventHostId(nodeId);
-		}
-
-		// Validate allowed node IDs (security check similar to officials)
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
-		if (!allowedNodeIds.contains(nodeId)) {
-			throw new SecurityException("Invalid node submitted!");
-		}
-
-		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "champ_eventbynode/" + mNodeId);
-		additionalData.put("target", "events_target");
-
-		return handleRequest(result, () -> {
-			// Save the event first
-			EventDTO savedEvent = service.save(eventDTO);
-
-			// Save item mappings if provided
-			if (seniorItemIds != null && !seniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(savedEvent.getEventId(), seniorItemIds, EventItemMap.Category.SENIOR);
-			}
-			if (juniorItemIds != null && !juniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(savedEvent.getEventId(), juniorItemIds, EventItemMap.Category.JUNIOR);
-			}
-			if (subjuniorItemIds != null && !subjuniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(savedEvent.getEventId(), subjuniorItemIds,
-						EventItemMap.Category.SUBJUNIOR);
-			}
-
-			return savedEvent;
-		}, "Event added successfully", additionalData);
-	}
-
-	@GetMapping("/edit/{id}")
-	public String editEventForm(@PathVariable Long id, Model model, Authentication authentication) {
-		Long eventId = XorMaskHelper.unmask(id);
-
-		// Get the event with security check
-		EventDTO event = service.findById(eventId);
-
-		// Security validation - ensure user has access to this event's node
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
-		if (!allowedNodeIds.contains(event.getEventHostId())) {
-			throw new SecurityException("Access denied to this event!");
-		}
-
-		model.addAttribute("event", event);
-		model.addAttribute("pageTitle", "Edit Event");
-		model.addAttribute("eventId", id); // Pass masked ID
-
-		// Get all available items
-		List<EventItemDTO> allItems = eventItemService.findAll();
-		model.addAttribute("eventItems", allItems);
-
-		// Get currently selected items
-		Map<EventItemMap.Category, List<Long>> selectedItems = eventItemMapService
-				.findItemsByEventIdGroupedByCategory(eventId);
-		model.addAttribute("seniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.SENIOR, Collections.emptyList()));
-		model.addAttribute("juniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.JUNIOR, Collections.emptyList()));
-		model.addAttribute("subjuniorItemIds",
-				selectedItems.getOrDefault(EventItemMap.Category.SUBJUNIOR, Collections.emptyList()));
-
-		return "fragments/events/edit";
-	}
-
-	@PostMapping("/edit/{id}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateEvent(@PathVariable("id") Long mEventId,
-			@Valid @ModelAttribute EventDTO eventDTO, BindingResult result,
-			@RequestParam(value = "seniorItemIds", required = false) List<Long> seniorItemIds,
-			@RequestParam(value = "juniorItemIds", required = false) List<Long> juniorItemIds,
-			@RequestParam(value = "subjuniorItemIds", required = false) List<Long> subjuniorItemIds,
-			Authentication authentication) {
-
-		Long eventId = XorMaskHelper.unmask(mEventId);
-
-		// Validate that at least one item is selected
-		if ((seniorItemIds == null || seniorItemIds.isEmpty()) && (juniorItemIds == null || juniorItemIds.isEmpty())
-				&& (subjuniorItemIds == null || subjuniorItemIds.isEmpty())
-
-		) {
-			result.rejectValue("eventItems", "error.event", "Please select at least one item from catogories");
-		}
-
-		// Security validation
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		EventDTO existingEvent = service.findById(eventId);
-		List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
-		if (!allowedNodeIds.contains(existingEvent.getEventHostId())) {
-			throw new SecurityException("Access denied to this event!");
-		}
-
-		Map<String, Object> additionalData = new HashMap<>();
-		additionalData.put("loadnext", "champ_eventbynode/" + XorMaskHelper.mask(existingEvent.getEventHostId()));
-		additionalData.put("target", "events_target");
-
-		return handleRequest(result, () -> {
-			// Update the event first
-			EventDTO updatedEvent = service.update(eventId, eventDTO);
-
-			// First delete all existing mappings for this event
-			// eventItemMapService.deleteByEventId(eventId);
-
-			eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.SENIOR, seniorItemIds);
-			eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.JUNIOR, juniorItemIds);
-			eventItemMapService.deleteByEventIdAndCategory(eventId, EventItemMap.Category.SUBJUNIOR, subjuniorItemIds);
-
-			if (seniorItemIds != null && !seniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, seniorItemIds, EventItemMap.Category.SENIOR);
-			}
-			if (juniorItemIds != null && !juniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, juniorItemIds, EventItemMap.Category.JUNIOR);
-			}
-			if (subjuniorItemIds != null && !subjuniorItemIds.isEmpty()) {
-				eventItemMapService.saveMappings(eventId, subjuniorItemIds, EventItemMap.Category.SUBJUNIOR);
-			}
-
-			return updatedEvent;
-		}, "Event updated successfully", additionalData);
-	}
-
-	@GetMapping("/participation/{eventid}/{nodeid}")
-	public String participationForm(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
-			Model model) {
-
-		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
-		
-		EventDTO eventRecord = service.findById(eventId);
-		
-		model.addAttribute("eventId", mEventId);
-		model.addAttribute("nodeId", mNodeId);
-		model.addAttribute("pageTitle", "Add Event Participants");
-		
-		
-		List<String> eligibleMeids = new ArrayList<>();
-
-		if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
-		    eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(
-		        eventRecord.getEventYear(), nodeId, this.getPreviousLevel(eventRecord.getEventHost())
-		    );
-
-		    if (eligibleMeids == null) eligibleMeids = new ArrayList<>();
-		    
-		    System.out.println("Eligible MEI IDs: " + eligibleMeids);
-		    
-		    if (eligibleMeids.isEmpty()) {
-		        System.out.println("No eligible MEI IDs found for national/state level.");
-		        // Optionally return or just continue
-		    }
-		}
-
-		// ✅ Always add
-		model.addAttribute("eligibleMeids", eligibleMeids);
-
-
-		// Safe fetch of members
-		Map<String, Map<String, List<CoreUser>>> memberMatrix = Objects
-				.requireNonNullElse(memberUserService.getMembersMatrix(nodeId,eventRecord), Collections.emptyMap());
-
-		// Fetch all EventItemMap for the event safely
-		Map<EventItemMap.Category, List<EventItemMap>> eventItemsByCategory = Objects
-				.requireNonNullElse(eventItemMapService.getEventItemMatrix(eventId), Collections.emptyMap());
-
-		// Flatten list safely
-		// Flatten list safely with stable ordering
-		List<EventItemMap> allItems = eventItemsByCategory.values().stream()
-		        .filter(Objects::nonNull)
-		        .flatMap(Collection::stream)
-		        .filter(Objects::nonNull)
-		        .sorted(Comparator.comparing(
-		                e -> e.getItem().getEvitemName(),
-		                String.CASE_INSENSITIVE_ORDER
-		        ))
-		        .distinct()
-		        .collect(Collectors.toList());
-
-		Map<String, List<TeamOptionDTO>> teamOptions =
-		        TeamBuilderHelper.buildTeamOptions(
-		                memberMatrix,
-		                allItems
-		        );
-		
-		model.addAttribute("teamOptions", teamOptions);
-		
-		
-		// Unique EventItems
-		List<EventItem> uniqueEventItems = allItems.stream()
-		        .map(EventItemMap::getItem)
-		        .filter(Objects::nonNull)
-		        .distinct()
-		        .sorted(Comparator.comparing(
-		                EventItem::getEvitemName,
-		                String.CASE_INSENSITIVE_ORDER
-		        ))
-		        .collect(Collectors.toList());
-
-		// Category as string map for template
-		Map<String, List<EventItemMap>> eventItemsByCategoryStrKey = new HashMap<>();
-		eventItemsByCategory.forEach((cat, list) -> eventItemsByCategoryStrKey.put(cat.name(), list));
-
-		// Item -> category -> list map
-		Map<Long, Map<String, List<EventItemMap>>> itemCategoryMap = new HashMap<>();
-		for (EventItem uniqueItem : uniqueEventItems) {
-			Map<String, List<EventItemMap>> catMap = new HashMap<>();
-			for (Map.Entry<EventItemMap.Category, List<EventItemMap>> entry : eventItemsByCategory.entrySet()) {
-				List<EventItemMap> filtered = entry.getValue().stream().filter(Objects::nonNull).filter(
-						eim -> eim.getItem() != null && eim.getItem().getEvitemId().equals(uniqueItem.getEvitemId()))
-						.toList();
-				if (!filtered.isEmpty())
-					catMap.put(entry.getKey().name(), filtered);
-			}
-			itemCategoryMap.put(uniqueItem.getEvitemId(), catMap);
-		}
-
-		Set<String> selectedKeys = memberEventItemService.getSelectedKeys(eventId, nodeId);
-		
-		Map<String, String> selectedTeams =
-		        memberEventItemService.getSelectedTeams(
-		                eventId,
-		                nodeId
-		        );
-
-		model.addAttribute(
-		        "selectedTeams",
-		        selectedTeams
-		);
-		
-		model.addAttribute("selectedKeys", selectedKeys);
-
-		// Add attributes safely
-		model.addAttribute("itemCategoryMap", itemCategoryMap);
-		model.addAttribute("eventItemsByCategoryStrKey", eventItemsByCategoryStrKey);
-		model.addAttribute("memberMatrix", memberMatrix);
-		model.addAttribute("uniqueEventItems", uniqueEventItems);
-		model.addAttribute("allEventItems", allItems);
-		model.addAttribute("eventItemsByCategory", eventItemsByCategory);
-
-
-		return "fragments/events/participation";
-	}
-
-	private Event.Type getPreviousLevel(Node.Type current) {
-	    return switch (current) {
-	        case NATIONAL -> Event.Type.STATE;
-	        case STATE -> Event.Type.DISTRICT;
-	        default -> null;
-	    };
-	}
-
-
-
-	@PostMapping("/participation/{eventId}/{nodeId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> addParticipation(@PathVariable("eventId") Long mEventId,
-			@PathVariable("nodeId") Long mNodeId, @RequestParam Map<String, String> requestParams,
-			@RequestParam(name = "pageParams", required = false) String pageParams) {
-
-		System.out.println("=== ALL REQUEST PARAMETERS ===");
-		requestParams.forEach((key, value) -> {
-			System.out.println("KEY: '" + key + "' = VALUE: '" + value + "'");
-		});
-		System.out.println("=== END PARAMETERS ===");
-
-		// Also print the raw query string if available
-		// This helps see the actual parameter order and duplicates
-
-		// Count selectedUsers parameters
-		long selectedUsersCount = requestParams.keySet().stream().filter(key -> key.startsWith("selectedUsers["))
-				.count();
-		System.out.println("Total selectedUsers parameters: " + selectedUsersCount);
-
-		Long eventId = XorMaskHelper.unmask(mEventId);
-		Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		// Page reload target
-		Map<String, Object> extra = new HashMap<>();
-		extra.put("loadnext", "participation/" + eventId + "/" + nodeId + (pageParams != null ? "?" + pageParams : ""));
-		
-		
-		Map<String, String> teamSelections = new HashMap<>();
-		
-		requestParams.forEach((key, value) -> {
+	memberMatrix.forEach((category, genderMap) -> {
+
+	    System.out.println("CATEGORY : " + category);
+
+	    genderMap.forEach((gender, users) -> {
+
+	        System.out.println("   GENDER : " + gender);
+
+	        users.forEach(u ->
+	                System.out.println(
+	                        "      -> "
+	                                + u.getUserId()
+	                                + " : "
+	                                + u.getUserFname()
+	                                + " "
+	                                + u.getUserLname()
+	                )
+	        );
+	    });
+	});
+
+	System.out.println("\n================ ITEM MEMBER MATRIX ================\n");
+
+	itemMemberMatrix.forEach((eimId, genderMap) -> {
+
+	    System.out.println("EIM ID : " + eimId);
+
+	    genderMap.forEach((gender, users) -> {
+
+	        System.out.println("   GENDER : " + gender);
+
+	        users.forEach(u ->
+	                System.out.println(
+	                        "      -> "
+	                                + u.getUserId()
+	                                + " : "
+	                                + u.getUserFname()
+	                                + " "
+	                                + u.getUserLname()
+	                )
+	        );
+	    });
+	});
+
+	model.addAttribute("uniqueEventItems", uniqueEventItems);
+
+	model.addAttribute("allEventItems", allItems);
+
+	model.addAttribute("eventItemsByCategory", eventItemsByCategory);
+
+	return "fragments/events/participation";
+    }
+
+    private Event.Type getPreviousLevel(Node.Type current) {
+	return switch (current) {
+	case NATIONAL -> Event.Type.STATE;
+	case STATE -> Event.Type.DISTRICT;
+	default -> null;
+	};
+    }
+
+    @PostMapping("/participation/{eventId}/{nodeId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addParticipation(@PathVariable("eventId") Long mEventId,
+	    @PathVariable("nodeId") Long mNodeId, @RequestParam Map<String, String> requestParams,
+	    @RequestParam(name = "pageParams", required = false) String pageParams) {
+
+	System.out.println("=== ALL REQUEST PARAMETERS ===");
+	requestParams.forEach((key, value) -> {
+	    System.out.println("KEY: '" + key + "' = VALUE: '" + value + "'");
+	});
+	System.out.println("=== END PARAMETERS ===");
+
+	// Also print the raw query string if available
+	// This helps see the actual parameter order and duplicates
+
+	// Count selectedUsers parameters
+	long selectedUsersCount = requestParams.keySet().stream().filter(key -> key.startsWith("selectedUsers["))
+		.count();
+	System.out.println("Total selectedUsers parameters: " + selectedUsersCount);
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	// Page reload target
+	Map<String, Object> extra = new HashMap<>();
+	extra.put("loadnext", "participation/" + eventId + "/" + nodeId + (pageParams != null ? "?" + pageParams : ""));
+
+	Map<String, String> teamSelections = new HashMap<>();
+
+	requestParams.forEach((key, value) -> {
+
+	    /*
+	     * selectedUsers[1932][SUBJUNIOR][MALE]
+	     */
+	    if (key.startsWith("selectedUsers[")) {
+
+		try {
+
+		    // USER ID
+		    String userId = key.substring(key.indexOf('[') + 1, key.indexOf(']'));
+
+		    // eimId
+		    String eimId = value;
 
 		    /*
-		     * selectedUsers[1932][SUBJUNIOR][MALE]
+		     * Matching: teamSelections[1932][380]
 		     */
-		    if (key.startsWith("selectedUsers[")) {
+		    String teamKey = "teamSelections[" + userId + "][" + eimId + "]";
 
-		        try {
+		    String teamCode = requestParams.get(teamKey);
 
-		            // USER ID
-		            String userId =
-		                    key.substring(
-		                            key.indexOf('[') + 1,
-		                            key.indexOf(']')
-		                    );
+		    System.out.println("USER : " + userId);
 
-		            // eimId
-		            String eimId = value;
+		    System.out.println("EIM  : " + eimId);
 
-		            /*
-		             * Matching:
-		             * teamSelections[1932][380]
-		             */
-		            String teamKey =
-		                    "teamSelections[" +
-		                    userId +
-		                    "][" +
-		                    eimId +
-		                    "]";
+		    System.out.println("TEAM : " + teamCode);
 
-		            String teamCode =
-		                    requestParams.get(teamKey);
+		} catch (Exception ex) {
 
-		            System.out.println(
-		                    "USER : " + userId
-		            );
+		    ex.printStackTrace();
+		}
+	    }
+	});
 
-		            System.out.println(
-		                    "EIM  : " + eimId
-		            );
+	memberEventItemService.saveParticipation(eventId, nodeId, requestParams);
+	Map<String, Object> body = new HashMap<>();
+	body.put("message", "Participation saved successfully");
+	body.put("status", "success");
+	// body.put("loadnext", "champ_participation/" + mEventId + "/" + mNodeId +
+	// (pageParams != null ? "?" + pageParams : ""));
 
-		            System.out.println(
-		                    "TEAM : " + teamCode
-		            );
+	body.put("loadnext",
+		"champ_participation/" + mEventId + "/" + mNodeId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("target", "modal");
+	return ResponseEntity.ok(body);
+    }
 
-		        } catch (Exception ex) {
+    @GetMapping({ "/participants/{eventid}/{nodeid}", "/participants/{eventid}/{nodeid}/{viewType}" })
+    public String listParticipants(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
+	    @PathVariable(value = "viewType", required = false) String viewType,
 
-		            ex.printStackTrace();
-		        }
+	    @RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
+	    @RequestParam(required = false) EventItemMap.Category category,
+
+	    Model model) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	// default view
+	if (viewType == null || viewType.isBlank()) {
+	    viewType = "participants";
+	}
+
+	model.addAttribute("eventId", mEventId);
+	model.addAttribute("nodeId", mNodeId);
+	model.addAttribute("viewType", viewType);
+
+	EventDTO eventRecord = service.findById(eventId);
+
+	Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
+		.getParticipationMatrix(eventId, itemId, gender, category);
+
+	model.addAttribute("eventRecord", eventRecord);
+
+	model.addAttribute("matrix", matrix);
+
+	Map<String, String> paramx = new HashMap<>();
+	paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	paramx.put("gender", gender != null ? gender.name() : "");
+	paramx.put("category", category != null ? category.name() : "");
+
+	model.addAttribute("paramx", paramx);
+
+	model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	model.addAttribute("genders", CoreUser.Gender.values());
+	model.addAttribute("categories", EventItemMap.Category.values());
+
+	// view resolver
+	switch (viewType.toLowerCase()) {
+
+	case "chestcard":
+	    model.addAttribute("pageTitle", "Chest Card");
+
+	    return "events/chestcard";
+
+	case "judgecard":
+	    model.addAttribute("pageTitle", "Judge Card");
+	    model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
+	    return "events/judgecard";
+
+	case "tabsheet":
+	    model.addAttribute("pageTitle", "Tab Sheet");
+	    model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
+	    return "events/tabsheet";
+
+	case "finallist":
+	    model.addAttribute("pageTitle", "Final Sheet");
+	    return "events/finallist";
+
+	case "summary":
+	    model.addAttribute("pageTitle", "Tab Summary");
+	    return "events/summary";
+
+	default:
+
+	    // ── 1. DECLARE ALL MAPS FIRST ──────────────────
+	    int totalParticipations = 0;
+	    Set<Long> uniqueParticipants = new LinkedHashSet<>();
+	    Set<Long> uniqueMales = new LinkedHashSet<>();
+	    Set<Long> uniqueFemales = new LinkedHashSet<>();
+
+	    Map<String, Integer> itemTotals = new LinkedHashMap<>();
+	    Map<String, Integer> itemCatTotals = new LinkedHashMap<>();
+	    Map<String, Integer> itemGenderTotals = new LinkedHashMap<>();
+
+	    // ── 2. POPULATE FROM MATRIX ────────────────────
+	    for (var itemEntry : matrix.entrySet()) {
+		String itemName = itemEntry.getKey();
+		for (var genderEntry : itemEntry.getValue().entrySet()) {
+		    String genderx = genderEntry.getKey();
+		    for (var catEntry : genderEntry.getValue().entrySet()) {
+			String cat = catEntry.getKey();
+			List<MemberEventItem> meis = catEntry.getValue();
+
+			totalParticipations += meis.size();
+			itemTotals.merge(itemName, meis.size(), Integer::sum);
+			itemCatTotals.merge(itemName + " | " + cat, meis.size(), Integer::sum);
+			itemGenderTotals.merge(itemName + " | " + genderx, meis.size(), Integer::sum);
+
+			for (MemberEventItem mei : meis) {
+			    Long userId = mei.getMemberEventMember().getUserId();
+			    uniqueParticipants.add(userId);
+			    if ("MALE".equals(genderx))
+				uniqueMales.add(userId);
+			    if ("FEMALE".equals(genderx))
+				uniqueFemales.add(userId);
+			}
 		    }
-		});
-		
-		
-
-		memberEventItemService.saveParticipation(
-		        eventId,
-		        nodeId,
-		        requestParams
-		);
-		Map<String, Object> body = new HashMap<>();
-		body.put("message", "Participation saved successfully");
-		body.put("status", "success");
-		// body.put("loadnext", "champ_participation/" + mEventId + "/" + mNodeId +
-		// (pageParams != null ? "?" + pageParams : ""));
-
-		body.put("loadnext",
-				"champ_participation/" + mEventId + "/" + mNodeId + (pageParams != null ? "?" + pageParams : ""));
-		body.put("target", "modal");
-		return ResponseEntity.ok(body);
-	}
-	
-	
-	@GetMapping({
-	        "/participants/{eventid}/{nodeid}",
-	        "/participants/{eventid}/{nodeid}/{viewType}"
-	})
-	public String listParticipants(
-	        @PathVariable("eventid") Long mEventId,
-	        @PathVariable("nodeid") Long mNodeId,
-	        @PathVariable(value = "viewType", required = false) String viewType,
-
-	        @RequestParam(required = false) Long itemId,
-	        @RequestParam(required = false) CoreUser.Gender gender,
-	        @RequestParam(required = false) EventItemMap.Category category,
-
-	        Model model) {
-
-	    Long eventId = XorMaskHelper.unmask(mEventId);
-	    Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-	    // default view
-	    if (viewType == null || viewType.isBlank()) {
-	        viewType = "participants";
+		}
 	    }
 
-	    model.addAttribute("eventId", mEventId);
-	    model.addAttribute("nodeId", mNodeId);
-	    model.addAttribute("viewType", viewType);
+	    // ── 3. BUILD breakdownRows AFTER itemTotals IS READY ──
+	    List<Map<String, Object>> breakdownRows = new ArrayList<>();
 
-	    EventDTO eventRecord = service.findById(eventId);
+	    matrix.forEach((itemName, genderMap) -> {
+		genderMap.forEach((genderd, catMap) -> {
+		    catMap.forEach((cat, meis) -> {
+			Map<String, Object> row = new LinkedHashMap<>();
+			row.put("item", itemName);
+			row.put("gender", genderd);
+			row.put("category", cat);
+			row.put("count", meis.size());
+			row.put("subtotal", false);
+			breakdownRows.add(row);
+		    });
+		});
 
-	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
-	            memberEventItemService.getParticipationMatrix(
-	                    eventId,
-	                    itemId,
-	                    gender,
-	                    category
-	            );
-	    
-	    model.addAttribute("eventRecord" , eventRecord);
+		Map<String, Object> subtotalRow = new LinkedHashMap<>();
+		subtotalRow.put("item", itemName + " — Total");
+		subtotalRow.put("gender", "");
+		subtotalRow.put("category", "");
+		subtotalRow.put("count", itemTotals.get(itemName)); // ✅ safe now
+		subtotalRow.put("subtotal", true);
+		breakdownRows.add(subtotalRow);
+	    });
+
+	    // ── 4. ADD TO MODEL ────────────────────────────
+	    model.addAttribute("totalParticipations", totalParticipations);
+	    model.addAttribute("uniqueParticipants", uniqueParticipants.size());
+	    model.addAttribute("uniqueMales", uniqueMales.size());
+	    model.addAttribute("uniqueFemales", uniqueFemales.size());
+	    model.addAttribute("itemTotals", itemTotals);
+	    model.addAttribute("itemCatTotals", itemCatTotals);
+	    model.addAttribute("itemGenderTotals", itemGenderTotals);
+	    model.addAttribute("breakdownRows", breakdownRows);
+
+	    model.addAttribute("pageTitle", "Add Event Participants");
+	    return "events/participants";
+	}
+    }
+
+    private Map<String, Map<String, Map<String, List<MemberEventItem>>>> deduplicateMatrix(
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
+
+	Map<String, Map<String, Map<String, List<MemberEventItem>>>> result = new LinkedHashMap<>();
+
+	matrix.forEach((gender, categories) -> {
+	    Map<String, Map<String, List<MemberEventItem>>> catMap = new LinkedHashMap<>();
+	    categories.forEach((category, items) -> {
+		Map<String, List<MemberEventItem>> itemMap = new LinkedHashMap<>();
+		items.forEach((itemName, meiList) -> {
+		    List<MemberEventItem> distinct = meiList.stream().filter(mei -> mei.getMemberChestNo() != null)
+			    .collect(Collectors.collectingAndThen(Collectors.toCollection(
+				    () -> new TreeSet<>(Comparator.comparing(MemberEventItem::getMemberChestNo))),
+				    ArrayList::new));
+		    itemMap.put(itemName, distinct);
+		});
+		catMap.put(category, itemMap);
+	    });
+	    result.put(gender, catMap);
+	});
+
+	return result;
+    }
+
+    @GetMapping("/participants_score/{eventid}")
+    public String eventScoreEntry(@PathVariable("eventid") Long mEventId, @RequestParam(required = false) Long itemId,
+	    @RequestParam(required = false) CoreUser.Gender gender,
+	    @RequestParam(required = false) EventItemMap.Category category, Model model) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	model.addAttribute("eventId", mEventId);
+	model.addAttribute("pageTitle", "Score Card");
+
+	if (itemId != null && gender != null && category != null) {
+
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
+		    .getParticipationMatrix(eventId, itemId, gender, category);
 
 	    model.addAttribute("matrix", matrix);
 
-	    Map<String, String> paramx = new HashMap<>();
-	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
-	    paramx.put("gender", gender != null ? gender.name() : "");
-	    paramx.put("category", category != null ? category.name() : "");
-
-	    model.addAttribute("paramx", paramx);
-
-	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
-	    model.addAttribute("genders", CoreUser.Gender.values());
-	    model.addAttribute("categories", EventItemMap.Category.values());
-
-	    // view resolver
-	    switch (viewType.toLowerCase()) {
-
-	        case "chestcard":
-	            model.addAttribute("pageTitle", "Chest Card");
-
-	            return "events/chestcard";
-
-	        case "judgecard":
-	            model.addAttribute("pageTitle", "Judge Card");
-	            model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
-	            return "events/judgecard";
-
-	        case "tabsheet":
-	            model.addAttribute("pageTitle", "Tab Sheet");
-	            model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
-	            return "events/tabsheet";
-	            
-	            
-	        case "finallist":
-	            model.addAttribute("pageTitle", "Final Sheet");
-	            return "events/finallist";
-
-	        case "summary":
-	            model.addAttribute("pageTitle", "Tab Summary");
-	            return "events/summary";
-	            
-	            
-	        default:
-	            
-	         // ── 1. DECLARE ALL MAPS FIRST ──────────────────
-	            int totalParticipations = 0;
-	            Set<Long> uniqueParticipants = new LinkedHashSet<>();
-	            Set<Long> uniqueMales        = new LinkedHashSet<>();
-	            Set<Long> uniqueFemales      = new LinkedHashSet<>();
-
-	            Map<String, Integer> itemTotals     = new LinkedHashMap<>();
-	            Map<String, Integer> itemCatTotals  = new LinkedHashMap<>();
-	            Map<String, Integer> itemGenderTotals = new LinkedHashMap<>();
-
-	            // ── 2. POPULATE FROM MATRIX ────────────────────
-	            for (var itemEntry : matrix.entrySet()) {
-	                String itemName = itemEntry.getKey();
-	                for (var genderEntry : itemEntry.getValue().entrySet()) {
-	                    String genderx = genderEntry.getKey();
-	                    for (var catEntry : genderEntry.getValue().entrySet()) {
-	                        String cat  = catEntry.getKey();
-	                        List<MemberEventItem> meis = catEntry.getValue();
-
-	                        totalParticipations += meis.size();
-	                        itemTotals.merge(itemName, meis.size(), Integer::sum);
-	                        itemCatTotals.merge(itemName + " | " + cat, meis.size(), Integer::sum);
-	                        itemGenderTotals.merge(itemName + " | " + genderx, meis.size(), Integer::sum);
-
-	                        for (MemberEventItem mei : meis) {
-	                            Long userId = mei.getMemberEventMember().getUserId();
-	                            uniqueParticipants.add(userId);
-	                            if ("MALE".equals(genderx))   uniqueMales.add(userId);
-	                            if ("FEMALE".equals(genderx)) uniqueFemales.add(userId);
-	                        }
-	                    }
-	                }
-	            }
-
-	            // ── 3. BUILD breakdownRows AFTER itemTotals IS READY ──
-	            List<Map<String, Object>> breakdownRows = new ArrayList<>();
-
-	            matrix.forEach((itemName, genderMap) -> {
-	                genderMap.forEach((genderd, catMap) -> {
-	                    catMap.forEach((cat, meis) -> {
-	                        Map<String, Object> row = new LinkedHashMap<>();
-	                        row.put("item",     itemName);
-	                        row.put("gender",   genderd);
-	                        row.put("category", cat);
-	                        row.put("count",    meis.size());
-	                        row.put("subtotal", false);
-	                        breakdownRows.add(row);
-	                    });
-	                });
-
-	                Map<String, Object> subtotalRow = new LinkedHashMap<>();
-	                subtotalRow.put("item",     itemName + " — Total");
-	                subtotalRow.put("gender",   "");
-	                subtotalRow.put("category", "");
-	                subtotalRow.put("count",    itemTotals.get(itemName)); // ✅ safe now
-	                subtotalRow.put("subtotal", true);
-	                breakdownRows.add(subtotalRow);
-	            });
-
-	            // ── 4. ADD TO MODEL ────────────────────────────
-	            model.addAttribute("totalParticipations",  totalParticipations);
-	            model.addAttribute("uniqueParticipants",   uniqueParticipants.size());
-	            model.addAttribute("uniqueMales",          uniqueMales.size());
-	            model.addAttribute("uniqueFemales",        uniqueFemales.size());
-	            model.addAttribute("itemTotals",           itemTotals);
-	            model.addAttribute("itemCatTotals",        itemCatTotals);
-	            model.addAttribute("itemGenderTotals",     itemGenderTotals);
-	            model.addAttribute("breakdownRows",        breakdownRows);
-	            
-	            
-	            model.addAttribute("pageTitle", "Add Event Participants");
-	            return "events/participants";
-	    }
-	}
-	
-	
-	private Map<String, Map<String, Map<String, List<MemberEventItem>>>> deduplicateMatrix(
-	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
-
-	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> result = new LinkedHashMap<>();
-
-	    matrix.forEach((gender, categories) -> {
-	        Map<String, Map<String, List<MemberEventItem>>> catMap = new LinkedHashMap<>();
-	        categories.forEach((category, items) -> {
-	            Map<String, List<MemberEventItem>> itemMap = new LinkedHashMap<>();
-	            items.forEach((itemName, meiList) -> {
-	                List<MemberEventItem> distinct = meiList.stream()
-	                    .filter(mei -> mei.getMemberChestNo() != null)
-	                    .collect(Collectors.collectingAndThen(
-	                        Collectors.toCollection(() -> new TreeSet<>(
-	                            Comparator.comparing(MemberEventItem::getMemberChestNo)
-	                        )),
-	                        ArrayList::new
-	                    ));
-	                itemMap.put(itemName, distinct);
-	            });
-	            catMap.put(category, itemMap);
-	        });
-	        result.put(gender, catMap);
-	    });
-
-	    return result;
 	}
 
-	@GetMapping("/participants_score/{eventid}")
-	public String eventScoreEntry(@PathVariable("eventid") Long mEventId,
-			@RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
-			@RequestParam(required = false) EventItemMap.Category category, Model model) {
+	Map<String, String> paramx = new HashMap<>();
+	paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	paramx.put("gender", gender != null ? gender.name() : "");
+	paramx.put("category", category != null ? category.name() : "");
+	model.addAttribute("paramx", paramx);
 
-		Long eventId = XorMaskHelper.unmask(mEventId);
+	model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
+	model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
+	model.addAttribute("categories", EventItemMap.Category.values());
 
-		model.addAttribute("eventId", mEventId);
-		model.addAttribute("pageTitle", "Score Card");
+	return "fragments/events/score";
+    }
 
-		if (itemId != null && gender != null && category != null) {
+    @PostMapping("/participants_score/{mEventId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateScores(@PathVariable("mEventId") Long mEventId,
+	    @RequestParam Map<String, String> params,
+	    @RequestParam(name = "pageParams", required = false) String pageParams) {
 
-			Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
-					.getParticipationMatrix(eventId, itemId, gender, category);
+	Long eventId = XorMaskHelper.unmask(mEventId);
+	// Long nodeId = XorMaskHelper.unmask(mNodeId);
 
-			model.addAttribute("matrix", matrix);
+	// Extract scores and grades from params (meiId is the key)
+	Map<Long, Double> scores = new HashMap<>();
+	Map<Long, MemberEventItem.Grade> grades = new HashMap<>();
 
+	params.forEach((key, value) -> {
+	    if (key.startsWith("scores[")) {
+		Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+		scores.put(meiId, Double.valueOf(value));
+	    } else if (key.startsWith("grades[")) {
+		Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+		if (value != null && !value.isBlank()) {
+		    grades.put(meiId, MemberEventItem.Grade.valueOf(value));
 		}
-
-		Map<String, String> paramx = new HashMap<>();
-		paramx.put("itemId", itemId != null ? itemId.toString() : "");
-		paramx.put("gender", gender != null ? gender.name() : "");
-		paramx.put("category", category != null ? category.name() : "");
-		model.addAttribute("paramx", paramx);
-
-		model.addAttribute("itemsMap", eventItemService.getIdNameMap()); // Map<Long,String>
-		model.addAttribute("genders", CoreUser.Gender.values()); // enum constants
-		model.addAttribute("categories", EventItemMap.Category.values());
-
-		return "fragments/events/score";
-	}
-
-	@PostMapping("/participants_score/{mEventId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateScores(@PathVariable("mEventId") Long mEventId,
-			@RequestParam Map<String, String> params,
-			@RequestParam(name = "pageParams", required = false) String pageParams) {
-
-		Long eventId = XorMaskHelper.unmask(mEventId);
-		//Long nodeId = XorMaskHelper.unmask(mNodeId);
-
-		// Extract scores and grades from params (meiId is the key)
-		Map<Long, Double> scores = new HashMap<>();
-		Map<Long, MemberEventItem.Grade> grades = new HashMap<>();
-
-		params.forEach((key, value) -> {
-			if (key.startsWith("scores[")) {
-				Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-				scores.put(meiId, Double.valueOf(value));
-			} else if (key.startsWith("grades[")) {
-				Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-				if (value != null && !value.isBlank()) {
-					grades.put(meiId, MemberEventItem.Grade.valueOf(value));
-				}
-			}
-		});
-
-		memberEventItemService.updateScores(scores, grades);
-
-		// response body
-		Map<String, Object> body = new HashMap<>();
-		body.put("message", "Scores updated successfully");
-		body.put("status", "success");
-		body.put("loadnext",
-				"champ_participants_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
-		body.put("target", "modal2");
-		
-
-		return ResponseEntity.ok(body);
-
-	}
-	
-	
-	@GetMapping("/certificate_approve/{eventId}")
-	public String certificateApprovalView(@PathVariable("eventId") Long mEventId,
-	                                      @RequestParam(required = false) Long itemId,
-	                                      @RequestParam(required = false) CoreUser.Gender gender,
-	                                      @RequestParam(required = false) EventItemMap.Category category,
-	                                      Model model) {
-
-	    Long eventId = XorMaskHelper.unmask(mEventId);
-
-	    model.addAttribute("eventId", mEventId);
-	    model.addAttribute("pageTitle", "Certificate Approval");
-
-	    if (itemId != null && gender != null && category != null) {
-	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
-	                memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category);
-	        model.addAttribute("matrix", matrix);
 	    }
+	});
 
-	    Map<String, String> paramx = new HashMap<>();
-	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
-	    paramx.put("gender", gender != null ? gender.name() : "");
-	    paramx.put("category", category != null ? category.name() : "");
-	    model.addAttribute("paramx", paramx);
-	    
-	    
-	    String combined = String.format("itemId=%s;gender=%s;category=%s",
-	    	    paramx.get("itemId"), paramx.get("gender"), paramx.get("category"));
-	    model.addAttribute("combinedParam", combined);
+	memberEventItemService.updateScores(scores, grades);
 
-	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
-	    model.addAttribute("genders", CoreUser.Gender.values());
-	    model.addAttribute("categories", EventItemMap.Category.values());
-	    model.addAttribute("target", "modal2");
+	// response body
+	Map<String, Object> body = new HashMap<>();
+	body.put("message", "Scores updated successfully");
+	body.put("status", "success");
+	body.put("loadnext", "champ_participants_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("target", "modal2");
 
-	    return "fragments/events/approval";
+	return ResponseEntity.ok(body);
+
+    }
+
+    @GetMapping("/certificate_approve/{eventId}")
+    public String certificateApprovalView(@PathVariable("eventId") Long mEventId,
+	    @RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
+	    @RequestParam(required = false) EventItemMap.Category category, Model model) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	model.addAttribute("eventId", mEventId);
+	model.addAttribute("pageTitle", "Certificate Approval");
+
+	if (itemId != null && gender != null && category != null) {
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
+		    .getParticipationMatrix(eventId, itemId, gender, category);
+	    model.addAttribute("matrix", matrix);
 	}
 
-	@PostMapping("/certificate_approve/{mEventId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateCertificateApproval(
-	        @PathVariable("mEventId") Long mEventId,
-	        @RequestParam Map<String, String> params,
-	        @RequestParam("cparams") String cparams,
-	        Authentication authentication,
-	        @RequestParam(name = "pageParams", required = false) String pageParams) {
+	Map<String, String> paramx = new HashMap<>();
+	paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	paramx.put("gender", gender != null ? gender.name() : "");
+	paramx.put("category", category != null ? category.name() : "");
+	model.addAttribute("paramx", paramx);
 
-	    Long eventId = XorMaskHelper.unmask(mEventId);
+	String combined = String.format("itemId=%s;gender=%s;category=%s", paramx.get("itemId"), paramx.get("gender"),
+		paramx.get("category"));
+	model.addAttribute("combinedParam", combined);
 
-	    CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-	    long userId = principal.getUserId();
+	model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	model.addAttribute("genders", CoreUser.Gender.values());
+	model.addAttribute("categories", EventItemMap.Category.values());
+	model.addAttribute("target", "modal2");
 
-	    // Collect approvals (meiId -> true/false)
-	    Map<Long, Boolean> approvals = new HashMap<>();
-	    params.forEach((key, value) -> {
-	        if (key.startsWith("approved[")) {
-	            Long meiId = Long.valueOf(key.substring(9, key.length() - 1));
-	            approvals.put(meiId, value.equals("on"));
-	        }
-	    });
+	return "fragments/events/approval";
+    }
 
-	    memberEventItemService.updateCertificateApprovals(eventId,cparams,approvals, userId);
+    @PostMapping("/certificate_approve/{mEventId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateCertificateApproval(@PathVariable("mEventId") Long mEventId,
+	    @RequestParam Map<String, String> params, @RequestParam("cparams") String cparams,
+	    Authentication authentication, @RequestParam(name = "pageParams", required = false) String pageParams) {
 
-	    Map<String, Object> body = new HashMap<>();
-	    body.put("message", "Score and Grade Verified and Approved Successfully");
-	    body.put("status", "success");
-	    body.put("loadnext", "champ_certificate_approve/" + mEventId + 
-	            (pageParams != null ? "?" + pageParams : ""));
-	    body.put("target", "modal2");
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-	    return ResponseEntity.ok(body);
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	long userId = principal.getUserId();
+
+	// Collect approvals (meiId -> true/false)
+	Map<Long, Boolean> approvals = new HashMap<>();
+	params.forEach((key, value) -> {
+	    if (key.startsWith("approved[")) {
+		Long meiId = Long.valueOf(key.substring(9, key.length() - 1));
+		approvals.put(meiId, value.equals("on"));
+	    }
+	});
+
+	memberEventItemService.updateCertificateApprovals(eventId, cparams, approvals, userId);
+
+	Map<String, Object> body = new HashMap<>();
+	body.put("message", "Score and Grade Verified and Approved Successfully");
+	body.put("status", "success");
+	body.put("loadnext", "champ_certificate_approve/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("target", "modal2");
+
+	return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/certificate_generate/{mEventId}")
+    public ResponseEntity<?> generateBatchCertificate(@PathVariable Long mEventId) throws Exception {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	int count = certificateBatchService.processCertificateBatch(eventId);
+
+	Map<String, Object> body = new HashMap<>();
+
+	String message;
+	if (count == 0) {
+	    message = "No certificate tasks were queued.";
+	} else if (count == 1) {
+	    message = "1 certificate task queued successfully!";
+	} else {
+	    message = count + " certificate tasks queued successfully!";
 	}
 
-	
+	body.put("message", message);
 
-	@GetMapping("/certificate_generate/{mEventId}")
-	public ResponseEntity<?> generateBatchCertificate(@PathVariable Long mEventId) throws Exception {
+	// body.put("target", "modal");
+	body.put("status", "success");
+	// body.put("loadnext", "champ_eventview/" + mEventId);
 
-	    Long eventId = XorMaskHelper.unmask(mEventId);
+	return ResponseEntity.ok(body);
+    }
 
-	    int count = certificateBatchService.processCertificateBatch(eventId);
+    @GetMapping("/participants_certificate/{mMeiId}")
+    public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
 
-	    Map<String, Object> body = new HashMap<>();
+	// Unmask ID
+	Long meiId = XorMaskHelper.unmask(mMeiId);
 
-	    String message;
-	    if (count == 0) {
-	        message = "No certificate tasks were queued.";
-	    } else if (count == 1) {
-	        message = "1 certificate task queued successfully!";
-	    } else {
-	        message = count + " certificate tasks queued successfully!";
+	// Validate MemberEventItem exists
+	MemberEventItem mei = memberEventItemService.findById(meiId)
+		.orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+
+	// Delegate all work to service
+	byte[] signedPdf = certificateService.generateOrGetSignedCertificate1(mei);
+
+	// Prepare response headers
+	HttpHeaders headers = new HttpHeaders();
+	headers.setContentType(MediaType.APPLICATION_PDF);
+	headers.setContentDispositionFormData("filename",
+		"certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+
+	return ResponseEntity.ok().headers(headers).body(signedPdf);
+    }
+
+    private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
+	try {
+	    try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
+		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    PdfReader reader = new PdfReader(bais);
+		    PdfWriter writer = new PdfWriter(baos, new WriterProperties().setFullCompressionMode(true))) {
+
+		writer.setCompressionLevel(CompressionConstants.BEST_COMPRESSION);
+		PdfDocument pdfDoc = new PdfDocument(reader, writer);
+		pdfDoc.close();
+
+		return baos.toByteArray();
+	    }
+	} catch (IOException e) {
+	    throw new RuntimeException("Failed to compress PDF", e);
+	}
+    }
+
+    @GetMapping("/html/listparticipants")
+    public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
+
+	List<MemberEventDTO> memberEeventDTO = memberEventService.findByEvent(eventId);
+
+	List<EventItemDTO> allItems = eventItemService.findAll(); // or eventService.getItemsByEventId(eventId)
+
+	Map<Long, String> itemIdToName = allItems.stream()
+		.collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+
+	// logInfo("eventItems: {}",itemIdToName);
+
+	model.addAttribute("itemNameMap", itemIdToName);
+	model.addAttribute("partList", memberEeventDTO);
+	model.addAttribute("pageTitle", "List of Participants");
+	model.addAttribute("event", new EventDTO());
+
+	return "fragments/events/list_participants";
+    }
+
+    @GetMapping("/html/listitems")
+    public String listItems(@RequestParam(name = "eventId") Long eventId, Model model) {
+
+	List<EventItemDTO> juniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.JUNIOR);
+	List<EventItemDTO> seniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.SENIOR);
+
+	logInfo("juniorItems: {}", juniorItems);
+	logInfo("seniorItems: {}", seniorItems);
+
+	model.addAttribute("juniorItems", juniorItems);
+	model.addAttribute("seniorItems", seniorItems);
+	model.addAttribute("eventId", eventId);
+	model.addAttribute("pageTitle", "Event Items");
+
+	return "fragments/events/list_items";
+    }
+
+    @GetMapping("/html/selectitems")
+    public String selectItems(@RequestParam("eventId") Long eventId,
+	    @RequestParam("selectedItemId") Long selectedItemId, HttpServletRequest request, Model model) {
+
+	// Fetch filtered event member list
+	List<Object[]> resultList = service.getMemberEventsWithFilters(selectedItemId, eventId, null, null, null, null,
+		null);
+
+	List<EventItemDTO> allItems = eventItemService.findAll(); // Or fetch only for this event if optimized
+	Map<Long, String> itemIdToName = allItems.stream()
+		.collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+
+	// Populate model attributes for rendering
+	model.addAttribute("resultList", resultList);
+	model.addAttribute("eventId", eventId);
+	model.addAttribute("selectedItemId", selectedItemId);
+	model.addAttribute("itemNameMap", itemIdToName);
+
+	return "fragments/events/list_items_members";
+    }
+
+    @PostMapping("/html/save_scores")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveScores(@RequestParam("eventId") Long eventId,
+	    @RequestParam("itemId") Integer selectedItemId, @RequestParam Map<String, String> allParams,
+	    HttpServletRequest request) {
+
+	HttpSession session = request.getSession(false);
+	Long resultEntryBy = session != null ? (Long) session.getAttribute("USER_ID") : null;
+
+	Map<String, Object> additionalData = new HashMap<>();
+
+	try {
+	    // Loop through all "scores[memberId]" entries
+	    for (Map.Entry<String, String> entry : allParams.entrySet()) {
+		String key = entry.getKey();
+
+		if (key.startsWith("scores[")) {
+		    try {
+			// Extract the memberEventId from key "scores[60]"
+			String memberEventIdStr = key.substring("scores[".length(), key.length() - 1);
+			Long memberEventId = Long.parseLong(memberEventIdStr);
+			String scoreValue = entry.getValue(); // e.g., "A"
+
+			// Fetch MemberEventDTO by memberEventId (more efficient than eventId+memberId)
+			MemberEventDTO memberEvent = (MemberEventDTO) memberEventService.findByEventAndMember(eventId,
+				memberEventId);
+			if (memberEvent != null) {
+			    // Set or update the score for selectedItemId
+			    Map<Integer, String> items = memberEvent.getItems();
+			    if (items == null) {
+				items = new HashMap<>();
+				memberEvent.setItems(items);
+			    }
+			    // Changed to String key to match your previous implementation
+			    items.put(selectedItemId, scoreValue);
+
+			    memberEvent.setResultDate(LocalDateTime.now());
+			    memberEvent.setResultEntryBy(resultEntryBy);
+
+			    // Save updated data
+			    memberEventService.save(memberEvent);
+			}
+		    } catch (NumberFormatException e) {
+			// Handle invalid memberEventId format
+			return ResponseEntity.badRequest()
+				.body(Map.of("error", "Invalid member ID format in parameter: " + key));
+		    }
+		}
 	    }
 
-	    body.put("message", message);
-
-	    //body.put("target", "modal");
-	    body.put("status", "success");
-	    //body.put("loadnext", "champ_eventview/" + mEventId);
-
-	    return ResponseEntity.ok(body);
+	    return ResponseEntity.ok().body(Map.of("status", "success", "message", "Scores updated successfully",
+		    "additionalData", additionalData));
+	} catch (Exception e) {
+	    return ResponseEntity.internalServerError().body(Map.of("error", "Error saving scores: " + e.getMessage()));
 	}
+    }
 
+    @PostMapping("/html/cancel/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelEvent(@PathVariable Long id) {
+	service.softDeleteById(id);
+	return buildResponse("Event cancelled successfully", Map.of("redirect", "/events/html"));
+    }
 
-	@GetMapping("/participants_certificate/{mMeiId}")
-	public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
+    @GetMapping("/html/active")
+    public String getActiveEvents(Model model) {
+	List<EventDTO> activeEvents = service.findActiveEventsOnDate(LocalDate.now());
+	model.addAttribute("events", activeEvents);
+	model.addAttribute("pageTitle", "Active Events");
+	return "fragments/active_events";
+    }
 
-		// Unmask ID
-		Long meiId = XorMaskHelper.unmask(mMeiId);
+    @GetMapping("/participants_chestno/{eventid}")
+    public String participantChestConfig(@PathVariable("eventid") Long mEventId, Model model) {
 
-		// Validate MemberEventItem exists
-		MemberEventItem mei = memberEventItemService.findById(meiId)
-				.orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-		// Delegate all work to service
-		byte[] signedPdf = certificateService.generateOrGetSignedCertificate1(mei);
+	model.addAttribute("eventId", mEventId);
 
-		// Prepare response headers
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_PDF);
-		headers.setContentDispositionFormData("filename",
-				"certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
+	model.addAttribute("pageTitle", "Chest Number Configuration");
 
-		return ResponseEntity.ok().headers(headers).body(signedPdf);
-	}
+	Map<String, Map<String, Map<String, EventChestConfigDTO>>> matrix = eventChestConfigService
+		.getChestConfigMatrix(eventId);
 
-	private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
-		try {
-			try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					PdfReader reader = new PdfReader(bais);
-					PdfWriter writer = new PdfWriter(baos, new WriterProperties().setFullCompressionMode(true))) {
+	logger.debug("Chest Config Matrix : {}", matrix);
 
-				writer.setCompressionLevel(CompressionConstants.BEST_COMPRESSION);
-				PdfDocument pdfDoc = new PdfDocument(reader, writer);
-				pdfDoc.close();
+	System.out.println(matrix);
 
-				return baos.toByteArray();
-			}
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to compress PDF", e);
-		}
-	}
+	model.addAttribute("matrix", matrix);
 
-	@GetMapping("/html/listparticipants")
-	public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {
+	model.addAttribute("genders", CoreUser.Gender.values());
 
-		List<MemberEventDTO> memberEeventDTO = memberEventService.findByEvent(eventId);
+	model.addAttribute("categories", EventItemMap.Category.values());
 
-		List<EventItemDTO> allItems = eventItemService.findAll(); // or eventService.getItemsByEventId(eventId)
+	return "fragments/events/chestno";
+    }
 
-		Map<Long, String> itemIdToName = allItems.stream()
-				.collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+    @PostMapping("/participants_chestno/{eventid}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateChestConfig(@PathVariable("eventid") Long mEventId,
+	    @RequestParam Map<String, String> params) {
 
-		// logInfo("eventItems: {}",itemIdToName);
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-		model.addAttribute("itemNameMap", itemIdToName);
-		model.addAttribute("partList", memberEeventDTO);
-		model.addAttribute("pageTitle", "List of Participants");
-		model.addAttribute("event", new EventDTO());
+	List<EventChestConfigDTO> rows = new ArrayList<>();
 
-		return "fragments/events/list_participants";
-	}
+	// matches both maleChest[303] and femaleChest[303]
+	java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^(male|female)Chest\\[(\\d+)\\]$");
 
-	@GetMapping("/html/listitems")
-	public String listItems(@RequestParam(name = "eventId") Long eventId, Model model) {
+	params.forEach((key, value) -> {
+	    if (value == null || value.isBlank())
+		return;
 
-		List<EventItemDTO> juniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.JUNIOR);
-		List<EventItemDTO> seniorItems = service.getEventItemsByCategory(eventId, EventItemMap.Category.SENIOR);
+	    java.util.regex.Matcher m = pattern.matcher(key);
+	    if (!m.matches())
+		return;
 
-		logInfo("juniorItems: {}", juniorItems);
-		logInfo("seniorItems: {}", seniorItems);
+	    String gender = m.group(1); // "male" or "female"
+	    Long eimId = Long.valueOf(m.group(2));
 
-		model.addAttribute("juniorItems", juniorItems);
-		model.addAttribute("seniorItems", seniorItems);
-		model.addAttribute("eventId", eventId);
-		model.addAttribute("pageTitle", "Event Items");
+	    EventChestConfigDTO dto = new EventChestConfigDTO();
+	    dto.setEventItemMapId(eimId);
+	    dto.setGender(gender.equals("male") ? CoreUser.Gender.MALE : CoreUser.Gender.FEMALE);
+	    dto.setCurrentNo(Long.valueOf(value));
+	    dto.setStartNo(Long.valueOf(value));
+	    rows.add(dto);
+	});
 
-		return "fragments/events/list_items";
-	}
+	eventChestConfigService.updateChestConfigs(eventId, rows);
 
-	@GetMapping("/html/selectitems")
-	public String selectItems(@RequestParam("eventId") Long eventId,
-			@RequestParam("selectedItemId") Long selectedItemId, HttpServletRequest request, Model model) {
+	eventChestConfigService.regenerateChestNumbers(eventId);
 
-		// Fetch filtered event member list
-		List<Object[]> resultList = service.getMemberEventsWithFilters(selectedItemId, eventId, null, null, null, null,
-				null);
+	Map<String, Object> body = new HashMap<>();
 
-		List<EventItemDTO> allItems = eventItemService.findAll(); // Or fetch only for this event if optimized
-		Map<Long, String> itemIdToName = allItems.stream()
-				.collect(Collectors.toMap(EventItemDTO::getEvitemId, EventItemDTO::getEvitemName));
+	body.put("message", "Chest No. updated successfully");
 
-		// Populate model attributes for rendering
-		model.addAttribute("resultList", resultList);
-		model.addAttribute("eventId", eventId);
-		model.addAttribute("selectedItemId", selectedItemId);
-		model.addAttribute("itemNameMap", itemIdToName);
+	body.put("target", "modal2");
+	body.put("status", "success");
+	return ResponseEntity.ok(body);
+    }
 
-		return "fragments/events/list_items_members";
-	}
+    @GetMapping("/participants_judge_score/{eventid}")
+    public String eventJudgeScoreEntry(@PathVariable("eventid") Long mEventId,
+	    @RequestParam(required = false) Long itemId, @RequestParam(required = false) CoreUser.Gender gender,
+	    @RequestParam(required = false) EventItemMap.Category category, Model model) {
 
-	@PostMapping("/html/save_scores")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> saveScores(@RequestParam("eventId") Long eventId,
-			@RequestParam("itemId") Integer selectedItemId, @RequestParam Map<String, String> allParams,
-			HttpServletRequest request) {
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-		HttpSession session = request.getSession(false);
-		Long resultEntryBy = session != null ? (Long) session.getAttribute("USER_ID") : null;
+	model.addAttribute("eventId", mEventId);
+	model.addAttribute("pageTitle", "Judge Score Card");
 
-		Map<String, Object> additionalData = new HashMap<>();
+	if (itemId != null && gender != null && category != null) {
 
-		try {
-			// Loop through all "scores[memberId]" entries
-			for (Map.Entry<String, String> entry : allParams.entrySet()) {
-				String key = entry.getKey();
-
-				if (key.startsWith("scores[")) {
-					try {
-						// Extract the memberEventId from key "scores[60]"
-						String memberEventIdStr = key.substring("scores[".length(), key.length() - 1);
-						Long memberEventId = Long.parseLong(memberEventIdStr);
-						String scoreValue = entry.getValue(); // e.g., "A"
-
-						// Fetch MemberEventDTO by memberEventId (more efficient than eventId+memberId)
-						MemberEventDTO memberEvent = (MemberEventDTO) memberEventService.findByEventAndMember(eventId,
-								memberEventId);
-						if (memberEvent != null) {
-							// Set or update the score for selectedItemId
-							Map<Integer, String> items = memberEvent.getItems();
-							if (items == null) {
-								items = new HashMap<>();
-								memberEvent.setItems(items);
-							}
-							// Changed to String key to match your previous implementation
-							items.put(selectedItemId, scoreValue);
-
-							memberEvent.setResultDate(LocalDateTime.now());
-							memberEvent.setResultEntryBy(resultEntryBy);
-
-							// Save updated data
-							memberEventService.save(memberEvent);
-						}
-					} catch (NumberFormatException e) {
-						// Handle invalid memberEventId format
-						return ResponseEntity.badRequest()
-								.body(Map.of("error", "Invalid member ID format in parameter: " + key));
-					}
-				}
-			}
-
-			return ResponseEntity.ok().body(Map.of("status", "success", "message", "Scores updated successfully",
-					"additionalData", additionalData));
-		} catch (Exception e) {
-			return ResponseEntity.internalServerError().body(Map.of("error", "Error saving scores: " + e.getMessage()));
-		}
-	}
-
-	@PostMapping("/html/cancel/{id}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> cancelEvent(@PathVariable Long id) {
-		service.softDeleteById(id);
-		return buildResponse("Event cancelled successfully", Map.of("redirect", "/events/html"));
-	}
-
-	@GetMapping("/html/active")
-	public String getActiveEvents(Model model) {
-		List<EventDTO> activeEvents = service.findActiveEventsOnDate(LocalDate.now());
-		model.addAttribute("events", activeEvents);
-		model.addAttribute("pageTitle", "Active Events");
-		return "fragments/active_events";
-	}
-	
-	
-	
-	@GetMapping("/participants_chestno/{eventid}")
-	public String participantChestConfig(
-	        @PathVariable("eventid") Long mEventId,
-	        Model model
-	) {
-
-	    Long eventId = XorMaskHelper.unmask(mEventId);
-
-	    model.addAttribute("eventId", mEventId);
-
-	    model.addAttribute(
-	            "pageTitle",
-	            "Chest Number Configuration"
-	    );
-
-	    Map<String, Map<String, Map<String, EventChestConfigDTO>>> matrix =
-		        eventChestConfigService.getChestConfigMatrix(eventId);
-	    
-	    
-	    logger.debug("Chest Config Matrix : {}", matrix);
-	    
-	    System.out.println(matrix);
-	    
-
-	    
-
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = memberEventItemService
+		    .getParticipationMatrix(eventId, itemId, gender, category);
 
 	    model.addAttribute("matrix", matrix);
-	    
-	    
+	    model.addAttribute("chestGroups", buildChestGroups(matrix));
 
-	    model.addAttribute(
-	            "genders",
-	            CoreUser.Gender.values()
-	    );
-
-	    model.addAttribute(
-	            "categories",
-	            EventItemMap.Category.values()
-	    );
-
-	    return "fragments/events/chestno";
-	}
-	
-	
-	@PostMapping("/participants_chestno/{eventid}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateChestConfig(
-	        @PathVariable("eventid") Long mEventId,
-	        @RequestParam Map<String, String> params
-	) {
-	    
-	    Long eventId = XorMaskHelper.unmask(mEventId);
-
-	    List<EventChestConfigDTO> rows =
-	            new ArrayList<>();
-
-	 // matches both maleChest[303] and femaleChest[303]
-	    java.util.regex.Pattern pattern =
-	        java.util.regex.Pattern.compile("^(male|female)Chest\\[(\\d+)\\]$");
-
-	    params.forEach((key, value) -> {
-	        if (value == null || value.isBlank()) return;
-
-	        java.util.regex.Matcher m = pattern.matcher(key);
-	        if (!m.matches()) return;
-
-	        String gender = m.group(1);   // "male" or "female"
-	        Long eimId = Long.valueOf(m.group(2));
-
-	        EventChestConfigDTO dto = new EventChestConfigDTO();
-	        dto.setEventItemMapId(eimId);
-	        dto.setGender(gender.equals("male") ? CoreUser.Gender.MALE : CoreUser.Gender.FEMALE);
-	        dto.setCurrentNo(Long.valueOf(value));
-	        dto.setStartNo(Long.valueOf(value));
-	        rows.add(dto);
-	    });
-
-	    eventChestConfigService.updateChestConfigs(eventId, rows);
-
-	    eventChestConfigService.regenerateChestNumbers(eventId);
-	    
-
-	    Map<String, Object> body =
-	            new HashMap<>();
-
-	    
-	    
-	    body.put("message", "Chest No. updated successfully");
-
-	    body.put("target", "modal2");
-	    body.put("status", "success");
-	    return ResponseEntity.ok(body);
-	}
-	
-	
-	@GetMapping("/participants_judge_score/{eventid}")
-	public String eventJudgeScoreEntry(
-	        @PathVariable("eventid") Long mEventId,
-	        @RequestParam(required = false) Long itemId,
-	        @RequestParam(required = false) CoreUser.Gender gender,
-	        @RequestParam(required = false) EventItemMap.Category category,
-	        Model model) {
-
-	    Long eventId = XorMaskHelper.unmask(mEventId);
-
-	    model.addAttribute("eventId", mEventId);
-	    model.addAttribute("pageTitle", "Judge Score Card");
-
-	    if (itemId != null && gender != null && category != null) {
-
-	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix =
-	                memberEventItemService.getParticipationMatrix(
-	                        eventId,
-	                        itemId,
-	                        gender,
-	                        category
-	                );
-
-	        model.addAttribute("matrix", matrix);
-	        model.addAttribute("chestGroups", buildChestGroups(matrix));
-	        
-	        System.out.println("===== MATRIX =====");
-	        matrix.forEach((item, genderMap) -> {});
-	        System.out.println("==================");
-	    }
-	    
-	    Map<String, EventChestConfig> judgeConfigs =
-		        eventChestConfigService
-		                .getJudgeConfigsByEvent(eventId);
-
-	    model.addAttribute("judgeConfigs", judgeConfigs);
-
-	    Map<String, String> paramx = new HashMap<>();
-	    paramx.put("itemId", itemId != null ? itemId.toString() : "");
-	    paramx.put("gender", gender != null ? gender.name() : "");
-	    paramx.put("category", category != null ? category.name() : "");
-
-	    model.addAttribute("paramx", paramx);
-
-	    model.addAttribute("itemsMap", eventItemService.getIdNameMap());
-	    model.addAttribute("genders", CoreUser.Gender.values());
-	    model.addAttribute("categories", EventItemMap.Category.values());
-
-	    return "fragments/events/judge_score";
-	}
-	
-	
-	private Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> buildChestGroups(
-	        Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
-
-	    // item -> gender -> category -> chestNo -> List<MemberEventItem>
-	    Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> result = new LinkedHashMap<>();
-
+	    System.out.println("===== MATRIX =====");
 	    matrix.forEach((item, genderMap) -> {
-	        result.put(item, new LinkedHashMap<>());
-	        genderMap.forEach((gender, categoryMap) -> {
-	            result.get(item).put(gender, new LinkedHashMap<>());
-	            categoryMap.forEach((category, meiList) -> {
-	                Map<String, List<MemberEventItem>> byChest = new LinkedHashMap<>();
-	                meiList.forEach(mei -> {
-	                    Long chestNo = mei.getMemberChestNo();
-	                    if (chestNo != null) {
-	                        byChest.computeIfAbsent(
-	                            String.valueOf(chestNo),
-	                            k -> new ArrayList<>()
-	                        ).add(mei);
-	                    }
-	                });
-	                result.get(item).get(gender).put(category, byChest);
-	            });
-	        });
 	    });
-
-	    return result;
+	    System.out.println("==================");
 	}
-	
-	
-	@PostMapping("/participants_judge_score/{mEventId}")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> updateJudgeScores(
-	        @PathVariable("mEventId") Long mEventId,
-	        @RequestParam Map<String, String> params,
-	        @RequestParam(name = "pageParams", required = false) String pageParams) {
 
-	    Long eventId = XorMaskHelper.unmask(mEventId);
+	Map<String, EventChestConfig> judgeConfigs = eventChestConfigService.getJudgeConfigsByEvent(eventId);
 
-	    Map<Long, Double> score1 = new HashMap<>();
-	    Map<Long, Double> score2 = new HashMap<>();
-	    Map<Long, Double> score3 = new HashMap<>();
-	    
-	    Map<String, String> judge1Map = new HashMap<>();
-	    Map<String, String> judge2Map = new HashMap<>();
-	    Map<String, String> judge3Map = new HashMap<>();
+	model.addAttribute("judgeConfigs", judgeConfigs);
 
-	    params.forEach((key, value) -> {
+	Map<String, String> paramx = new HashMap<>();
+	paramx.put("itemId", itemId != null ? itemId.toString() : "");
+	paramx.put("gender", gender != null ? gender.name() : "");
+	paramx.put("category", category != null ? category.name() : "");
 
-	        if (value == null || value.isBlank()) {
-	            return;
-	        }
+	model.addAttribute("paramx", paramx);
 
-	        if (key.startsWith("score1[")) {
+	model.addAttribute("itemsMap", eventItemService.getIdNameMap());
+	model.addAttribute("genders", CoreUser.Gender.values());
+	model.addAttribute("categories", EventItemMap.Category.values());
 
-	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-	            score1.put(meiId, Double.valueOf(value));
+	return "fragments/events/judge_score";
+    }
 
-	        } else if (key.startsWith("score2[")) {
+    private Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> buildChestGroups(
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
 
-	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-	            score2.put(meiId, Double.valueOf(value));
+	// item -> gender -> category -> chestNo -> List<MemberEventItem>
+	Map<String, Map<String, Map<String, Map<String, List<MemberEventItem>>>>> result = new LinkedHashMap<>();
 
-	        } else if (key.startsWith("score3[")) {
-
-	            Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
-	            score3.put(meiId, Double.valueOf(value));
-	        }
-	        
-	        else if (key.startsWith("judge1[")) {
-
-	            String judgeKey =
-	                    key.substring(7, key.length() - 1);
-
-	            judge1Map.put(judgeKey, value);
-	        }
-
-	        // JUDGE 2
-	        else if (key.startsWith("judge2[")) {
-
-	            String judgeKey =
-	                    key.substring(7, key.length() - 1);
-
-	            judge2Map.put(judgeKey, value);
-	        }
-
-	        // JUDGE 3
-	        else if (key.startsWith("judge3[")) {
-
-	            String judgeKey =
-	                    key.substring(7, key.length() - 1);
-
-	            judge3Map.put(judgeKey, value);
-	        }
-	        
+	matrix.forEach((item, genderMap) -> {
+	    result.put(item, new LinkedHashMap<>());
+	    genderMap.forEach((gender, categoryMap) -> {
+		result.get(item).put(gender, new LinkedHashMap<>());
+		categoryMap.forEach((category, meiList) -> {
+		    Map<String, List<MemberEventItem>> byChest = new LinkedHashMap<>();
+		    meiList.forEach(mei -> {
+			Long chestNo = mei.getMemberChestNo();
+			if (chestNo != null) {
+			    byChest.computeIfAbsent(String.valueOf(chestNo), k -> new ArrayList<>()).add(mei);
+			}
+		    });
+		    result.get(item).get(gender).put(category, byChest);
+		});
 	    });
+	});
 
-	    memberEventItemService.updateJudgeScores(score1, score2, score3);
-	    eventChestConfigService.updateJudgeNames(
-		        judge1Map,
-		        judge2Map,
-		        judge3Map
-		);
-	    
+	return result;
+    }
 
-	    Map<String, Object> body = new HashMap<>();
-	    body.put("message", "Judge scores updated successfully");
-	    body.put("status", "success");
+    @PostMapping("/participants_judge_score/{mEventId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateJudgeScores(@PathVariable("mEventId") Long mEventId,
+	    @RequestParam Map<String, String> params,
+	    @RequestParam(name = "pageParams", required = false) String pageParams) {
 
-	    body.put(
-	            "loadnext",
-	            "champ_judge_score/" +
-	                    mEventId +
-	                    (pageParams != null ? "?" + pageParams : "")
-	    );
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-	    body.put("target", "modal2");
+	Map<Long, Double> score1 = new HashMap<>();
+	Map<Long, Double> score2 = new HashMap<>();
+	Map<Long, Double> score3 = new HashMap<>();
 
-	    return ResponseEntity.ok(body);
+	Map<String, String> judge1Map = new HashMap<>();
+	Map<String, String> judge2Map = new HashMap<>();
+	Map<String, String> judge3Map = new HashMap<>();
+
+	params.forEach((key, value) -> {
+
+	    if (value == null || value.isBlank()) {
+		return;
+	    }
+
+	    if (key.startsWith("score1[")) {
+
+		Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+		score1.put(meiId, Double.valueOf(value));
+
+	    } else if (key.startsWith("score2[")) {
+
+		Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+		score2.put(meiId, Double.valueOf(value));
+
+	    } else if (key.startsWith("score3[")) {
+
+		Long meiId = Long.valueOf(key.substring(7, key.length() - 1));
+		score3.put(meiId, Double.valueOf(value));
+	    }
+
+	    else if (key.startsWith("judge1[")) {
+
+		String judgeKey = key.substring(7, key.length() - 1);
+
+		judge1Map.put(judgeKey, value);
+	    }
+
+	    // JUDGE 2
+	    else if (key.startsWith("judge2[")) {
+
+		String judgeKey = key.substring(7, key.length() - 1);
+
+		judge2Map.put(judgeKey, value);
+	    }
+
+	    // JUDGE 3
+	    else if (key.startsWith("judge3[")) {
+
+		String judgeKey = key.substring(7, key.length() - 1);
+
+		judge3Map.put(judgeKey, value);
+	    }
+
+	});
+
+	memberEventItemService.updateJudgeScores(score1, score2, score3);
+	eventChestConfigService.updateJudgeNames(judge1Map, judge2Map, judge3Map);
+
+	Map<String, Object> body = new HashMap<>();
+	body.put("message", "Judge scores updated successfully");
+	body.put("status", "success");
+
+	body.put("loadnext", "champ_judge_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+
+	body.put("target", "modal2");
+
+	return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/category_shift/{eventId}/{nodeId}")
+    public String categoryShiftForm(@PathVariable("eventId") Long mEventId, @PathVariable("nodeId") Long mNodeId,
+	    Model model) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	EventDTO event = service.findById(eventId);
+
+	List<CoreUser> members = coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(nodeId,
+		CoreUser.UserType.MEMBER);
+
+	List<EventItem> items = eventItemRepository.findAllNotDeleted(null, null, Pageable.unpaged()).getContent();
+
+	model.addAttribute("eventId", mEventId);
+
+	model.addAttribute("nodeId", mNodeId);
+
+	model.addAttribute("eventRecord", event);
+
+	model.addAttribute("members", members);
+
+	model.addAttribute("items", items);
+
+	model.addAttribute("categories", EventItemMap.Category.values());
+
+	model.addAttribute("dto", new MemberCatShiftDTO());
+
+	return "fragments/events/category_shift_form";
+    }
+
+    @PostMapping("/category_shift/{eventId}/{nodeId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveCategoryShift(@PathVariable("eventId") Long mEventId,
+	    @PathVariable("nodeId") Long mNodeId, @Valid @ModelAttribute MemberCatShiftDTO dto, BindingResult result,
+	    Authentication authentication) {
+
+	Long eventId = XorMaskHelper.unmask(mEventId);
+
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
+
+	// =====================================================
+	// SECURITY VALIDATION
+	// =====================================================
+
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+	EventDTO eventRecord = service.findById(eventId);
+
+	if (eventRecord == null) {
+
+	    result.reject("event", "Invalid event");
 	}
+
+	List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
+
+	if (eventRecord != null && !allowedNodeIds.contains(eventRecord.getEventHostId())) {
+
+	    throw new SecurityException("Access denied to this event!");
+	}
+
+	// =====================================================
+	// RESPONSE METADATA
+	// =====================================================
+
+	Map<String, Object> additionalData = new HashMap<>();
+
+	additionalData.put("loadnext", "participation/" + mEventId + "/" + mNodeId);
+
+	additionalData.put("target", "events_target");
+
+	// =====================================================
+	// MEMBER VALIDATION
+	// =====================================================
+
+	CoreUser member = null;
+
+	if (dto.getMemCatShifMemId() == null) {
+
+	    result.rejectValue("memCatShifMemId", "error.member", "Member is required");
+
+	} else {
+
+	    member = coreUserRepository.findById(dto.getMemCatShifMemId()).orElse(null);
+
+	    if (member == null) {
+
+		result.rejectValue("memCatShifMemId", "error.member", "Invalid member");
+	    }
+	}
+
+	// =====================================================
+	// ITEM VALIDATION
+	// =====================================================
+
+	EventItem item = null;
+
+	if (dto.getItemId() == null) {
+
+	    result.rejectValue("itemId", "error.item", "Item is required");
+
+	} else {
+
+	    item = eventItemRepository.findById(dto.getItemId()).orElse(null);
+
+	    if (item == null) {
+
+		result.rejectValue("itemId", "error.item", "Invalid item");
+	    }
+	}
+
+	// =====================================================
+	// CATEGORY VALIDATION
+	// =====================================================
+
+	if (dto.getMemCatShifCategory() == null) {
+
+	    result.rejectValue("memCatShifCategory", "error.category", "Shift category is required");
+	}
+
+	// =====================================================
+	// STOP IF BASIC VALIDATION FAILED
+	// =====================================================
+
+	if (result.hasErrors()) {
+
+	    return handleRequest(result, () -> eventRecord, "Validation failed", additionalData);
+	}
+
+	// =====================================================
+	// CALCULATE ORIGINAL CATEGORY
+	// =====================================================
+
+	String calculatedCategoryStr = calculateAgeCategory(member, eventRecord);
+
+	EventItemMap.Category originalCategory = null;
+
+	try {
+
+	    originalCategory = EventItemMap.Category.valueOf(calculatedCategoryStr);
+
+	} catch (Exception e) {
+
+	    result.rejectValue("originalCategory", "error.originalCategory", "Unable to calculate original category");
+	}
+
+	// =====================================================
+	// FIND ORIGINAL EIM
+	// =====================================================
+
+	EventItemMap originalEim = null;
+
+	if (!result.hasErrors()) {
+
+	    originalEim = eventItemMapRepository.findByEventItemAndCategory(eventId, item, originalCategory)
+		    .orElse(null);
+
+	    if (originalEim == null) {
+
+		result.rejectValue("originalCategory", "error.originalCategory", "Original category mapping not found");
+	    }
+	}
+
+	// =====================================================
+	// FIND SHIFTED EIM
+	// =====================================================
+
+	EventItemMap shiftedEim = null;
+
+	if (!result.hasErrors()) {
+
+	    shiftedEim = eventItemMapRepository.findByEventItemAndCategory(eventId, item, dto.getMemCatShifCategory())
+		    .orElse(null);
+
+	    if (shiftedEim == null) {
+
+		result.rejectValue("memCatShifCategory", "error.shiftedCategory", "Shifted category mapping not found");
+	    }
+	}
+
+	// =====================================================
+	// ITEM VALIDATION
+	// =====================================================
+
+	if (!result.hasErrors() && !originalEim.getItem().getEvitemId().equals(shiftedEim.getItem().getEvitemId())) {
+
+	    result.rejectValue("itemId", "error.mapping", "Invalid item mapping");
+	}
+
+	// =====================================================
+	// DUPLICATE VALIDATION
+	// =====================================================
+
+	if (!result.hasErrors()) {
+
+	    Optional<MemberCatShift> existing = memberCatShiftRepository.findByMemCatShifMemIdAndMemCatShifEim(member,
+		    shiftedEim);
+
+	    if (existing.isPresent()) {
+
+		result.rejectValue("memCatShifCategory", "error.duplicate", "Category shift already exists");
+	    }
+	}
+
+	// =====================================================
+	// FINAL VALIDATION CHECK
+	// =====================================================
+
+	if (result.hasErrors()) {
+
+	    return handleRequest(result, () -> eventRecord, "Validation failed", additionalData);
+	}
+
+	// =====================================================
+	// HANDLE REQUEST
+	// =====================================================
+
+	final CoreUser finalMember = member;
+	final EventItem finalItem = item;
+	final EventItemMap.Category finalOriginalCategory = originalCategory;
+	final EventItemMap finalOriginalEim = originalEim;
+	final EventItemMap finalShiftedEim = shiftedEim;
+
+	return handleRequest(result, () -> {
+
+	    MemberCatShift entity = new MemberCatShift();
+
+	    entity.setItem(finalItem);
+
+	    entity.setOriginalCategory(finalOriginalCategory);
+
+	    entity.setMemCatShifOrgEim(finalOriginalEim);
+
+	    entity.setMemCatShifEim(finalShiftedEim);
+
+	    entity.setMemCatShifMemId(finalMember);
+
+	    entity.setMemCatShifCategory(dto.getMemCatShifCategory());
+
+	    memberCatShiftRepository.save(entity);
+
+	    return eventRecord;
+
+	}, "Category shift saved successfully", additionalData);
+    }
+
+    private String calculateAgeCategory(CoreUser user, EventDTO eventRecord) {
+
+	if (user.getUserDob() == null || eventRecord == null || eventRecord.getEventPeriodStart() == null) {
+
+	    return "UNKNOWN";
+	}
+
+	LocalDate evalDate = eventRecord.getEventPeriodStart();
+
+	int age = Period.between(user.getUserDob(), evalDate).getYears();
+
+	if (age < 0) {
+	    return "UNKNOWN";
+	}
+
+	if (age >= 18) {
+	    return "SENIOR";
+	} else if (age >= 14) {
+	    return "JUNIOR";
+	} else {
+	    return "SUBJUNIOR";
+	}
+    }
+
 }

@@ -79,7 +79,7 @@
 													</div>
 
 													<!-- iterate users (same as original) -->
-													<div th:each="user : ${memberMatrix[catEntry.key].MALE}">
+													<div th:each="user : ${itemMemberMatrix[itemInCategory.eimId].MALE}">
 
 													    <div th:if="${#lists.isEmpty(eligibleMeids) 
 													        or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"
@@ -161,7 +161,7 @@
 													</div>
 
 													<!-- iterate users (same as original) -->
-													<div th:each="user : ${memberMatrix[catEntry.key].FEMALE}">
+													<div th:each="user : ${itemMemberMatrix[itemInCategory.eimId].FEMALE}">
 
 													    <div th:if="${#lists.isEmpty(eligibleMeids) 
 													        or eligibleMeids.contains(uniqueItem.evitemId + '-' + catEntry.key + '-' + user.userId)}"

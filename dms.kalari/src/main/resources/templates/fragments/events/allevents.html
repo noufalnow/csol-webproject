@@ -121,6 +121,16 @@
 									<i class="fas fa-eye"></i> <span class="ms-1">View</span>
 								</a>
 							</div>
+							
+							
+							<div
+								th:if="${#authorization.expression('hasAuthority(''PRIV_champ_category_shift'')')}">
+								<a href="javascript:void(0);"
+									class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
+									th:onclick="'loadContent(\'/champ_category_shift/' + ${xorMaskHelper.mask(event.get('event_id'))} + '/' + ${parentId} + '\', \'modal\')'">
+									<i class="fas fa-eye"></i> <span class="ms-1">Shift Category</span>
+								</a>
+							</div>
 
 							<!-- Add Participation -->
 							<div

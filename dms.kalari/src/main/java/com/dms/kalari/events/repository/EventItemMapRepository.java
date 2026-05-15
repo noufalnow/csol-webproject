@@ -106,5 +106,20 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
 			+ "where e.event.eventId = :eventId and e.category = :category")
 	List<Long> findItemIdsByEventAndCategory(@Param("eventId") Long eventId,
 			@Param("category") EventItemMap.Category category);
+	
+	
+	@Query("""
+	        SELECT eim
+	        FROM EventItemMap eim
+	        WHERE eim.deleted = false
+	          AND eim.event.eventId = :eventId
+	          AND eim.item = :item
+	          AND eim.category = :category
+	       """)
+	Optional<EventItemMap> findByEventItemAndCategory(
+	        @Param("eventId") Long eventId,
+	        @Param("item") EventItem item,
+	        @Param("category") EventItemMap.Category category
+	);
 
 }

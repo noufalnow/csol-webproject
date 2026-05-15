@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Pattern;
 import com.dms.kalari.admin.dto.validation.groups.FullValidation;
 import com.dms.kalari.admin.dto.validation.groups.PartialValidation;
 import com.dms.kalari.admin.entity.CoreUser.Gender;
+import com.dms.kalari.admin.entity.CoreUser.MemberCategory;
 import com.dms.kalari.common.BaseDTO;
 
 import jakarta.validation.constraints.Email;
@@ -110,6 +111,8 @@ public class MemberUpdateDTO extends BaseDTO {
     private DesignationDTO designation; // Reference to the designation DTO
     
     private String designationName; 
+    
+    private MemberCategory userMemberCategory;
     
     
     private Short verificationStatus;
