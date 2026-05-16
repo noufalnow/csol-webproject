@@ -69,5 +69,16 @@ public interface MemberCatShiftRepository
     List<MemberCatShift> findByEventItemMap(
             @Param("eventItemMap") EventItemMap eventItemMap
     );
+    
+    
+    @Query("""
+	    SELECT mcs
+	    FROM MemberCatShift mcs
+	    WHERE mcs.deleted = false
+	      AND mcs.memCatShifEim.event.eventId = :eventId
+	""")
+	List<MemberCatShift> findAllByEventId(
+	        @Param("eventId") Long eventId
+	);
 
 }

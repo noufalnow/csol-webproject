@@ -54,7 +54,7 @@ public class TeamBuilderHelper {
                 int participantCount = members.size();
 
                 int totalTeams =
-                        (int) Math.ceil(participantCount / 2.0);
+                        (int) Math.ceil(participantCount / 2.0) + 2;
 
                 List<TeamOptionDTO> teams =
                         new ArrayList<>();
