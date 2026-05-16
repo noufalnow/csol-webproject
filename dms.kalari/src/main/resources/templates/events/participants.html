@@ -634,10 +634,13 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
             <tbody>
               <tr th:each="mei, stat : ${catEntry.value}">
                 <td class="fw-bold text-muted" th:text="${stat.count}"></td>
-                <td class="participant">
-                  <span th:text="${mei.memberEventMember.userFname}"></span>
-                  <span th:text="${mei.memberEventMember.userLname}"></span>
-                </td>
+				<td class="participant"
+				    th:text="${mei.memberEventMember.userFname + ' ' +
+				             mei.memberEventMember.userLname +
+				             (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
+				                 ? ' [' + mei.memberEventTeamCode + ']'
+				                 : '')}">
+				</td>
                 <td>
                   <span th:text="${mei.memberEventNode.nodeName}"></span>
                 </td>
@@ -660,10 +663,13 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
         <div class="participant-cards">
           <div th:each="mei, stat : ${catEntry.value}" class="participant-card">
             <span class="pc-sl">#<span th:text="${stat.count}"></span></span>
-            <div class="pc-name">
-              <span th:text="${mei.memberEventMember.userFname}"></span>
-              <span th:text="${mei.memberEventMember.userLname}"></span>
-            </div>
+			<div class="pc-name"
+			     th:text="${mei.memberEventMember.userFname + ' ' + 
+			              mei.memberEventMember.userLname + 
+			              (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
+			                  ? ' [' + mei.memberEventTeamCode + ']'
+			                  : '')}">
+			</div>
             <div class="pc-kalari">
               <i class="fas fa-building"></i>
               <span th:text="${mei.memberEventNode.nodeName}"></span>

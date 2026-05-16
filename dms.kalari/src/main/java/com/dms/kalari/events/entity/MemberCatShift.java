@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/* if the participant category is mentioned here then override the calculated category for that item and mentioned event_id*/
+
 @Entity
 @Table(name = "member_cat_shift")
 @Data
@@ -19,6 +21,20 @@ public class MemberCatShift extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mcs_id")
     private Long memCatShiftId;
+    
+    /**
+     * Event Id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mcs_event_id", nullable = false)
+    private Event event;
+    
+    /**
+     * Member
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "msc_member_id", nullable = false)
+    private CoreUser memCatShifMemId;
 
     /**
      * User selected item
@@ -33,32 +49,12 @@ public class MemberCatShift extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "mcs_org_category", nullable = false)
     private EventItemMap.Category originalCategory;
-
-    /**
-     * Original Event Item Map
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mcs_eim_org_id", nullable = false)
-    private EventItemMap memCatShifOrgEim;
-
-    /**
-     * Shifted Event Item Map
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mcs_eim_id", nullable = false)
-    private EventItemMap memCatShifEim;
-
-    /**
-     * Member
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "msc_member_id", nullable = false)
-    private CoreUser memCatShifMemId;
-
+    
     /**
      * Shifted category selected by user
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "msc_shit_category", nullable = false)
     private EventItemMap.Category memCatShifCategory;
+
 }

@@ -72,25 +72,31 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	int deleteByKeys(@Param("keys") Collection<String> keys, @Param("itemId") Long itemId);
 
 	@Query("""
-			    SELECT mei
-			    FROM MemberEventItem mei
-			    JOIN FETCH mei.memberEventItem ei
-			    JOIN FETCH mei.memberEventMember cu
-			    JOIN FETCH mei.memberEventNode n
-			    WHERE mei.memberEvent.eventId = :eventId
-			      AND (:itemId IS NULL OR ei.evitemId = :itemId)
-			      AND (:gender IS NULL OR mei.memberEventGender = :gender)
-			      AND (:category IS NULL OR mei.memberEventCategory = :category)
-                            ORDER BY
-                                n.nodeName ASC,
-                                ei.evitemName ASC,
-                                mei.memberEventCategory ASC,
-                                mei.memberEventGender ASC,
-                                mei.memberEventTeamCode ASC,
-                                cu.userFname ASC
-			""")
-	List<MemberEventItem> findByEventIdWithFilters(@Param("eventId") Long eventId, @Param("itemId") Long itemId,
-			@Param("gender") CoreUser.Gender gender, @Param("category") EventItemMap.Category category);
+	        SELECT mei
+	        FROM MemberEventItem mei
+	        JOIN FETCH mei.memberEventItem ei
+	        JOIN FETCH mei.memberEventMember cu
+	        JOIN FETCH mei.memberEventNode n
+	        WHERE mei.memberEvent.eventId = :eventId
+	          AND (:itemId IS NULL OR ei.evitemId = :itemId)
+	          AND (:gender IS NULL OR mei.memberEventGender = :gender)
+	          AND (:category IS NULL OR mei.memberEventCategory = :category)
+	          AND (:memberNode IS NULL OR n.nodeId = :memberNode)
+	        ORDER BY
+	            n.nodeName ASC,
+	            ei.evitemName ASC,
+	            mei.memberEventCategory ASC,
+	            mei.memberEventGender ASC,
+	            mei.memberEventTeamCode ASC,
+	            cu.userFname ASC
+	       """)
+	List<MemberEventItem> findByEventIdWithFilters(
+	        @Param("eventId") Long eventId,
+	        @Param("itemId") Long itemId,
+	        @Param("gender") CoreUser.Gender gender,
+	        @Param("category") EventItemMap.Category category,
+	        @Param("memberNode") Long memberNode
+	);
 
 	@Query("""
 		    SELECT mei FROM MemberEventItem mei

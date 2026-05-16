@@ -14,32 +14,28 @@ public class MemberCatShiftDTO {
     private Long memCatShiftId;
 
     /**
-     * User selected member
+     * Event
+     */
+    private Long eventId;
+
+    /**
+     * Member
      */
     private Long memCatShifMemId;
 
     /**
-     * User selected item
+     * Selected item
      */
     private Long itemId;
 
     /**
-     * Calculated original category
+     * Original calculated category
      */
     private EventItemMap.Category originalCategory;
 
     /**
-     * User selected shifted category
+     * Shifted category
      */
     private EventItemMap.Category memCatShifCategory;
 
-    /**
-     * Derived original EIM
-     */
-    private Long memCatShifOrgEimId;
-
-    /**
-     * Derived shifted EIM
-     */
-    private Long memCatShifEimId;
 }
