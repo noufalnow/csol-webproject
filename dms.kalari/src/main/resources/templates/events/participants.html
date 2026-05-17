@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-<title>Chest Number List</title>
+<title>Championship Participation List</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
 <style>
 
 	/* ── Variables ── */
@@ -27,10 +27,15 @@
 	*, *::before, *::after { box-sizing: border-box; }
 
 	html {
-	  overflow-y: scroll;
-	  scroll-behavior: smooth;
+	  overflow-x: scroll;
+	  overflow-y: scroll;          /* scroll not auto */
+	  -webkit-overflow-scrolling: touch;
 	  scrollbar-width: thin;
 	  scrollbar-color: #94a3b8 #e2e8f0;
+	  
+	  scrollbar-color: #f20d18 #e2e8f0;
+	    scrollbar-width: auto;
+	    scroll-behavior: auto;
 	}
 	html::-webkit-scrollbar { width: 6px; }
 	html::-webkit-scrollbar-track { background: #e2e8f0; }
@@ -45,6 +50,7 @@
 	  margin: 0;
 	  min-height: 100%;
 	  -webkit-font-smoothing: antialiased;
+	  /* NO overflow, NO position:relative */
 	}
 
 	.page-wrapper {
@@ -252,31 +258,67 @@
 	  body { background: #fff !important; font-size: 9pt; color: #000; }
 	  .page-wrapper { padding: 0; max-width: 100%; }
 	  .no-print, #filter_section, .scroll-fab { display: none !important; }
+
 	  .event-header {
 	    background: none !important; border: none !important;
 	    border-bottom: 2px solid #000 !important; border-radius: 0 !important;
 	    padding: 0 0 8px !important; margin-bottom: 10px; box-shadow: none !important;
 	  }
+
 	  .item-block {
 	    background: none !important; border: none !important;
 	    border-radius: 0 !important; box-shadow: none !important;
-	    overflow: visible !important; break-inside: auto;
+	    overflow: visible !important;
+	    break-inside: auto;          /* allow item blocks to split across pages */
 	  }
+
 	  .item-heading {
 	    background: var(--primary) !important; color: #fff !important;
 	    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-	    border-radius: 0 !important; break-after: avoid;
+	    border-radius: 0 !important;
+	    break-after: avoid;          /* keep heading with content below */
 	  }
+
 	  .gender-block { overflow: visible !important; break-inside: auto; }
-	  .gender-heading, .category-heading { break-after: avoid; }
-	  table { font-size: 8.5pt; border-collapse: collapse !important; break-inside: auto; }
-	  th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-	  thead { display: table-header-group; }
-	  tr { break-inside: avoid; break-after: auto; }
-	  .print-only { display: block; margin-top: 16px; text-align: center; font-size: 9pt; color: #666; }
-	  .item-block .table-responsive { display: block !important; }
+	  .gender-heading  { break-after: avoid; }
+	  .category-heading { break-after: avoid; }
+
+	  /* ── KEY: keep each category+table together if it fits on one page ── */
+	  .mb-4 {
+	    break-inside: avoid;         /* try to keep category block on one page */
+	  }
+
+	  /* ── Table rules ── */
+	  .item-block .table-responsive {
+	    display: block !important;
+	    overflow: visible !important;
+	  }
+
+	  table {
+	    font-size: 8.5pt;
+	    border-collapse: collapse !important;
+	    width: 100% !important;
+	    break-inside: auto;          /* allow table itself to split if too long */
+	  }
+
+	  th {
+	    background: #e0e0e0 !important;
+	    -webkit-print-color-adjust: exact;
+	    print-color-adjust: exact;
+	  }
+
+	  thead { display: table-header-group; } /* repeat header on each page */
+
+	  /* Each row: avoid breaking mid-row, but allow between rows */
+	  tbody tr { break-inside: avoid; break-after: auto; }
+
 	  .participant-cards { display: none !important; }
 	  .page-break-before { page-break-before: always; break-before: page; }
+
+	  .print-only {
+	    display: block; margin-top: 16px;
+	    text-align: center; font-size: 9pt; color: #666;
+	  }
 	}
 
 	/* ══════════════════════════════════
@@ -284,6 +326,19 @@
 	   ONE clean block — no duplicates
 	══════════════════════════════════ */
 	@media (max-width: 767px) {
+		
+		
+		/* MOBILE SCROLL FREEZE FIX */
+		html,
+		body,
+		.page-wrapper,
+		.item-block,
+		.gender-block {
+		  transform: none !important;
+		  will-change: auto !important;
+		  backface-visibility: visible !important;
+		}
+		
 	  .page-wrapper { padding: 12px 10px 80px; }
 
 	  .event-header { padding: 14px 13px 12px; }
@@ -388,53 +443,48 @@
   </div>
 
   <!-- ── Filter ── -->
-  <div class="filter-card" id="filter_section">
-    <form id="search-form" method="GET">
-      <div class="row g-2 align-items-end">
+  <form id="search-form" method="GET">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
 
-        <div class="col-6 col-md-3">
-          <div class="filter-label">Item</div>
-          <select name="itemId" class="form-select">
-            <option value="">All Items</option>
-            <option th:each="entry : ${itemsMap}" th:value="${entry.key}"
-              th:text="${entry.value}"
-              th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
-          </select>
-        </div>
-
-        <div class="col-6 col-md-3">
-          <div class="filter-label">Gender</div>
-          <select name="gender" class="form-select">
-            <option value="">All</option>
-            <option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
-              th:selected="${paramx['gender']} == ${g.name()}"></option>
-          </select>
-        </div>
-
-        <div class="col-6 col-md-3">
-          <div class="filter-label">Category</div>
-          <select name="category" class="form-select">
-            <option value="">All</option>
-            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
-              th:selected="${paramx['category']} == ${c.name()}"></option>
-          </select>
-        </div>
-
-        <!-- Buttons: full width on mobile, col-md-3 on desktop -->
-        <div class="col-12 col-md-3">
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary flex-fill">
-              <i class="fas fa-search me-1"></i> Search
-            </button>
-            <button type="button" class="btn btn-outline-secondary flex-fill" onclick="showAll()">
-              <i class="fas fa-list me-1"></i> All
-            </button>
-          </div>
-        </div>
-
+      <div>
+        <div class="filter-label">Item</div>
+        <select name="itemId" class="form-select">
+          <option value="">All Items</option>
+          <option th:each="entry : ${itemsMap}" th:value="${entry.key}"
+            th:text="${entry.value}"
+            th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
+        </select>
       </div>
-    </form>
-  </div>
+
+      <div>
+        <div class="filter-label">Gender</div>
+        <select name="gender" class="form-select">
+          <option value="">All</option>
+          <option th:each="g : ${genders}" th:value="${g}" th:text="${g}"
+            th:selected="${paramx['gender']} == ${g.name()}"></option>
+        </select>
+      </div>
+
+      <div>
+        <div class="filter-label">Category</div>
+        <select name="category" class="form-select">
+          <option value="">All</option>
+          <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+            th:selected="${paramx['category']} == ${c.name()}"></option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <button type="submit" class="btn btn-primary flex-fill">
+          <i class="fas fa-search me-1"></i> Search
+        </button>
+        <button type="button" class="btn btn-outline-secondary flex-fill" onclick="showAll()">
+          <i class="fas fa-list me-1"></i> All
+        </button>
+      </div>
+
+    </div>
+  </form>
 
   <!-- ── Print button ── -->
   <div class="no-print mb-3">
