@@ -2,558 +2,344 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
 <title>Chest Number List</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
 <style>
-/* ── Variables ── */
-:root {
-  --primary: #1a1a2e;
-  --accent: #2563eb;
-  --accent-light: #dbeafe;
-  --success: #047857;
-  --success-light: #ecfdf5;
-  --surface: #fff;
-  --bg: #f1f5f9;
-  --border: #e2e8f0;
-  --text-main: #111827;
-  --text-muted: #64748b;
-  --radius: 12px;
-  --radius-sm: 8px;
-}
 
-/* ── Reset / Base ── */
-*, *::before, *::after { box-sizing: border-box; }
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  color: var(--text-main);
-  background: var(--bg);
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-}
+	/* ── Variables ── */
+	:root {
+	  --primary: #1a1a2e;
+	  --accent: #2563eb;
+	  --accent-light: #dbeafe;
+	  --success: #047857;
+	  --success-light: #ecfdf5;
+	  --surface: #fff;
+	  --bg: #f1f5f9;
+	  --border: #e2e8f0;
+	  --text-main: #111827;
+	  --text-muted: #64748b;
+	  --radius: 12px;
+	  --radius-sm: 8px;
+	}
 
-/* ── Wrapper ── */
-.page-wrapper {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 16px 12px 32px;
-}
+	*, *::before, *::after { box-sizing: border-box; }
 
-/* ── Page title ── */
-h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary); }
+	html {
+	  overflow-y: scroll;
+	  scroll-behavior: smooth;
+	  scrollbar-width: thin;
+	  scrollbar-color: #94a3b8 #e2e8f0;
+	}
+	html::-webkit-scrollbar { width: 6px; }
+	html::-webkit-scrollbar-track { background: #e2e8f0; }
+	html::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+	html::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-/* ══════════════════════════════════
-   EVENT HEADER
-══════════════════════════════════ */
-.event-header {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px 16px 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-.event-header .event-title-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
-.event-header .event-name {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--primary);
-  margin: 0 0 2px;
-  line-height: 1.2;
-}
-.event-header .event-host {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin: 0 0 12px;
-}
-.event-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-}
-.event-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.event-meta-item i {
-  color: var(--accent);
-  width: 14px;
-  flex-shrink: 0;
-}
+	body {
+	  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+	  font-size: 14px;
+	  color: var(--text-main);
+	  background: var(--bg);
+	  margin: 0;
+	  min-height: 100%;
+	  -webkit-font-smoothing: antialiased;
+	}
 
-/* ══════════════════════════════════
-   FILTER CARD
-══════════════════════════════════ */
-.filter-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
-}
-.filter-card .form-select,
-.filter-card .form-control {
-  font-size: 13px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border-color: var(--border);
-  height: auto;
-}
-.filter-card .btn {
-  font-size: 13px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  height: auto;
-}
-.filter-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  margin-bottom: 4px;
-}
+	.page-wrapper {
+	  max-width: 960px;
+	  margin: 0 auto;
+	  padding: 16px 12px 32px;
+	}
 
-/* ══════════════════════════════════
-   PRINT BUTTON
-══════════════════════════════════ */
-.btn-print {
-  font-size: 13px;
-  padding: 8px 16px;
-  margin-bottom: 14px;
-  border-radius: var(--radius-sm);
-}
+	h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary); }
 
-/* ══════════════════════════════════
-   ITEM BLOCK
-══════════════════════════════════ */
-.item-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,.06);
-}
+	/* ── Event Header ── */
+	.event-header {
+	  background: var(--surface);
+	  border: 1px solid var(--border);
+	  border-radius: var(--radius);
+	  padding: 18px 16px 14px;
+	  margin-bottom: 14px;
+	  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+	}
+	.event-header .event-title-label {
+	  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+	  text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
+	}
+	.event-header .event-name {
+	  font-size: 20px; font-weight: 800; color: var(--primary);
+	  margin: 0 0 2px; line-height: 1.2;
+	}
+	.event-header .event-host { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+	.event-meta {
+	  display: grid; grid-template-columns: 1fr 1fr;
+	  gap: 6px 12px; border-top: 1px solid var(--border); padding-top: 10px;
+	}
+	.event-meta-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+	.event-meta-item i { color: var(--accent); width: 14px; flex-shrink: 0; }
 
-.item-heading {
-  background: var(--primary);
-  color: #fff;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-.item-heading .badge {
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(255,255,255,.2) !important;
-  color: #fff;
-  white-space: nowrap;
-}
+	/* ── Filter Card ── */
+	.filter-card {
+	  background: var(--surface); border: 1px solid var(--border);
+	  border-radius: var(--radius); padding: 14px; margin-bottom: 14px;
+	  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+	}
+	.filter-card .form-select,
+	.filter-card .form-control {
+	  font-size: 13px; padding: 8px 10px;
+	  border-radius: var(--radius-sm); border-color: var(--border); height: auto;
+	}
+	.filter-card .btn { font-size: 13px; padding: 8px 14px; border-radius: var(--radius-sm); height: auto; }
+	.filter-label {
+	  font-size: 11px; font-weight: 600; color: var(--text-muted);
+	  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px;
+	}
+	
+	
+	
 
-/* ══════════════════════════════════
-   GENDER BLOCK
-══════════════════════════════════ */
-.gender-block {
-  padding: 12px 14px 8px;
-}
+	/* ── Print Button ── */
+	.btn-print { font-size: 13px; padding: 8px 16px; margin-bottom: 14px; border-radius: var(--radius-sm); }
 
-.gender-heading {
-  background: #eff6ff;
-  color: #1d4ed8;
-  padding: 10px 14px;
-  border-left: 4px solid #2563eb;
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-  font-weight: 700;
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.gender-heading .badge {
-  font-size: 11px;
-  background: #2563eb !important;
-}
+	/* ── Item Block ── */
+	.item-block {
+	  background: var(--surface); border: 1px solid var(--border);
+	  border-radius: var(--radius); margin-bottom: 20px;
+	  overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.06);
+	}
+	.item-heading {
+	  background: var(--primary); color: #fff; padding: 12px 16px;
+	  font-size: 14px; font-weight: 700;
+	  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+	}
+	.item-heading .badge {
+	  font-size: 11px; font-weight: 600;
+	  background: rgba(255,255,255,.2) !important; color: #fff; white-space: nowrap;
+	}
 
-/* ══════════════════════════════════
-   CATEGORY HEADING
-══════════════════════════════════ */
-.category-heading {
-  background: #f8fafc;
-  padding: 9px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  margin-bottom: 10px;
-  font-weight: 600;
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-}
-.category-heading .badge {
-  font-size: 11px;
-  white-space: nowrap;
-}
+	/* ── Gender Block ── */
+	.gender-block { padding: 12px 14px 8px; }
+	.gender-heading {
+	  background: #eff6ff; color: #1d4ed8; padding: 10px 14px;
+	  border-left: 4px solid #2563eb; border-radius: var(--radius-sm);
+	  margin-bottom: 12px; font-weight: 700; font-size: 13px;
+	  display: flex; justify-content: space-between; align-items: center;
+	}
+	.gender-heading .badge { font-size: 11px; background: #2563eb !important; }
 
-/* ══════════════════════════════════
-   TABLE — COMPACT ROWS for large lists
-══════════════════════════════════ */
-.custom-score-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;   /* ↓ from 13px */
-  margin-bottom: 0;
-}
-.custom-score-table thead th {
-  font-size: 11px;   /* ↓ from 12px */
-  font-weight: 700;
-  letter-spacing: .4px;
-  vertical-align: middle;
-  padding: 6px 10px;  /* ↓ from 10px 12px */
-  white-space: nowrap;
-}
-.custom-score-table tbody td {
-  vertical-align: middle;
-  padding: 5px 10px;  /* ↓ from 10px 12px */
-  font-size: 12px;    /* ↓ from 13px */
-  border-color: var(--border);
-  line-height: 1.3;
-}
-.custom-score-table tbody tr:hover { background: #f8fafc; }
+	/* ── Category Heading ── */
+	.category-heading {
+	  background: #f8fafc; padding: 9px 14px; border-radius: var(--radius-sm);
+	  border: 1px solid var(--border); margin-bottom: 10px; font-weight: 600;
+	  font-size: 13px; display: flex; justify-content: space-between;
+	  align-items: center; gap: 6px;
+	}
+	.category-heading .badge { font-size: 11px; white-space: nowrap; }
 
-/* ══════════════════════════════════
-   SCROLLABLE TABLE WRAPPER — visible scrollbar on mobile/tablet
-══════════════════════════════════ */
-.table-responsive {
-  /* Always show horizontal scrollbar so users know it scrolls */
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+	/* ── Table ── */
+	.custom-score-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0; }
+	.custom-score-table thead th {
+	  font-size: 11px; font-weight: 700; letter-spacing: .4px;
+	  vertical-align: middle; padding: 6px 10px; white-space: nowrap;
+	}
+	.custom-score-table tbody td {
+	  vertical-align: middle; padding: 5px 10px; font-size: 12px;
+	  border-color: var(--border); line-height: 1.3;
+	}
+	.custom-score-table tbody tr:hover { background: #f8fafc; }
 
-  /* Visible, styled scrollbar — works in Chrome/Safari/Edge */
-  scrollbar-width: thin;               /* Firefox */
-  scrollbar-color: #94a3b8 #e2e8f0;   /* Firefox: thumb track */
-}
-.table-responsive::-webkit-scrollbar {
-  height: 6px;
-}
-.table-responsive::-webkit-scrollbar-track {
-  background: #e2e8f0;
-  border-radius: 3px;
-}
-.table-responsive::-webkit-scrollbar-thumb {
-  background: #94a3b8;
-  border-radius: 3px;
-}
-.table-responsive::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
-}
+	/* ── Table Responsive (horizontal scroll) ── */
+	.table-responsive {
+	  overflow-x: auto;
+	  -webkit-overflow-scrolling: touch;
+	  scrollbar-width: thin;
+	  scrollbar-color: #94a3b8 #e2e8f0;
+	}
+	.table-responsive::-webkit-scrollbar { height: 6px; }
+	.table-responsive::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 3px; }
+	.table-responsive::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+	.table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-/* Page-level vertical scrollbar — always visible */
-html {
-  overflow-y: scroll;
-  scrollbar-width: thin;
-  scrollbar-color: #94a3b8 #e2e8f0;
-}
-html::-webkit-scrollbar { width: 6px; }
-html::-webkit-scrollbar-track { background: #e2e8f0; }
-html::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-html::-webkit-scrollbar-thumb:hover { background: #475569; }
+	/* ── FAB ── */
+	.scroll-fab {
+	  position: fixed; right: 14px; bottom: 24px; z-index: 999;
+	  display: flex; flex-direction: column; gap: 8px;
+	  pointer-events: none;
+	}
+	.scroll-fab button {
+	  pointer-events: all;
+	  width: 42px; height: 42px; border-radius: 50%; border: none;
+	  background: var(--primary); color: #fff; font-size: 16px; cursor: pointer;
+	  box-shadow: 0 3px 10px rgba(0,0,0,.28);
+	  display: flex; align-items: center; justify-content: center;
+	  transition: background .2s, transform .15s, opacity .2s;
+	  opacity: 0.85; -webkit-tap-highlight-color: transparent;
+	}
+	.scroll-fab button:hover,
+	.scroll-fab button:active { background: var(--accent); opacity: 1; transform: scale(1.08); }
+	.scroll-fab #fabTop { display: none; }
+	.scroll-fab.show-top #fabTop { display: flex; }
 
-/* ══════════════════════════════════
-   FLOATING SCROLL BUTTONS
-══════════════════════════════════ */
-.scroll-fab {
-  position: fixed;
-  right: 14px;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  bottom: 24px;
-}
-.scroll-fab button {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: var(--primary);
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0,0,0,.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .2s, transform .15s, opacity .2s;
-  opacity: 0.85;
-  -webkit-tap-highlight-color: transparent;
-}
-.scroll-fab button:hover,
-.scroll-fab button:active {
-  background: var(--accent);
-  opacity: 1;
-  transform: scale(1.08);
-}
-/* Hide top button when already near top */
-.scroll-fab #fabTop { display: none; }
-.scroll-fab.show-top #fabTop { display: flex; }
+	/* ── Mobile Cards (default hidden) ── */
+	.participant-cards { display: none; }
 
-/* ══════════════════════════════════
-   MOBILE CARDS (replaces table rows on small screens)
-══════════════════════════════════ */
-.participant-cards { display: none; }
+	.participant-card {
+	  border: 1px solid var(--border); border-radius: var(--radius-sm);
+	  padding: 9px 12px; margin-bottom: 6px; background: #fff; position: relative;
+	}
+	.participant-card:last-child { margin-bottom: 0; }
+	.participant-card .pc-sl {
+	  position: absolute; top: 8px; right: 10px;
+	  font-size: 10px; color: var(--text-muted); font-weight: 600;
+	}
+	.participant-card .pc-name {
+	  font-size: 13px; font-weight: 700; color: var(--text-main);
+	  margin-bottom: 2px; padding-right: 26px;
+	}
+	.participant-card .pc-kalari {
+	  font-size: 11px; color: var(--text-muted); margin-bottom: 7px;
+	  display: flex; align-items: center; gap: 5px;
+	}
+	.participant-card .pc-kalari i { color: var(--accent); font-size: 11px; }
+	.participant-card .pc-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+	.participant-card .pc-pill-label {
+	  font-size: 10px; font-weight: 700; text-transform: uppercase;
+	  letter-spacing: .5px; color: var(--text-muted); display: block; margin-bottom: 2px;
+	}
 
-.participant-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 9px 12px;   /* ↓ slightly tighter */
-  margin-bottom: 6px;  /* ↓ from 8px */
-  background: #fff;
-  position: relative;
-}
-.participant-card:last-child { margin-bottom: 0; }
+	/* ── Pills ── */
+	.score-pill {
+	  background: var(--accent-light); color: #1d4ed8; padding: 3px 10px;
+	  border-radius: 30px; font-weight: 700; font-size: 11px;
+	  min-width: 44px; display: inline-block; text-align: center;
+	}
+	.grade-pill {
+	  background: var(--success-light); color: var(--success); padding: 3px 10px;
+	  border-radius: 30px; font-weight: 700; font-size: 11px;
+	  min-width: 44px; display: inline-block; text-align: center;
+	}
+	.participant { font-weight: 600; }
 
-.participant-card .pc-sl {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-.participant-card .pc-name {
-  font-size: 13px;    /* ↓ from 14px */
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 2px;
-  padding-right: 26px;
-}
-.participant-card .pc-kalari {
-  font-size: 11px;    /* ↓ from 12px */
-  color: var(--text-muted);
-  margin-bottom: 7px; /* ↓ from 10px */
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.participant-card .pc-kalari i { color: var(--accent); font-size: 11px; }
-.participant-card .pc-pills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.participant-card .pc-pill-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 2px;
-}
+	/* ── Summary Bar ── */
+	.summary-bar {
+	  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+	  padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border);
+	  border-radius: var(--radius-sm); margin-top: 10px;
+	}
+	.summary-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+	.summary-label {
+	  font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+	  font-size: 10px; letter-spacing: .5px;
+	}
+	.summary-value { font-weight: 600; color: var(--text-main); }
+	.total-box {
+	  margin-left: auto; background: var(--accent-light); color: #1d4ed8;
+	  padding: 4px 12px; border-radius: 30px;
+	}
 
-/* ══════════════════════════════════
-   PILLS
-══════════════════════════════════ */
-.score-pill {
-  background: var(--accent-light);
-  color: #1d4ed8;
-  padding: 3px 10px;   /* ↓ from 4px 12px */
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 11px;     /* ↓ from 12px */
-  min-width: 44px;
-  display: inline-block;
-  text-align: center;
-}
-.grade-pill {
-  background: var(--success-light);
-  color: var(--success);
-  padding: 3px 10px;   /* ↓ from 4px 12px */
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 11px;     /* ↓ from 12px */
-  min-width: 44px;
-  display: inline-block;
-  text-align: center;
-}
-.participant { font-weight: 600; }
+	/* ── Summary Tiles ── */
+	.summary-tile .tile-label { font-size: 11px; opacity: .85; margin-bottom: 2px; }
+	.summary-tile .tile-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
 
-/* ══════════════════════════════════
-   SUMMARY BAR
-══════════════════════════════════ */
-.summary-bar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-top: 10px;
-}
-.summary-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.summary-label {
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: .5px;
-}
-.summary-value { font-weight: 600; color: var(--text-main); }
-.total-box {
-  margin-left: auto;
-  background: var(--accent-light);
-  color: #1d4ed8;
-  padding: 4px 12px;
-  border-radius: 30px;
-}
+	/* ── Print ── */
+	.print-only { display: none; }
 
-/* =========================
-   Participation Summary
-========================= */
-.participation-summary-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 15px;
-    scrollbar-width: thin;
-    scrollbar-color: #94a3b8 #e2e8f0;
-}
-.participation-summary-wrapper::-webkit-scrollbar { height: 6px; }
-.participation-summary-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 3px; }
-.participation-summary-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+	@media print {
+	  @page { margin: 0.4in; size: letter; }
+	  * { overflow: visible !important; }
+	  body { background: #fff !important; font-size: 9pt; color: #000; }
+	  .page-wrapper { padding: 0; max-width: 100%; }
+	  .no-print, #filter_section, .scroll-fab { display: none !important; }
+	  .event-header {
+	    background: none !important; border: none !important;
+	    border-bottom: 2px solid #000 !important; border-radius: 0 !important;
+	    padding: 0 0 8px !important; margin-bottom: 10px; box-shadow: none !important;
+	  }
+	  .item-block {
+	    background: none !important; border: none !important;
+	    border-radius: 0 !important; box-shadow: none !important;
+	    overflow: visible !important; break-inside: auto;
+	  }
+	  .item-heading {
+	    background: var(--primary) !important; color: #fff !important;
+	    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+	    border-radius: 0 !important; break-after: avoid;
+	  }
+	  .gender-block { overflow: visible !important; break-inside: auto; }
+	  .gender-heading, .category-heading { break-after: avoid; }
+	  table { font-size: 8.5pt; border-collapse: collapse !important; break-inside: auto; }
+	  th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+	  thead { display: table-header-group; }
+	  tr { break-inside: avoid; break-after: auto; }
+	  .print-only { display: block; margin-top: 16px; text-align: center; font-size: 9pt; color: #666; }
+	  .item-block .table-responsive { display: block !important; }
+	  .participant-cards { display: none !important; }
+	  .page-break-before { page-break-before: always; break-before: page; }
+	}
 
-.participation-summary-wrapper table {
-    min-width: 900px;
-}
+	/* ══════════════════════════════════
+	   MOBILE  ≤ 767px
+	   ONE clean block — no duplicates
+	══════════════════════════════════ */
+	@media (max-width: 767px) {
+	  .page-wrapper { padding: 12px 10px 80px; }
 
-@media (max-width: 768px) {
-    .participation-summary-wrapper {
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: #fff;
-    }
-    .participation-summary-wrapper table { font-size: 12px; }
-    .participation-summary-wrapper th,
-    .participation-summary-wrapper td {
-        white-space: nowrap;
-        padding: 5px 8px !important;
-    }
-    .participation-summary-title { font-size: 18px; line-height: 1.3; }
-}
+	  .event-header { padding: 14px 13px 12px; }
+	  .event-header .event-name { font-size: 17px; }
+	  .event-meta { grid-template-columns: 1fr; gap: 5px; }
 
-/* =========================
-   PRINT SUPPORT
-========================= */
-@media print {
-    .page-break-before { page-break-before: always; break-before: page; }
-    .participation-summary-wrapper { overflow: visible !important; }
-    .participation-summary-wrapper table { width: 100% !important; min-width: 100% !important; }
-    /* Hide FAB in print */
-    .scroll-fab { display: none !important; }
-}
+	  /* Participant section: hide wide table, show cards */
+	  .item-block .table-responsive { display: none !important; }
+	  .item-block .participant-cards { display: block !important; }
 
-/* ══════════════════════════════════
-   COMPREHENSIVE SUMMARY CARD
-══════════════════════════════════ */
-.summary-tile .tile-label { font-size: 11px; opacity: .85; margin-bottom: 2px; }
-.summary-tile .tile-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+	  /* Summary / Kalari cards: always keep table visible */
+	  .card .table-responsive { display: block !important; }
 
-/* ══════════════════════════════════
-   PRINT
-══════════════════════════════════ */
-.print-only { display: none; }
+	  .item-heading { font-size: 13px; padding: 11px 13px; }
+	  .gender-block { padding: 10px 11px 6px; }
+	  .gender-heading { font-size: 12px; padding: 8px 12px; }
+	  .category-heading { font-size: 12px; padding: 8px 12px; }
 
-@media print {
-  @page { margin: 0.4in; size: letter; }
-  * { overflow: visible !important; }
-  body { background: #fff !important; font-size: 9pt; color: #000; }
-  .page-wrapper { padding: 0; max-width: 100%; }
-  .no-print, #filter_section { display: none !important; }
-  .event-header { background: none !important; border: none !important; border-bottom: 2px solid #000 !important; border-radius: 0 !important; padding: 0 0 8px !important; margin-bottom: 10px; box-shadow: none !important; }
-  .item-block { background: none !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; break-inside: auto; }
-  .item-heading { background: var(--primary) !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0 !important; break-after: avoid; }
-  .gender-block { overflow: visible !important; break-inside: auto; }
-  .gender-heading, .category-heading { break-after: avoid; }
-  table { font-size: 8.5pt; border-collapse: collapse !important; break-inside: auto; }
-  th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  thead { display: table-header-group; }
-  tr { break-inside: avoid; break-after: auto; }
-  .print-only { display: block; margin-top: 16px; text-align: center; font-size: 9pt; color: #666; }
-  .table-responsive { display: block !important; }
-  .participant-cards { display: none !important; }
-}
+	  .summary-bar { gap: 6px 12px; }
+	  .total-box { margin-left: 0; }
 
-/* ══════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-══════════════════════════════════ */
-@media (max-width: 767px) {
-  .page-wrapper { padding: 12px 10px 80px; } /* extra bottom padding for FAB */
+	  .summary-tile .tile-value { font-size: 22px; }
+	  .summary-tile .tile-label { font-size: 10px; }
 
-  .event-header { padding: 14px 13px 12px; }
-  .event-header .event-name { font-size: 17px; }
-  .event-meta { grid-template-columns: 1fr; gap: 5px; }
+	  .scroll-fab button { width: 38px; height: 38px; font-size: 14px; }
+	  
+	  .filter-card .row {
+	    flex-direction: row !important;
+	    flex-wrap: wrap !important;
+	  }
+	  .filter-card .col-6 {
+	    width: 50% !important;
+	    flex: 0 0 50% !important;
+	    max-width: 50% !important;
+	  }
+	  .filter-card .col-12 {
+	    width: 100% !important;
+	    flex: 0 0 100% !important;
+	    max-width: 100% !important;
+	  }
+	}
 
-  .filter-card .col-md-3 { width: 100%; }
-  .filter-card .row { gap: 8px 0; }
+	@media (max-width: 400px) {
+	  .event-header .event-name { font-size: 15px; }
+	  .item-heading { font-size: 12px; }
+	}
 
-  /* Hide desktop table, show cards */
-  .table-responsive { display: none !important; }
-  .participant-cards { display: block; }
+	/* ── Desktop ≥ 768px ── */
+	@media (min-width: 768px) {
+	  .item-block .participant-cards { display: none !important; }
+	  .item-block .table-responsive { display: block !important; }
+	  .page-wrapper { padding-bottom: 72px; }
+	}
+	
 
-  .item-heading { font-size: 13px; padding: 11px 13px; }
-  .gender-block { padding: 10px 11px 6px; }
-  .gender-heading { font-size: 12px; padding: 8px 12px; }
-  .category-heading { font-size: 12px; padding: 8px 12px; }
 
-  .summary-bar { gap: 6px 12px; }
-  .total-box { margin-left: 0; }
-
-  .summary-tile .tile-value { font-size: 22px; }
-  .summary-tile .tile-label { font-size: 10px; }
-
-  /* FAB smaller on very small screens */
-  .scroll-fab button { width: 38px; height: 38px; font-size: 14px; }
-}
-
-@media (min-width: 768px) {
-  .participant-cards { display: none !important; }
-  .table-responsive { display: block !important; }
-  .page-wrapper { padding-bottom: 72px; } /* room for FAB */
-}
-
-@media (max-width: 400px) {
-  .event-header .event-name { font-size: 15px; }
-  .item-heading { font-size: 12px; }
-}
 </style>
 </head>
 <body>
@@ -605,6 +391,7 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
   <div class="filter-card" id="filter_section">
     <form id="search-form" method="GET">
       <div class="row g-2 align-items-end">
+
         <div class="col-6 col-md-3">
           <div class="filter-label">Item</div>
           <select name="itemId" class="form-select">
@@ -614,6 +401,7 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
               th:selected="${paramx['itemId']} == ${entry.key.toString()}"></option>
           </select>
         </div>
+
         <div class="col-6 col-md-3">
           <div class="filter-label">Gender</div>
           <select name="gender" class="form-select">
@@ -622,6 +410,7 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
               th:selected="${paramx['gender']} == ${g.name()}"></option>
           </select>
         </div>
+
         <div class="col-6 col-md-3">
           <div class="filter-label">Category</div>
           <select name="category" class="form-select">
@@ -630,8 +419,9 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
               th:selected="${paramx['category']} == ${c.name()}"></option>
           </select>
         </div>
-        <div class="col-6 col-md-3">
-          <div class="filter-label d-none d-md-block">&nbsp;</div>
+
+        <!-- Buttons: full width on mobile, col-md-3 on desktop -->
+        <div class="col-12 col-md-3">
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary flex-fill">
               <i class="fas fa-search me-1"></i> Search
@@ -641,6 +431,7 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
             </button>
           </div>
         </div>
+
       </div>
     </form>
   </div>
@@ -757,36 +548,70 @@ html::-webkit-scrollbar-thumb:hover { background: #475569; }
         </div>
 
         <!-- ── MOBILE CARDS ── -->
-        <div class="participant-cards">
-          <div th:each="mei, stat : ${catEntry.value}" class="participant-card">
-            <span class="pc-sl">#<span th:text="${stat.count}"></span></span>
-            <div class="pc-name"
-                 th:text="${mei.memberEventMember.userFname + ' ' +
-                          mei.memberEventMember.userLname +
-                          (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
-                              ? ' [' + mei.memberEventTeamCode + ']'
-                              : '')}">
-            </div>
-            <div class="pc-kalari">
-              <i class="fas fa-building"></i>
-              <span th:text="${mei.memberEventNode.nodeName}"></span>
-            </div>
-            <div class="pc-pills">
-              <div>
-                <span class="pc-pill-label">Score</span>
-                <span class="score-pill"
-                      th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : '-'}">
-                </span>
-              </div>
-              <div>
-                <span class="pc-pill-label">Grade</span>
-                <span class="grade-pill"
-                      th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+		<!-- ── MOBILE CARDS ── -->
+		<div class="participant-cards">
+
+		    <div th:each="mei, stat : ${catEntry.value}"
+		         class="participant-card">
+
+		        <span class="pc-sl">
+		            #<span th:text="${stat.count}"></span>
+		        </span>
+
+		        <div class="pc-name"
+		             th:text="${mei.memberEventMember.userFname + ' ' +
+		                      mei.memberEventMember.userLname}">
+		        </div>
+
+		        <!-- TEAM -->
+		        <div class="pc-team mt-1">
+
+		            <i class="fas fa-users text-secondary"></i>
+
+		            <span th:if="${mei.memberEventTeamCode != null 
+		                          and !#strings.isEmpty(mei.memberEventTeamCode)}"
+		                  class="badge bg-secondary ms-1"
+		                  th:text="${mei.memberEventTeamCode}">
+		            </span>
+
+		            <span th:unless="${mei.memberEventTeamCode != null 
+		                              and !#strings.isEmpty(mei.memberEventTeamCode)}"
+		                  class="ms-1 text-muted">
+		                -
+		            </span>
+
+		        </div>
+
+		        <!-- KALARI -->
+		        <div class="pc-kalari">
+		            <i class="fas fa-building"></i>
+		            <span th:text="${mei.memberEventNode.nodeName}"></span>
+		        </div>
+
+		        <!-- SCORE / GRADE -->
+		        <div class="pc-pills">
+
+		            <div>
+		                <span class="pc-pill-label">Score</span>
+
+		                <span class="score-pill"
+		                      th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : '-'}">
+		                </span>
+		            </div>
+
+		            <div>
+		                <span class="pc-pill-label">Grade</span>
+
+		                <span class="grade-pill"
+		                      th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
+		                </span>
+		            </div>
+
+		        </div>
+
+		    </div>
+
+		</div>
 
         <!-- SUMMARY BAR -->
         <div class="summary-bar mt-2">
@@ -950,41 +775,33 @@ function showAll() {
 
 /* ── Floating scroll buttons ── */
 function smoothScroll(dir) {
-  if (dir === 'top') {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  }
+  const target = dir === 'top' ? 0 : document.body.scrollHeight;
+  window.scrollTo({ top: target, behavior: 'smooth' });
 }
 
 (function () {
   var fab = document.getElementById('scrollFab');
-  var lastY = 0;
+
+  function getScrollY() {
+    return window.scrollY ?? window.pageYOffset
+      ?? document.documentElement.scrollTop
+      ?? document.body.scrollTop
+      ?? 0;
+  }
 
   function updateFab() {
-    var y = window.scrollY || window.pageYOffset;
+    var y = getScrollY();
     var maxY = document.documentElement.scrollHeight - window.innerHeight;
 
-    /* Show up-arrow only after scrolling down 200px */
-    if (y > 200) {
-      fab.classList.add('show-top');
-    } else {
-      fab.classList.remove('show-top');
-    }
+    fab.classList.toggle('show-top', y > 200);
 
-    /* Swap down→ up when near the bottom (within 80px) */
     var fabBottom = document.getElementById('fabBottom');
-    if (maxY > 0 && y >= maxY - 80) {
-      fabBottom.style.display = 'none';
-    } else {
-      fabBottom.style.display = '';
-    }
-
-    lastY = y;
+    fabBottom.style.display = (maxY > 0 && y >= maxY - 80) ? 'none' : '';
   }
 
   window.addEventListener('scroll', updateFab, { passive: true });
-  updateFab(); /* run once on load */
+  document.addEventListener('scroll', updateFab, { passive: true }); // fallback
+  updateFab();
 })();
 </script>
 </body>

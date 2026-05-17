@@ -33,23 +33,21 @@
 		<!-- Summary -->
 		<div th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}">
 
-			<a href="javascript:void(0);"
-				class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
-				th:onclick="'window.open(\'/champ_participants/' 
-		+ ${xorMaskHelper.mask(event.eventId)} 
-		+ '/' 
-		+ ${xorMaskHelper.mask(event.eventHostId)}  
-		+ '/participants\', 
-		\'summaryWindow\', 
-		\'width=1200,height=800,scrollbars=yes,resizable=yes\')'">
+		    <a href="javascript:void(0);"
+		        class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
+		        th:onclick="'window.open(\'/champ_participants/'
+		    + ${xorMaskHelper.mask(event.eventId)}
+		    + '/'
+		    + ${xorMaskHelper.mask(event.eventHostId)}
+		    + '/participants\', \'_blank\')'">
 
-				<i class="fas fa-list-alt"></i>
+		        <i class="fas fa-list-alt"></i>
 
-				<span class="ms-1">
-					Participation
-				</span>
+		        <span class="ms-1">
+		            Participation
+		        </span>
 
-			</a>
+		    </a>
 
 		</div>
 
