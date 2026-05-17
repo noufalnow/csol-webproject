@@ -217,29 +217,107 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 }
 
 /* ══════════════════════════════════
-   TABLE (desktop)
+   TABLE — COMPACT ROWS for large lists
 ══════════════════════════════════ */
 .custom-score-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;   /* ↓ from 13px */
   margin-bottom: 0;
 }
 .custom-score-table thead th {
-  font-size: 12px;
+  font-size: 11px;   /* ↓ from 12px */
   font-weight: 700;
   letter-spacing: .4px;
   vertical-align: middle;
-  padding: 10px 12px;
+  padding: 6px 10px;  /* ↓ from 10px 12px */
   white-space: nowrap;
 }
 .custom-score-table tbody td {
   vertical-align: middle;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 5px 10px;  /* ↓ from 10px 12px */
+  font-size: 12px;    /* ↓ from 13px */
   border-color: var(--border);
+  line-height: 1.3;
 }
 .custom-score-table tbody tr:hover { background: #f8fafc; }
+
+/* ══════════════════════════════════
+   SCROLLABLE TABLE WRAPPER — visible scrollbar on mobile/tablet
+══════════════════════════════════ */
+.table-responsive {
+  /* Always show horizontal scrollbar so users know it scrolls */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* Visible, styled scrollbar — works in Chrome/Safari/Edge */
+  scrollbar-width: thin;               /* Firefox */
+  scrollbar-color: #94a3b8 #e2e8f0;   /* Firefox: thumb track */
+}
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Page-level vertical scrollbar — always visible */
+html {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e2e8f0;
+}
+html::-webkit-scrollbar { width: 6px; }
+html::-webkit-scrollbar-track { background: #e2e8f0; }
+html::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+html::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ══════════════════════════════════
+   FLOATING SCROLL BUTTONS
+══════════════════════════════════ */
+.scroll-fab {
+  position: fixed;
+  right: 14px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  bottom: 24px;
+}
+.scroll-fab button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, transform .15s, opacity .2s;
+  opacity: 0.85;
+  -webkit-tap-highlight-color: transparent;
+}
+.scroll-fab button:hover,
+.scroll-fab button:active {
+  background: var(--accent);
+  opacity: 1;
+  transform: scale(1.08);
+}
+/* Hide top button when already near top */
+.scroll-fab #fabTop { display: none; }
+.scroll-fab.show-top #fabTop { display: flex; }
 
 /* ══════════════════════════════════
    MOBILE CARDS (replaces table rows on small screens)
@@ -249,8 +327,8 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 .participant-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  padding: 9px 12px;   /* ↓ slightly tighter */
+  margin-bottom: 6px;  /* ↓ from 8px */
   background: #fff;
   position: relative;
 }
@@ -258,23 +336,23 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 
 .participant-card .pc-sl {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 8px;
+  right: 10px;
   font-size: 10px;
   color: var(--text-muted);
   font-weight: 600;
 }
 .participant-card .pc-name {
-  font-size: 14px;
+  font-size: 13px;    /* ↓ from 14px */
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 3px;
-  padding-right: 28px;
+  margin-bottom: 2px;
+  padding-right: 26px;
 }
 .participant-card .pc-kalari {
-  font-size: 12px;
+  font-size: 11px;    /* ↓ from 12px */
   color: var(--text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 7px; /* ↓ from 10px */
   display: flex;
   align-items: center;
   gap: 5px;
@@ -301,22 +379,22 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 .score-pill {
   background: var(--accent-light);
   color: #1d4ed8;
-  padding: 4px 12px;
+  padding: 3px 10px;   /* ↓ from 4px 12px */
   border-radius: 30px;
   font-weight: 700;
-  font-size: 12px;
-  min-width: 50px;
+  font-size: 11px;     /* ↓ from 12px */
+  min-width: 44px;
   display: inline-block;
   text-align: center;
 }
 .grade-pill {
   background: var(--success-light);
   color: var(--success);
-  padding: 4px 12px;
+  padding: 3px 10px;   /* ↓ from 4px 12px */
   border-radius: 30px;
   font-weight: 700;
-  font-size: 12px;
-  min-width: 50px;
+  font-size: 11px;     /* ↓ from 12px */
+  min-width: 44px;
   display: inline-block;
   text-align: center;
 }
@@ -358,65 +436,49 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
   border-radius: 30px;
 }
 
-
 /* =========================
    Participation Summary
 ========================= */
-
 .participation-summary-wrapper {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin-top: 15px;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #e2e8f0;
 }
+.participation-summary-wrapper::-webkit-scrollbar { height: 6px; }
+.participation-summary-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 3px; }
+.participation-summary-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
 
 .participation-summary-wrapper table {
-    min-width: 900px; /* prevents crushed columns */
+    min-width: 900px;
 }
 
 @media (max-width: 768px) {
-
     .participation-summary-wrapper {
         border: 1px solid #ddd;
         border-radius: 6px;
         background: #fff;
     }
-
-    .participation-summary-wrapper table {
-        font-size: 12px;
-    }
-
+    .participation-summary-wrapper table { font-size: 12px; }
     .participation-summary-wrapper th,
     .participation-summary-wrapper td {
         white-space: nowrap;
-        padding: 6px 8px !important;
+        padding: 5px 8px !important;
     }
-
-    .participation-summary-title {
-        font-size: 18px;
-        line-height: 1.3;
-    }
+    .participation-summary-title { font-size: 18px; line-height: 1.3; }
 }
 
 /* =========================
    PRINT SUPPORT
 ========================= */
-
 @media print {
-
-    .page-break-before {
-        page-break-before: always;
-        break-before: page;
-    }
-
-    .participation-summary-wrapper {
-        overflow: visible !important;
-    }
-
-    .participation-summary-wrapper table {
-        width: 100% !important;
-        min-width: 100% !important;
-    }
+    .page-break-before { page-break-before: always; break-before: page; }
+    .participation-summary-wrapper { overflow: visible !important; }
+    .participation-summary-wrapper table { width: 100% !important; min-width: 100% !important; }
+    /* Hide FAB in print */
+    .scroll-fab { display: none !important; }
 }
 
 /* ══════════════════════════════════
@@ -446,7 +508,6 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
   thead { display: table-header-group; }
   tr { break-inside: avoid; break-after: auto; }
   .print-only { display: block; margin-top: 16px; text-align: center; font-size: 9pt; color: #666; }
-  /* Always show table in print, hide cards */
   .table-responsive { display: block !important; }
   .participant-cards { display: none !important; }
 }
@@ -455,13 +516,12 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
    RESPONSIVE BREAKPOINTS
 ══════════════════════════════════ */
 @media (max-width: 767px) {
-  .page-wrapper { padding: 12px 10px 28px; }
+  .page-wrapper { padding: 12px 10px 80px; } /* extra bottom padding for FAB */
 
   .event-header { padding: 14px 13px 12px; }
   .event-header .event-name { font-size: 17px; }
   .event-meta { grid-template-columns: 1fr; gap: 5px; }
 
-  /* Filter stacks vertically */
   .filter-card .col-md-3 { width: 100%; }
   .filter-card .row { gap: 8px 0; }
 
@@ -477,14 +537,17 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
   .summary-bar { gap: 6px 12px; }
   .total-box { margin-left: 0; }
 
-  /* Summary tiles 2x2 on phone */
   .summary-tile .tile-value { font-size: 22px; }
   .summary-tile .tile-label { font-size: 10px; }
+
+  /* FAB smaller on very small screens */
+  .scroll-fab button { width: 38px; height: 38px; font-size: 14px; }
 }
 
 @media (min-width: 768px) {
   .participant-cards { display: none !important; }
   .table-responsive { display: block !important; }
+  .page-wrapper { padding-bottom: 72px; } /* room for FAB */
 }
 
 @media (max-width: 400px) {
@@ -494,6 +557,19 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════
+     FLOATING SCROLL FAB
+══════════════════════════════════ -->
+<div class="scroll-fab" id="scrollFab" aria-label="Page navigation">
+  <button id="fabTop" onclick="smoothScroll('top')" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+  <button id="fabBottom" onclick="smoothScroll('bottom')" title="Scroll to bottom" aria-label="Scroll to bottom">
+    <i class="fas fa-chevron-down"></i>
+  </button>
+</div>
+
 <div class="page-wrapper mt-2">
 
   <!-- ── Event Header ── -->
@@ -621,55 +697,76 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 
         <!-- ── DESKTOP TABLE ── -->
         <div class="table-responsive shadow-sm rounded border overflow-hidden">
-          <table class="table table-bordered table-hover mb-0 custom-score-table">
-            <thead class="table-dark">
-              <tr>
-                <th width="50">SL</th>
-                <th>Participant</th>
-                <th>Kalari</th>
-                <th width="90" class="text-center">Score</th>
-                <th width="100" class="text-center">Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="mei, stat : ${catEntry.value}">
-                <td class="fw-bold text-muted" th:text="${stat.count}"></td>
-				<td class="participant"
-				    th:text="${mei.memberEventMember.userFname + ' ' +
-				             mei.memberEventMember.userLname +
-				             (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
-				                 ? ' [' + mei.memberEventTeamCode + ']'
-				                 : '')}">
-				</td>
-                <td>
-                  <span th:text="${mei.memberEventNode.nodeName}"></span>
-                </td>
-                <td class="text-center">
-                  <span class="score-pill"
-                        th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : '-'}">
-                  </span>
-                </td>
-                <td class="text-center">
-                  <span class="grade-pill"
-                        th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+			<table class="table table-bordered table-hover mb-0 custom-score-table">
+			    <thead class="table-dark">
+			        <tr>
+			            <th width="40">SL</th>
+			            <th>Participant</th>
+			            <th width="90" class="text-center">Team</th>
+			            <th>Kalari</th>
+			            <th width="80" class="text-center">Score</th>
+			            <th width="90" class="text-center">Grade</th>
+			        </tr>
+			    </thead>
+
+			    <tbody>
+			        <tr th:each="mei, stat : ${catEntry.value}">
+
+			            <td class="fw-bold text-muted"
+			                th:text="${stat.count}">
+			            </td>
+
+			            <td class="participant"
+			                th:text="${mei.memberEventMember.userFname + ' ' + mei.memberEventMember.userLname}">
+			            </td>
+
+						<td class="text-center">
+
+						    <span th:if="${mei.memberEventTeamCode != null 
+						                  and !#strings.isEmpty(mei.memberEventTeamCode)}"
+						          class="badge bg-secondary"
+						          th:text="${mei.memberEventTeamCode}">
+						    </span>
+
+						    <span th:unless="${mei.memberEventTeamCode != null 
+						                      and !#strings.isEmpty(mei.memberEventTeamCode)}">
+						        -
+						    </span>
+
+						</td>
+
+			            <td>
+			                <span th:text="${mei.memberEventNode.nodeName}"></span>
+			            </td>
+
+			            <td class="text-center">
+			                <span class="score-pill"
+			                      th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : '-'}">
+			                </span>
+			            </td>
+
+			            <td class="text-center">
+			                <span class="grade-pill"
+			                      th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
+			                </span>
+			            </td>
+
+			        </tr>
+			    </tbody>
+			</table>
         </div>
 
         <!-- ── MOBILE CARDS ── -->
         <div class="participant-cards">
           <div th:each="mei, stat : ${catEntry.value}" class="participant-card">
             <span class="pc-sl">#<span th:text="${stat.count}"></span></span>
-			<div class="pc-name"
-			     th:text="${mei.memberEventMember.userFname + ' ' + 
-			              mei.memberEventMember.userLname + 
-			              (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
-			                  ? ' [' + mei.memberEventTeamCode + ']'
-			                  : '')}">
-			</div>
+            <div class="pc-name"
+                 th:text="${mei.memberEventMember.userFname + ' ' +
+                          mei.memberEventMember.userLname +
+                          (mei.memberEventTeamCode != null and !#strings.isEmpty(mei.memberEventTeamCode)
+                              ? ' [' + mei.memberEventTeamCode + ']'
+                              : '')}">
+            </div>
             <div class="pc-kalari">
               <i class="fas fa-building"></i>
               <span th:text="${mei.memberEventNode.nodeName}"></span>
@@ -788,6 +885,54 @@ h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; color: var(--primary);
 
     </div>
   </div>
+  <!-- KALARI PARTICIPATION REPORT -->
+  <div th:if="${isNotKalari}" class="card mt-4 border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-header bg-dark text-white fw-bold py-2 px-3 d-flex align-items-center gap-2">
+      <i class="fas fa-users"></i> Overall Participation By Kalaries 
+    </div>
+
+    <div class="card-body p-3">
+
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0"
+               style="font-size:12px; line-height:1.4;">
+
+          <thead class="table-dark">
+            <tr>
+              <th width="40">#</th>
+               <th>Kalari</th>
+              <th class="text-center" width="120">Participation</th>
+              <th class="text-center" width="140">Unique Participants</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr th:if="${#lists.isEmpty(kalariParticipation)}">
+              <td colspan="5" class="text-center text-muted py-3">
+                No participation data available
+              </td>
+            </tr>
+
+            <tr th:each="row, stat : ${kalariParticipation}">
+              <td class="text-center fw-bold"
+                  th:text="${stat.count}"></td>
+              <td th:text="${row.kalariName}"></td>
+
+              <td class="text-center fw-bold text-primary"
+                  th:text="${row.participation}"></td>
+
+              <td class="text-center fw-bold text-success"
+                  th:text="${row.uniqueParticipants}"></td>
+            </tr>
+
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  </div>
 
   <div class="print-time text-center text-muted mt-3" style="font-size:11px;">
     Printed on:
@@ -802,6 +947,45 @@ function showAll() {
   form.querySelectorAll('input, select').forEach(el => el.value = '');
   form.submit();
 }
+
+/* ── Floating scroll buttons ── */
+function smoothScroll(dir) {
+  if (dir === 'top') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+}
+
+(function () {
+  var fab = document.getElementById('scrollFab');
+  var lastY = 0;
+
+  function updateFab() {
+    var y = window.scrollY || window.pageYOffset;
+    var maxY = document.documentElement.scrollHeight - window.innerHeight;
+
+    /* Show up-arrow only after scrolling down 200px */
+    if (y > 200) {
+      fab.classList.add('show-top');
+    } else {
+      fab.classList.remove('show-top');
+    }
+
+    /* Swap down→ up when near the bottom (within 80px) */
+    var fabBottom = document.getElementById('fabBottom');
+    if (maxY > 0 && y >= maxY - 80) {
+      fabBottom.style.display = 'none';
+    } else {
+      fabBottom.style.display = '';
+    }
+
+    lastY = y;
+  }
+
+  window.addEventListener('scroll', updateFab, { passive: true });
+  updateFab(); /* run once on load */
+})();
 </script>
 </body>
 </html>

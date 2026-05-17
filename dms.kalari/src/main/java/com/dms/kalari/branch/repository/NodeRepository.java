@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.dms.kalari.branch.dto.NodeFlatDTO;
+import com.dms.kalari.branch.dto.NodeParticipationDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.common.BaseRepository;
 
@@ -120,6 +121,44 @@ public interface NodeRepository extends BaseRepository<Node, Long> {
 	        FROM node_hierarchy nh;
 	        """, nativeQuery = true)
 	List<Long> findAllowedNodeIds(@Param("nodeId") Long nodeId);
+	
+	
+	
+	@Query(value = """
+		    SELECT
+		        np.node_name AS parentName,
+		        n.node_name AS kalariName,
+
+		        mc.participation AS participation,
+		        mc.unique_participants AS uniqueParticipants
+
+		    FROM nodes n
+
+		    LEFT JOIN nodes np
+		        ON np.node_id = n.parent_id
+
+		    LEFT JOIN (
+		        SELECT
+		            mei_member_node,
+		            COUNT(mei_member_id) AS participation,
+		            COUNT(DISTINCT mei_member_id) AS unique_participants
+		        FROM member_events_items
+		        WHERE mei_event_id = :eventId
+		        GROUP BY mei_member_node
+		    ) mc
+		        ON mc.mei_member_node = n.node_id
+
+		    WHERE n.node_type = 'KALARI'
+		      AND COALESCE(mc.participation, 0) > 0
+		      AND n.deleted = false
+
+                    ORDER BY
+                        mc.participation DESC,
+                        parentName,
+                        kalariName
+		    """, nativeQuery = true)
+		List<NodeParticipationDTO> findKalariParticipationByEvent(
+		        @Param("eventId") Long eventId);
 
 
 }

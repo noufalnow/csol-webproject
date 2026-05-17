@@ -18,6 +18,7 @@ import com.dms.kalari.admin.repository.CoreUserRepository;
 import com.dms.kalari.admin.service.MemberUserService;
 import com.dms.kalari.branch.dto.NodeDTO;
 import com.dms.kalari.branch.entity.Node;
+import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.branch.service.NodeService;
 import com.dms.kalari.common.BaseController;
 import com.dms.kalari.events.dto.EventChestConfigDTO;
@@ -109,6 +110,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     private final EventItemMapRepository eventItemMapRepository;
     private final MemberCatShiftRepository memberCatShiftRepository;
     private final EventRepository eventRepository;
+    private final NodeRepository nodeRepository;
     
     
 
@@ -118,7 +120,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    CertificateService certificateService, CertificateBatchService certificateBatchService,
 	    MemberEventItemRepository memberEventItemRepository, EventChestConfigService eventChestConfigService,
 	    EventItemRepository eventItemRepository, CoreUserRepository coreUserRepository,
-	    MemberCatShiftRepository memberCatShiftRepository, EventItemMapRepository eventItemMapRepository, EventRepository eventRepository) {
+	    MemberCatShiftRepository memberCatShiftRepository, EventItemMapRepository eventItemMapRepository, EventRepository eventRepository, NodeRepository nodeRepository) {
 	super(eventService);
 	this.nodeService = nodeService;
 	this.memberEventService = memberEventService;
@@ -135,6 +137,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	this.eventItemMapRepository = eventItemMapRepository;
 	this.memberCatShiftRepository = memberCatShiftRepository;
 	this.eventRepository = eventRepository;
+	this.nodeRepository = nodeRepository;
+	
 
     }
 
@@ -826,6 +830,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    );
 
 	} else {
+	    
+	    model.addAttribute("isNotKalari", true);
 
 	    matrix = memberEventItemService.getParticipationMatrix(
 	            eventId,
@@ -938,6 +944,9 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		subtotalRow.put("subtotal", true);
 		breakdownRows.add(subtotalRow);
 	    });
+	    
+	    
+	    model.addAttribute("kalariParticipation",nodeRepository.findKalariParticipationByEvent(eventId));
 
 	    // ── 4. ADD TO MODEL ────────────────────────────
 	    model.addAttribute("totalParticipations", totalParticipations);
@@ -1552,6 +1561,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	model.addAttribute("categories", EventItemMap.Category.values());
 
 	model.addAttribute("dto", new MemberCatShiftDTO());
+	
+	model.addAttribute("pageTitle", "Shift Category");
 
 	return "fragments/events/category_shift_form";
     }
@@ -1569,6 +1580,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
             Authentication authentication
     ) {
+	
+	
 
         // =====================================================
         // IDS
