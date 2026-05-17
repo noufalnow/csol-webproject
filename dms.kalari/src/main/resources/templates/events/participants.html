@@ -30,8 +30,6 @@
 	  overflow-x: scroll;
 	  overflow-y: scroll;          /* scroll not auto */
 	  -webkit-overflow-scrolling: touch;
-	  scrollbar-width: thin;
-	  scrollbar-color: #94a3b8 #e2e8f0;
 	  
 	  scrollbar-color: #f20d18 #e2e8f0;
 	    scrollbar-width: auto;
@@ -102,9 +100,7 @@
 	  font-size: 11px; font-weight: 600; color: var(--text-muted);
 	  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px;
 	}
-	
-	
-	
+
 
 	/* ── Print Button ── */
 	.btn-print { font-size: 13px; padding: 8px 16px; margin-bottom: 14px; border-radius: var(--radius-sm); }
@@ -252,43 +248,48 @@
 	/* ── Print ── */
 	.print-only { display: none; }
 
+
 	@media print {
 	  @page { margin: 0.4in; size: letter; }
-	  * { overflow: visible !important; }
-	  body { background: #fff !important; font-size: 9pt; color: #000; }
-	  .page-wrapper { padding: 0; max-width: 100%; }
-	  .no-print, #filter_section, .scroll-fab { display: none !important; }
 
+	  * { overflow: visible !important; }
+
+	  body { background: #fff !important; font-size: 9pt; color: #000; }
+
+	  .page-wrapper { padding: 0; max-width: 100%; }
+
+	  .no-print, #search-form, .scroll-fab { display: none !important; }
+
+	  /* ── Event header: stays together, no break after ── */
 	  .event-header {
 	    background: none !important; border: none !important;
 	    border-bottom: 2px solid #000 !important; border-radius: 0 !important;
 	    padding: 0 0 8px !important; margin-bottom: 10px; box-shadow: none !important;
 	  }
 
+	  /* ── Item block: allow splitting, remove screen styling ── */
 	  .item-block {
 	    background: none !important; border: none !important;
 	    border-radius: 0 !important; box-shadow: none !important;
 	    overflow: visible !important;
-	    break-inside: auto;          /* allow item blocks to split across pages */
 	  }
 
+	  /* ── Item heading: never orphaned from content below ── */
 	  .item-heading {
 	    background: var(--primary) !important; color: #fff !important;
 	    -webkit-print-color-adjust: exact; print-color-adjust: exact;
 	    border-radius: 0 !important;
-	    break-after: avoid;          /* keep heading with content below */
 	  }
 
-	  .gender-block { overflow: visible !important; break-inside: auto; }
-	  .gender-heading  { break-after: avoid; }
-	  .category-heading { break-after: avoid; }
-
-	  /* ── KEY: keep each category+table together if it fits on one page ── */
-	  .mb-4 {
-	    break-inside: avoid;         /* try to keep category block on one page */
+	  /* ── Gender block: allow splitting ── */
+	  .gender-block {
+	    overflow: visible !important;
 	  }
+	  .gender-heading,.item-heading { break-after: avoid; break-inside: avoid;break-after: avoid}
 
-	  /* ── Table rules ── */
+
+
+	  /* ── Table ── */
 	  .item-block .table-responsive {
 	    display: block !important;
 	    overflow: visible !important;
@@ -298,7 +299,6 @@
 	    font-size: 8.5pt;
 	    border-collapse: collapse !important;
 	    width: 100% !important;
-	    break-inside: auto;          /* allow table itself to split if too long */
 	  }
 
 	  th {
@@ -307,18 +307,30 @@
 	    print-color-adjust: exact;
 	  }
 
-	  thead { display: table-header-group; } /* repeat header on each page */
+	  thead { display: table-header-group; }
 
-	  /* Each row: avoid breaking mid-row, but allow between rows */
-	  tbody tr { break-inside: avoid; break-after: auto; }
 
 	  .participant-cards { display: none !important; }
-	  .page-break-before { page-break-before: always; break-before: page; }
+
+	  .page-break-before {
+	    page-break-before: always;
+	    break-before: page;
+	  }
+
+	  .page-break-after {
+	    page-break-after: always;
+	    break-after: page;
+	  }
 
 	  .print-only {
 	    display: block; margin-top: 16px;
 	    text-align: center; font-size: 9pt; color: #666;
 	  }
+	  
+	  
+	  
+	  
+	  
 	}
 
 	/* ══════════════════════════════════
@@ -496,8 +508,9 @@
   <!-- ══════════════════════════════════
        DATA BLOCKS
   ══════════════════════════════════ -->
-  <div th:each="itemEntry, itemStat : ${matrix}" class="item-block mb-4">
-
+  <div th:each="itemEntry, itemStat : ${matrix}" 
+       class="item-block mb-4">
+	
     <!-- ITEM HEADER -->
     <div class="item-heading">
       <div class="d-flex align-items-center gap-2 overflow-hidden">
@@ -520,7 +533,7 @@
         </span>
       </div>
 
-      <div th:each="catEntry, catStat : ${genderEntry.value}" class="mb-4">
+      <div th:each="catEntry, catStat : ${genderEntry.value}" class="mb-4" >
 
         <!-- CATEGORY HEADER -->
         <div class="category-heading">
@@ -684,6 +697,8 @@
             </span>
           </div>
         </div>
+		
+		<div class="page-break-after"></div>
 
       </div><!-- end catEntry -->
     </div><!-- end genderEntry -->
@@ -760,6 +775,7 @@
 
     </div>
   </div>
+  <div class="page-break-before"></div>
   <!-- KALARI PARTICIPATION REPORT -->
   <div th:if="${isNotKalari}" class="card mt-4 border-0 shadow-sm rounded-3 overflow-hidden">
     <div class="card-header bg-dark text-white fw-bold py-2 px-3 d-flex align-items-center gap-2">
