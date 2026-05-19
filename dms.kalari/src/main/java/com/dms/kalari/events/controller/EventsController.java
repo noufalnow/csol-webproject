@@ -111,8 +111,6 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     private final MemberCatShiftRepository memberCatShiftRepository;
     private final EventRepository eventRepository;
     private final NodeRepository nodeRepository;
-    
-    
 
     public EventsController(EventService eventService, NodeService nodeService, MemberEventService memberEventService,
 	    EventItemService eventItemService, MemberUserService memberUserService,
@@ -120,7 +118,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	    CertificateService certificateService, CertificateBatchService certificateBatchService,
 	    MemberEventItemRepository memberEventItemRepository, EventChestConfigService eventChestConfigService,
 	    EventItemRepository eventItemRepository, CoreUserRepository coreUserRepository,
-	    MemberCatShiftRepository memberCatShiftRepository, EventItemMapRepository eventItemMapRepository, EventRepository eventRepository, NodeRepository nodeRepository) {
+	    MemberCatShiftRepository memberCatShiftRepository, EventItemMapRepository eventItemMapRepository,
+	    EventRepository eventRepository, NodeRepository nodeRepository) {
 	super(eventService);
 	this.nodeService = nodeService;
 	this.memberEventService = memberEventService;
@@ -138,7 +137,6 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	this.memberCatShiftRepository = memberCatShiftRepository;
 	this.eventRepository = eventRepository;
 	this.nodeRepository = nodeRepository;
-	
 
     }
 
@@ -437,272 +435,160 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     }
 
     @GetMapping("/participation/{eventid}/{nodeid}")
-    public String participationForm(
-            @PathVariable("eventid") Long mEventId,
-            @PathVariable("nodeid") Long mNodeId,
-            Model model
-    ) {
+    public String participationForm(@PathVariable("eventid") Long mEventId, @PathVariable("nodeid") Long mNodeId,
+	    Model model) {
 
-        // =====================================================
-        // UNMASK IDS
-        // =====================================================
+	// =====================================================
+	// UNMASK IDS
+	// =====================================================
 
-        Long eventId = XorMaskHelper.unmask(mEventId);
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-        Long nodeId = XorMaskHelper.unmask(mNodeId);
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
 
-        // =====================================================
-        // EVENT
-        // =====================================================
+	// =====================================================
+	// EVENT
+	// =====================================================
 
-        EventDTO eventRecord =
-                service.findById(eventId);
+	EventDTO eventRecord = service.findById(eventId);
 
-        model.addAttribute("eventId", mEventId);
+	model.addAttribute("eventId", mEventId);
 
-        model.addAttribute("nodeId", mNodeId);
+	model.addAttribute("nodeId", mNodeId);
 
-        model.addAttribute("pageTitle", "Add Event Participants");
+	model.addAttribute("pageTitle", "Add Event Participants");
 
-        // =====================================================
-        // ELIGIBLE MEI IDS
-        // =====================================================
+	// =====================================================
+	// ELIGIBLE MEI IDS
+	// =====================================================
 
-        List<String> eligibleMeids =
-                new ArrayList<>();
+	List<String> eligibleMeids = new ArrayList<>();
 
-        if (eventRecord.getEventHost() == Node.Type.NATIONAL
-                || eventRecord.getEventHost() == Node.Type.STATE) {
+	if (eventRecord.getEventHost() == Node.Type.NATIONAL || eventRecord.getEventHost() == Node.Type.STATE) {
 
-            eligibleMeids =
-                    memberEventItemRepository.findMeiIdsByFilters(
-                            eventRecord.getEventYear(),
-                            nodeId,
-                            this.getPreviousLevel(
-                                    eventRecord.getEventHost()
-                            )
-                    );
+	    eligibleMeids = memberEventItemRepository.findMeiIdsByFilters(eventRecord.getEventYear(), nodeId,
+		    this.getPreviousLevel(eventRecord.getEventHost()));
 
-            if (eligibleMeids == null) {
+	    if (eligibleMeids == null) {
 
-                eligibleMeids =
-                        new ArrayList<>();
-            }
+		eligibleMeids = new ArrayList<>();
+	    }
 
-            System.out.println(
-                    "Eligible MEI IDs : "
-                            + eligibleMeids
-            );
-        }
+	    System.out.println("Eligible MEI IDs : " + eligibleMeids);
+	}
 
-        model.addAttribute(
-                "eligibleMeids",
-                eligibleMeids
-        );
+	model.addAttribute("eligibleMeids", eligibleMeids);
 
-        // =====================================================
-        // EVENT ITEM MATRIX
-        // =====================================================
+	// =====================================================
+	// EVENT ITEM MATRIX
+	// =====================================================
 
-        Map<EventItemMap.Category, List<EventItemMap>> eventItemsByCategory =
-                Objects.requireNonNullElse(
-                        eventItemMapService.getEventItemMatrix(eventId),
-                        Collections.emptyMap()
-                );
+	Map<EventItemMap.Category, List<EventItemMap>> eventItemsByCategory = Objects
+		.requireNonNullElse(eventItemMapService.getEventItemMatrix(eventId), Collections.emptyMap());
 
-        // =====================================================
-        // FLATTEN ALL EIMS
-        // =====================================================
+	// =====================================================
+	// FLATTEN ALL EIMS
+	// =====================================================
 
-        List<EventItemMap> allItems =
-                eventItemsByCategory.values()
-                        .stream()
-                        .filter(Objects::nonNull)
-                        .flatMap(Collection::stream)
-                        .filter(Objects::nonNull)
-                        .sorted(
-                                Comparator.comparing(
-                                        e -> e.getItem().getEvitemName(),
-                                        String.CASE_INSENSITIVE_ORDER
-                                )
-                        )
-                        .distinct()
-                        .collect(Collectors.toList());
+	List<EventItemMap> allItems = eventItemsByCategory.values().stream().filter(Objects::nonNull)
+		.flatMap(Collection::stream).filter(Objects::nonNull)
+		.sorted(Comparator.comparing(e -> e.getItem().getEvitemName(), String.CASE_INSENSITIVE_ORDER))
+		.distinct().collect(Collectors.toList());
 
-        // =====================================================
-        // UNIQUE EVENT ITEMS
-        // =====================================================
+	// =====================================================
+	// UNIQUE EVENT ITEMS
+	// =====================================================
 
-        List<EventItem> uniqueEventItems =
-                allItems.stream()
-                        .map(EventItemMap::getItem)
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .sorted(
-                                Comparator.comparing(
-                                        EventItem::getEvitemName,
-                                        String.CASE_INSENSITIVE_ORDER
-                                )
-                        )
-                        .collect(Collectors.toList());
+	List<EventItem> uniqueEventItems = allItems.stream().map(EventItemMap::getItem).filter(Objects::nonNull)
+		.distinct().sorted(Comparator.comparing(EventItem::getEvitemName, String.CASE_INSENSITIVE_ORDER))
+		.collect(Collectors.toList());
 
-        // =====================================================
-        // MEMBER MATRIX
-        // EIM ID -> GENDER -> USERS
-        // =====================================================
+	// =====================================================
+	// MEMBER MATRIX
+	// EIM ID -> GENDER -> USERS
+	// =====================================================
 
-        Map<Long, Map<String, List<CoreUser>>> memberMatrix =
-                new HashMap<>();
+	Map<Long, Map<String, List<CoreUser>>> memberMatrix = new HashMap<>();
 
-        for (EventItemMap eventItemMap : allItems) {
+	for (EventItemMap eventItemMap : allItems) {
 
-            memberMatrix.put(
+	    memberMatrix.put(
 
-                    eventItemMap.getEimId(),
+		    eventItemMap.getEimId(),
 
-                    memberUserService.getMembersMatrix(
-                            nodeId,
-                            eventRecord,
-                            eventItemMap
-                    )
-            );
-        }
+		    memberUserService.getMembersMatrix(nodeId, eventRecord, eventItemMap));
+	}
 
-        // =====================================================
-        // TEAM OPTIONS
-        // =====================================================
+	// =====================================================
+	// TEAM OPTIONS
+	// =====================================================
 
-        Map<String, List<TeamOptionDTO>> teamOptions =
-                TeamBuilderHelper.buildTeamOptions(
-                        memberMatrix,
-                        allItems
-                );
+	Map<String, List<TeamOptionDTO>> teamOptions = TeamBuilderHelper.buildTeamOptions(memberMatrix, allItems);
 
-        model.addAttribute(
-                "teamOptions",
-                teamOptions
-        );
+	model.addAttribute("teamOptions", teamOptions);
 
-        // =====================================================
-        // CATEGORY STRING MAP
-        // =====================================================
+	// =====================================================
+	// CATEGORY STRING MAP
+	// =====================================================
 
-        Map<String, List<EventItemMap>> eventItemsByCategoryStrKey =
-                new HashMap<>();
+	Map<String, List<EventItemMap>> eventItemsByCategoryStrKey = new HashMap<>();
 
-        eventItemsByCategory.forEach(
-                (cat, list) ->
-                        eventItemsByCategoryStrKey.put(
-                                cat.name(),
-                                list
-                        )
-        );
+	eventItemsByCategory.forEach((cat, list) -> eventItemsByCategoryStrKey.put(cat.name(), list));
 
-        // =====================================================
-        // ITEM -> CATEGORY MAP
-        // =====================================================
+	// =====================================================
+	// ITEM -> CATEGORY MAP
+	// =====================================================
 
-        Map<Long, Map<String, List<EventItemMap>>> itemCategoryMap =
-                new HashMap<>();
+	Map<Long, Map<String, List<EventItemMap>>> itemCategoryMap = new HashMap<>();
 
-        for (EventItem uniqueItem : uniqueEventItems) {
+	for (EventItem uniqueItem : uniqueEventItems) {
 
-            Map<String, List<EventItemMap>> catMap =
-                    new HashMap<>();
+	    Map<String, List<EventItemMap>> catMap = new HashMap<>();
 
-            for (Map.Entry<EventItemMap.Category, List<EventItemMap>> entry
-                    : eventItemsByCategory.entrySet()) {
+	    for (Map.Entry<EventItemMap.Category, List<EventItemMap>> entry : eventItemsByCategory.entrySet()) {
 
-                List<EventItemMap> filtered =
-                        entry.getValue()
-                                .stream()
-                                .filter(Objects::nonNull)
-                                .filter(eim ->
-                                        eim.getItem() != null
-                                                && eim.getItem()
-                                                .getEvitemId()
-                                                .equals(uniqueItem.getEvitemId())
-                                )
-                                .toList();
+		List<EventItemMap> filtered = entry.getValue().stream().filter(Objects::nonNull).filter(
+			eim -> eim.getItem() != null && eim.getItem().getEvitemId().equals(uniqueItem.getEvitemId()))
+			.toList();
 
-                if (!filtered.isEmpty()) {
+		if (!filtered.isEmpty()) {
 
-                    catMap.put(
-                            entry.getKey().name(),
-                            filtered
-                    );
-                }
-            }
+		    catMap.put(entry.getKey().name(), filtered);
+		}
+	    }
 
-            itemCategoryMap.put(
-                    uniqueItem.getEvitemId(),
-                    catMap
-            );
-        }
+	    itemCategoryMap.put(uniqueItem.getEvitemId(), catMap);
+	}
 
-        // =====================================================
-        // SELECTED KEYS
-        // =====================================================
+	// =====================================================
+	// SELECTED KEYS
+	// =====================================================
 
-        Set<String> selectedKeys =
-                memberEventItemService.getSelectedKeys(
-                        eventId,
-                        nodeId
-                );
+	Set<String> selectedKeys = memberEventItemService.getSelectedKeys(eventId, nodeId);
 
-        Map<String, String> selectedTeams =
-                memberEventItemService.getSelectedTeams(
-                        eventId,
-                        nodeId
-                );
+	Map<String, String> selectedTeams = memberEventItemService.getSelectedTeams(eventId, nodeId);
 
-        model.addAttribute(
-                "selectedKeys",
-                selectedKeys
-        );
+	model.addAttribute("selectedKeys", selectedKeys);
 
-        model.addAttribute(
-                "selectedTeams",
-                selectedTeams
-        );
+	model.addAttribute("selectedTeams", selectedTeams);
 
-        // =====================================================
-        // MODEL ATTRIBUTES
-        // =====================================================
+	// =====================================================
+	// MODEL ATTRIBUTES
+	// =====================================================
 
-        model.addAttribute(
-                "memberMatrix",
-                memberMatrix
-        );
+	model.addAttribute("memberMatrix", memberMatrix);
 
-        model.addAttribute(
-                "itemCategoryMap",
-                itemCategoryMap
-        );
+	model.addAttribute("itemCategoryMap", itemCategoryMap);
 
-        model.addAttribute(
-                "eventItemsByCategoryStrKey",
-                eventItemsByCategoryStrKey
-        );
+	model.addAttribute("eventItemsByCategoryStrKey", eventItemsByCategoryStrKey);
 
-        model.addAttribute(
-                "uniqueEventItems",
-                uniqueEventItems
-        );
+	model.addAttribute("uniqueEventItems", uniqueEventItems);
 
-        model.addAttribute(
-                "allEventItems",
-                allItems
-        );
+	model.addAttribute("allEventItems", allItems);
 
-        model.addAttribute(
-                "eventItemsByCategory",
-                eventItemsByCategory
-        );
+	model.addAttribute("eventItemsByCategory", eventItemsByCategory);
 
-       
-
-        return "fragments/events/participation";
+	return "fragments/events/participation";
     }
 
     private Event.Type getPreviousLevel(Node.Type current) {
@@ -801,10 +687,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	Long eventId = XorMaskHelper.unmask(mEventId);
 	Long nodeId = XorMaskHelper.unmask(mNodeId);
-	
-	NodeDTO node = nodeService.findById(nodeId);
-	
 
+	NodeDTO node = nodeService.findById(nodeId);
 
 	// default view
 	if (viewType == null || viewType.isBlank()) {
@@ -821,24 +705,13 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	if ("KALARI".equals(node.getNodeType().name())) {
 
-	    matrix = memberEventItemService.getParticipationMatrix(
-	            eventId,
-	            itemId,
-	            gender,
-	            category,
-	            nodeId
-	    );
+	    matrix = memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category, nodeId);
 
 	} else {
-	    
+
 	    model.addAttribute("isNotKalari", true);
 
-	    matrix = memberEventItemService.getParticipationMatrix(
-	            eventId,
-	            itemId,
-	            gender,
-	            category
-	    );
+	    matrix = memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category);
 	}
 
 	model.addAttribute("eventRecord", eventRecord);
@@ -944,9 +817,8 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 		subtotalRow.put("subtotal", true);
 		breakdownRows.add(subtotalRow);
 	    });
-	    
-	    
-	    model.addAttribute("kalariParticipation",nodeRepository.findKalariParticipationByEvent(eventId));
+
+	    model.addAttribute("kalariParticipation", nodeRepository.findKalariParticipationByEvent(eventId));
 
 	    // ── 4. ADD TO MODEL ────────────────────────────
 	    model.addAttribute("totalParticipations", totalParticipations);
@@ -1534,7 +1406,12 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     }
 
     @GetMapping("/category_shift/{eventId}/{nodeId}")
-    public String categoryShiftForm(@PathVariable("eventId") Long mEventId, @PathVariable("nodeId") Long mNodeId,
+    public String categoryShiftForm(
+
+	    @PathVariable("eventId") Long mEventId,
+
+	    @PathVariable("nodeId") Long mNodeId,
+
 	    Model model) {
 
 	Long eventId = XorMaskHelper.unmask(mEventId);
@@ -1546,7 +1423,26 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	List<CoreUser> members = coreUserRepository.findByApprovedUserIdAndTypeAndNotDeleted(nodeId,
 		CoreUser.UserType.MEMBER);
 
-	List<EventItem> items = eventItemRepository.findAllNotDeleted(null, null, Pageable.unpaged()).getContent();
+	// =====================================================
+	// EXISTING SHIFTS
+	// =====================================================
+
+	List<MemberCatShift> existingShifts = memberCatShiftRepository.findAllByEventAndNode(eventId,nodeId);
+
+	// =====================================================
+	// MEMBER CATEGORY MAP
+	// =====================================================
+
+	Map<Long, String> memberCategoryMap = new HashMap<>();
+
+	for (CoreUser member : members) {
+
+	    memberCategoryMap.put(
+
+		    member.getUserId(),
+
+		    calculateAgeCategory(member, event));
+	}
 
 	model.addAttribute("eventId", mEventId);
 
@@ -1556,12 +1452,14 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	model.addAttribute("members", members);
 
-	model.addAttribute("items", items);
+	model.addAttribute("memberCategoryMap", memberCategoryMap);
+
+	model.addAttribute("existingShifts", existingShifts);
 
 	model.addAttribute("categories", EventItemMap.Category.values());
 
 	model.addAttribute("dto", new MemberCatShiftDTO());
-	
+
 	model.addAttribute("pageTitle", "Shift Category");
 
 	return "fragments/events/category_shift_form";
@@ -1571,342 +1469,190 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveCategoryShift(
 
-            @PathVariable("eventId") Long mEventId,
-            @PathVariable("nodeId") Long mNodeId,
+	    @PathVariable("eventId") Long mEventId, @PathVariable("nodeId") Long mNodeId,
 
-            @Valid @ModelAttribute MemberCatShiftDTO dto,
+	    @Valid @ModelAttribute MemberCatShiftDTO dto,
 
-            BindingResult result,
+	    BindingResult result,
 
-            Authentication authentication
-    ) {
-	
-	
+	    Authentication authentication) {
 
-        // =====================================================
-        // IDS
-        // =====================================================
+	// =====================================================
+	// IDS
+	// =====================================================
 
-        Long eventId =
-                XorMaskHelper.unmask(mEventId);
+	Long eventId = XorMaskHelper.unmask(mEventId);
 
-        Long nodeId =
-                XorMaskHelper.unmask(mNodeId);
+	Long nodeId = XorMaskHelper.unmask(mNodeId);
 
-        // =====================================================
-        // USER
-        // =====================================================
+	// =====================================================
+	// USER
+	// =====================================================
 
-        CustomUserPrincipal principal =
-                (CustomUserPrincipal) authentication.getPrincipal();
+	CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 
-        // =====================================================
-        // EVENT
-        // =====================================================
+	// =====================================================
+	// EVENT
+	// =====================================================
 
-        EventDTO eventRecord =
-                service.findById(eventId);
+	EventDTO eventRecord = service.findById(eventId);
 
-        if (eventRecord == null) {
+	if (eventRecord == null) {
 
-            result.reject(
-                    "event",
-                    "Invalid event"
-            );
-        }
+	    result.reject("event", "Invalid event");
+	}
 
-        // =====================================================
-        // SECURITY
-        // =====================================================
+	// =====================================================
+	// SECURITY
+	// =====================================================
 
-        List<Long> allowedNodeIds =
-                nodeService.findAllowedNodeIds(
-                        principal.getInstId()
-                );
+	List<Long> allowedNodeIds = nodeService.findAllowedNodeIds(principal.getInstId());
 
-        if (eventRecord != null
-                && !allowedNodeIds.contains(
-                        eventRecord.getEventHostId()
-                )) {
+	if (eventRecord != null && !allowedNodeIds.contains(eventRecord.getEventHostId())) {
 
-            throw new SecurityException(
-                    "Access denied to this event!"
-            );
-        }
+	    throw new SecurityException("Access denied to this event!");
+	}
 
-        // =====================================================
-        // RESPONSE DATA
-        // =====================================================
+	// =====================================================
+	// RESPONSE DATA
+	// =====================================================
 
-        Map<String, Object> additionalData =
-                new HashMap<>();
+	Map<String, Object> additionalData = new HashMap<>();
 
-        additionalData.put(
-                "loadnext",
-                "participation/" + mEventId + "/" + mNodeId
-        );
+	additionalData.put("loadnext", "participation/" + mEventId + "/" + mNodeId);
 
-        additionalData.put(
-                "target",
-                "events_target"
-        );
+	additionalData.put("target", "events_target");
 
-        // =====================================================
-        // MEMBER VALIDATION
-        // =====================================================
+	// =====================================================
+	// MEMBER VALIDATION
+	// =====================================================
 
-        CoreUser member = null;
+	CoreUser member = null;
 
-        if (dto.getMemCatShifMemId() == null) {
+	if (dto.getMemCatShifMemId() == null) {
 
-            result.rejectValue(
-                    "memCatShifMemId",
-                    "error.member",
-                    "Member is required"
-            );
+	    result.rejectValue("memCatShifMemId", "error.member", "Member is required");
 
-        } else {
+	} else {
 
-            member =
-                    coreUserRepository
-                            .findById(dto.getMemCatShifMemId())
-                            .orElse(null);
+	    member = coreUserRepository.findById(dto.getMemCatShifMemId()).orElse(null);
 
-            if (member == null) {
-
-                result.rejectValue(
-                        "memCatShifMemId",
-                        "error.member",
-                        "Invalid member"
-                );
-            }
-        }
-
-        // =====================================================
-        // ITEM VALIDATION
-        // =====================================================
-
-        EventItem item = null;
-
-        if (dto.getItemId() == null) {
-
-            result.rejectValue(
-                    "itemId",
-                    "error.item",
-                    "Item is required"
-            );
-
-        } else {
-
-            item =
-                    eventItemRepository
-                            .findById(dto.getItemId())
-                            .orElse(null);
-
-            if (item == null) {
-
-                result.rejectValue(
-                        "itemId",
-                        "error.item",
-                        "Invalid item"
-                );
-            }
-        }
-
-        // =====================================================
-        // SHIFT CATEGORY VALIDATION
-        // =====================================================
-
-        if (dto.getMemCatShifCategory() == null) {
-
-            result.rejectValue(
-                    "memCatShifCategory",
-                    "error.category",
-                    "Shift category is required"
-            );
-        }
-
-        // =====================================================
-        // STOP EARLY
-        // =====================================================
-
-        if (result.hasErrors()) {
-
-            return handleRequest(
-                    result,
-                    () -> eventRecord,
-                    "Validation failed",
-                    additionalData
-            );
-        }
-
-        // =====================================================
-        // CALCULATE ORIGINAL CATEGORY
-        // =====================================================
-
-        String calculatedCategoryStr =
-                calculateAgeCategory(
-                        member,
-                        eventRecord
-                );
-
-        EventItemMap.Category originalCategory =
-                null;
-
-        try {
-
-            originalCategory =
-                    EventItemMap.Category.valueOf(
-                            calculatedCategoryStr
-                    );
-
-        } catch (Exception e) {
-
-            result.rejectValue(
-                    "originalCategory",
-                    "error.originalCategory",
-                    "Unable to calculate original category"
-            );
-        }
-
-        // =====================================================
-        // SAME CATEGORY BLOCK
-        // =====================================================
-
-        if (!result.hasErrors()
-                && originalCategory ==
-                dto.getMemCatShifCategory()) {
-
-            result.rejectValue(
-                    "memCatShifCategory",
-                    "error.sameCategory",
-                    "Shift category cannot be same as original category"
-            );
-        }
-
-        // =====================================================
-        // VALIDATE TARGET CATEGORY EXISTS FOR ITEM
-        // =====================================================
-
-        if (!result.hasErrors()) {
-
-            Optional<EventItemMap> shiftedMap =
-                    eventItemMapRepository
-                            .findByEventItemAndCategory(
-                                    eventId,
-                                    item,
-                                    dto.getMemCatShifCategory()
-                            );
-
-            if (shiftedMap.isEmpty()) {
-
-                result.rejectValue(
-                        "memCatShifCategory",
-                        "error.shiftCategory",
-                        "Shift category mapping not available for this item"
-                );
-            }
-        }
+	    if (member == null) {
 
-        // =====================================================
-        // DUPLICATE CHECK
-        // =====================================================
+		result.rejectValue("memCatShifMemId", "error.member", "Invalid member");
+	    }
+	}
 
-        if (!result.hasErrors()) {
+	// =====================================================
+	// SHIFT CATEGORY VALIDATION
+	// =====================================================
 
-            Optional<MemberCatShift> existing =
-                    memberCatShiftRepository.findOverride(
-                            eventId,
-                            member,
-                            item,
-                            originalCategory
-                    );
+	if (dto.getMemCatShifCategory() == null) {
 
-            if (existing.isPresent()) {
+	    result.rejectValue("memCatShifCategory", "error.category", "Shift category is required");
+	}
 
-                result.rejectValue(
-                        "memCatShifCategory",
-                        "error.duplicate",
-                        "Category shift already exists"
-                );
-            }
-        }
+	// =====================================================
+	// STOP EARLY
+	// =====================================================
 
-        // =====================================================
-        // FINAL VALIDATION
-        // =====================================================
+	if (result.hasErrors()) {
 
-        if (result.hasErrors()) {
+	    return handleRequest(result, () -> eventRecord, "Validation failed", additionalData);
+	}
 
-            return handleRequest(
-                    result,
-                    () -> eventRecord,
-                    "Validation failed",
-                    additionalData
-            );
-        }
+	// =====================================================
+	// CALCULATE ORIGINAL CATEGORY
+	// =====================================================
 
-        // =====================================================
-        // FINAL VARIABLES
-        // =====================================================
+	String calculatedCategoryStr = calculateAgeCategory(member, eventRecord);
 
-        final CoreUser finalMember = member;
+	EventItemMap.Category originalCategory = null;
 
-        final EventItem finalItem = item;
+	try {
 
-        final EventItemMap.Category finalOriginalCategory =
-                originalCategory;
+	    originalCategory = EventItemMap.Category.valueOf(calculatedCategoryStr);
 
-        // =====================================================
-        // SAVE
-        // =====================================================
+	} catch (Exception e) {
 
-        return handleRequest(
+	    result.rejectValue("originalCategory", "error.originalCategory", "Unable to calculate original category");
+	}
 
-                result,
+	// =====================================================
+	// SAME CATEGORY BLOCK
+	// =====================================================
 
-                () -> {
+	if (!result.hasErrors() && originalCategory == dto.getMemCatShifCategory()) {
 
-                    Event event =
-                            eventRepository.getReferenceById(
-                                    eventId
-                            );
+	    result.rejectValue("memCatShifCategory", "error.sameCategory",
+		    "Shift category cannot be same as original category");
+	}
 
-                    MemberCatShift entity =
-                            new MemberCatShift();
+	// =====================================================
+	// DUPLICATE CHECK
+	// =====================================================
 
-                    entity.setEvent(
-                            event
-                    );
+	if (!result.hasErrors()) {
 
-                    entity.setMemCatShifMemId(
-                            finalMember
-                    );
+	    Optional<MemberCatShift> existing = memberCatShiftRepository.findOverride(eventId, member,
+		    originalCategory);
 
-                    entity.setItem(
-                            finalItem
-                    );
+	    if (existing.isPresent()) {
 
-                    entity.setOriginalCategory(
-                            finalOriginalCategory
-                    );
+		result.rejectValue("memCatShifCategory", "error.duplicate", "Category shift already exists");
+	    }
+	}
 
-                    entity.setMemCatShifCategory(
-                            dto.getMemCatShifCategory()
-                    );
+	// =====================================================
+	// FINAL VALIDATION
+	// =====================================================
 
-                    memberCatShiftRepository.save(
-                            entity
-                    );
+	if (result.hasErrors()) {
 
-                    return eventRecord;
+	    return handleRequest(result, () -> eventRecord, "Validation failed", additionalData);
+	}
 
-                },
+	// =====================================================
+	// FINAL VARIABLES
+	// =====================================================
 
-                "Category shift saved successfully",
+	final CoreUser finalMember = member;
 
-                additionalData
-        );
+	final EventItemMap.Category finalOriginalCategory = originalCategory;
+
+	// =====================================================
+	// SAVE
+	// =====================================================
+
+	return handleRequest(
+
+		result,
+
+		() -> {
+
+		    Event event = eventRepository.getReferenceById(eventId);
+
+		    MemberCatShift entity = new MemberCatShift();
+
+		    entity.setEvent(event);
+
+		    entity.setMemCatShifMemId(finalMember);
+
+		    entity.setOriginalCategory(finalOriginalCategory);
+
+		    entity.setMemCatShifCategory(dto.getMemCatShifCategory());
+
+		    memberCatShiftRepository.save(entity);
+
+		    memberEventItemRepository.deleteByEventAndMember(eventId, finalMember.getUserId());
+
+		    return eventRecord;
+
+		},
+
+		"Category shift saved successfully; \"Existing participation entries were cleared. Please re-add participation under shifted category.\"",
+
+		additionalData);
     }
 
     private String calculateAgeCategory(CoreUser user, EventDTO eventRecord) {

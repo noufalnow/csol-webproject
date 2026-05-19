@@ -85,8 +85,8 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	        ORDER BY
 	            n.nodeName ASC,
 	            ei.evitemName ASC,
-	            mei.memberEventCategory ASC,
 	            mei.memberEventGender ASC,
+	            mei.memberEventCategory ASC,
 	            mei.memberEventTeamCode ASC,
 	            cu.userFname ASC
 	       """)
@@ -228,6 +228,20 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		        @Param("itemId") Long itemId,
 		        @Param("nodeId") Long nodeId
 		);
+	
+	
+	@Modifying
+	@Transactional
+	@Query("""
+	    DELETE
+	    FROM MemberEventItem mei
+	    WHERE mei.memberEvent.eventId = :eventId
+	      AND mei.memberEventMember.userId = :memberId
+	""")
+	void deleteByEventAndMember(
+	        @Param("eventId") Long eventId,
+	        @Param("memberId") Long memberId
+	);
 
 
 

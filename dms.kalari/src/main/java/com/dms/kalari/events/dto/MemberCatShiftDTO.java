@@ -24,11 +24,6 @@ public class MemberCatShiftDTO {
     private Long memCatShifMemId;
 
     /**
-     * Selected item
-     */
-    private Long itemId;
-
-    /**
      * Original calculated category
      */
     private EventItemMap.Category originalCategory;

@@ -27,13 +27,11 @@ public interface MemberCatShiftRepository
         WHERE mcs.deleted = false
           AND mcs.event = :event
           AND mcs.memCatShifMemId = :member
-          AND mcs.item = :item
           AND mcs.originalCategory = :originalCategory
     """)
     Optional<MemberCatShift> findOverride(
             @Param("event") Event event,
             @Param("member") CoreUser member,
-            @Param("item") EventItem item,
             @Param("originalCategory") EventItemMap.Category originalCategory
     );
 
@@ -60,11 +58,9 @@ public interface MemberCatShiftRepository
         FROM MemberCatShift mcs
         WHERE mcs.deleted = false
           AND mcs.event = :event
-          AND mcs.item = :item
     """)
     List<MemberCatShift> findByEventAndItem(
-            @Param("event") Event event,
-            @Param("item") EventItem item
+            @Param("event") Event event
     );
 
     /**
@@ -80,6 +76,21 @@ public interface MemberCatShiftRepository
             @Param("eventId") Long eventId
     );
     
+    @Query("""
+	    SELECT mcs
+	    FROM MemberCatShift mcs
+	    WHERE mcs.deleted = false
+	      AND mcs.event.eventId = :eventId
+	      AND mcs.memCatShifMemId.userNode.nodeId = :nodeId
+	    ORDER BY
+	        mcs.memCatShifMemId.userFname,
+	        mcs.memCatShifMemId.userLname
+	""")
+	List<MemberCatShift> findAllByEventAndNode(
+	        @Param("eventId") Long eventId,
+	        @Param("nodeId") Long nodeId
+	);
+    
     
     @Query("""
 	    SELECT mcs
@@ -87,13 +98,11 @@ public interface MemberCatShiftRepository
 	    WHERE mcs.deleted = false
 	      AND mcs.event.eventId = :eventId
 	      AND mcs.memCatShifMemId = :member
-	      AND mcs.item = :item
 	      AND mcs.originalCategory = :originalCategory
 	""")
 	Optional<MemberCatShift> findOverride(
 	        @Param("eventId") Long eventId,
 	        @Param("member") CoreUser member,
-	        @Param("item") EventItem item,
 	        @Param("originalCategory") EventItemMap.Category originalCategory
 	);
 

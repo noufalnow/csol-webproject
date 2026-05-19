@@ -231,41 +231,56 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
      * Compute category based on DOB: 8-15 -> Junior 12-15 -> Sub-Junior 22+ ->
      * Senior
      */
-    private String calculateAgeCategory(CoreUser user, EventDTO eventRecord) {
-
-	if (user.getUserDob() == null || eventRecord == null || eventRecord.getEventPeriodStart() == null) {
-
-	    return "UNKNOWN";
-	}
-
-	LocalDate evalDate = eventRecord.getEventPeriodStart();
-
-	int age = Period.between(user.getUserDob(), evalDate).getYears();
-
-	if (age < 0) {
-	    return "UNKNOWN";
-	}
-
-	if (age >= 18) {
-	    return "SENIOR";
-	} else if (age >= 14) {
-	    return "JUNIOR";
-	} else {
-	    return "SUBJUNIOR";
-	}
-    }
-
-    private String computeCategory(
+    private EventItemMap.Category calculateAgeCategory(
 	        CoreUser user,
-	        EventDTO eventRecord,
-	        EventItemMap eventItemMap
+	        EventDTO eventRecord
+	) {
+
+	    if (user.getUserDob() == null
+	            || eventRecord == null
+	            || eventRecord.getEventPeriodStart() == null) {
+
+	        return null;
+	    }
+
+	    LocalDate evalDate =
+	            eventRecord.getEventPeriodStart();
+
+	    int age =
+	            Period.between(
+	                    user.getUserDob(),
+	                    evalDate
+	            ).getYears();
+
+	    if (age < 0) {
+
+	        return null;
+	    }
+
+	    if (age >= 18) {
+
+	        return EventItemMap.Category.SENIOR;
+
+	    } else if (age >= 14) {
+
+	        return EventItemMap.Category.JUNIOR;
+
+	    } else {
+
+	        return EventItemMap.Category.SUBJUNIOR;
+	    }
+	}
+
+    private EventItemMap.Category computeCategory(
+	        CoreUser user,
+	        EventDTO eventRecord
 	) {
 
 	    // ==========================================
 	    // BASE CATEGORY
 	    // ==========================================
 
-	    String calculatedCategory =
+	    EventItemMap.Category calculatedCategory =
 	            calculateAgeCategory(
 	                    user,
 	                    eventRecord
@@ -275,9 +290,9 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	    // INVALID
 	    // ==========================================
 
-	    if ("UNKNOWN".equals(calculatedCategory)) {
+	    if (calculatedCategory == null) {
 
-	        return calculatedCategory;
+	        return null;
 	    }
 
 	    // ==========================================
@@ -288,10 +303,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	            memberCatShiftRepository.findOverride(
 	                    eventRecord.getEventId(),
 	                    user,
-	                    eventItemMap.getItem(),
-	                    EventItemMap.Category.valueOf(
-	                            calculatedCategory
-	                    )
+	                    calculatedCategory
 	            );
 
 	    // ==========================================
@@ -303,8 +315,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 
 	        return shiftOpt
 	                .get()
-	                .getMemCatShifCategory()
-	                .name();
+	                .getMemCatShifCategory();
 	    }
 
 	    // ==========================================
@@ -329,8 +340,8 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	    Map<String, List<CoreUser>> genderMap =
 	            new HashMap<>();
 
-	    String eimCategory =
-	            eventItemMap.getCategory().name();
+	    EventItemMap.Category eimCategory =
+	            eventItemMap.getCategory();
 
 	    // ==========================================
 	    // MALE
@@ -344,8 +355,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	                            eimCategory.equals(
 	                                    computeCategory(
 	                                            u,
-	                                            eventRecord,
-	                                            eventItemMap
+	                                            eventRecord
 	                                    )
 	                            )
 	                    )
@@ -364,8 +374,7 @@ public class MemberUserService implements BaseService<MemberAddDTO> {
 	                            eimCategory.equals(
 	                                    computeCategory(
 	                                            u,
-	                                            eventRecord,
-	                                            eventItemMap
+	                                            eventRecord
 	                                    )
 	                            )
 	                    )

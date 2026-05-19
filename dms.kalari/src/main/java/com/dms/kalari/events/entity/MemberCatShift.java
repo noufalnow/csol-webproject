@@ -36,12 +36,6 @@ public class MemberCatShift extends BaseEntity {
     @JoinColumn(name = "msc_member_id", nullable = false)
     private CoreUser memCatShifMemId;
 
-    /**
-     * User selected item
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mcs_item_id", nullable = false)
-    private EventItem item;
 
     /**
      * Original calculated category
