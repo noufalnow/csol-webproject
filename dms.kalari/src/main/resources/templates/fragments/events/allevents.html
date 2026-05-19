@@ -136,7 +136,7 @@
 							
 							
 							<div
-							    th:if="${#authorization.expression('hasAuthority(''PRIV_champ_category_shift'')')}">
+							    th:if="${linkNodeType == 'KALARI'and #authorization.expression('hasAuthority(''PRIV_champ_category_shift'')')}">
 
 							    <a href="javascript:void(0);"
 							       class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center px-2 py-1"
