@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<style>
+@page {
+	size: A4 landscape;
+	margin: 1mm;
+}
+
+body {
+	font-family: 'Times New Roman', serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f9f3e0;
+}
+
+.certificate-page {
+	width: 100%;
+	height: 100%;
+	background-color: #fff;
+	border: 12px double #d0b152;
+	box-sizing: border-box;
+	padding: 0; /* remove 4mm padding to avoid extra bottom space */
+	position: relative;
+	overflow: hidden;
+}
+
+/* === TOP BAR === */
+.top-bar {
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+	margin-bottom: 10mm;
+}
+
+.affiliation-top {
+	text-align: center;
+	color: #2c3e50;
+	width: 100%;
+}
+
+.affiliation-top .federation-row {
+	display: table;
+	margin: 0 auto 2mm;
+	width: auto;
+	padding-top: 5mm;
+}
+
+.affiliation-top .federation-row>div, .affiliation-top .federation-row>img
+	{
+	display: table-cell;
+	vertical-align: middle;
+	padding: 0 5mm;
+}
+
+.affiliation-top .federation-text {
+	font-size: 25pt;
+	font-weight: bold;
+}
+
+.affiliation-top .federation-text-medium {
+	font-size: 18pt;
+}
+
+.affiliation-top .federation-text-small {
+	font-size: 12pt;
+}
+
+.affiliation-top .logo-small {
+	height: 25mm;
+}
+
+.affiliation-top .affiliation-text {
+	font-size: 11pt;
+	font-style: italic;
+	line-height: 1.4;
+}
+
+/* === TITLE + MEDAL === */
+.title-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10mm;
+	margin-top: 25mm;
+	margin-bottom: 2mm;
+}
+
+.title-container .medal-image {
+	height: 25mm;
+	margin-left: 10mm;
+	margin-top: 10mm;
+	flex-shrink: 0;
+}
+
+.title-container .title {
+	font-size: 22pt;
+	font-weight: bold;
+	color: #8b0000;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.subtitle {
+	margin-top: -25mm;
+	font-size: 18pt;
+	font-weight: bold;
+	color: #2c3e50;
+	margin-bottom: 8mm;
+	text-align: center;
+}
+
+.recipient {
+	font-size: 18pt;
+	font-weight: bold;
+	color: #2c3e50;
+	margin: 3mm 0;
+	text-align: center;
+}
+
+.event-description {
+	font-size: 14pt;
+	color: #2c3e50;
+	margin-bottom: 8mm;
+	width: 85%;
+	margin-left: auto;
+	margin-right: auto;
+	line-height: 1.4;
+	text-align: center;
+}
+
+.certificate-number {
+	font-size: 11pt;
+	font-style: italic;
+	color: gray;
+	margin-bottom: 8mm;
+	text-align: center;
+}
+
+/* === SIGNATORIES === */
+.signatories {
+	margin-top: 10mm;
+	font-size: 12pt;
+	color: #2c3e50;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+}
+
+.signatory {
+	display: table-cell;
+	text-align: center;
+	padding: 0 5mm;
+}
+
+.signatory i {
+	font-size: 10pt;
+	color: gray;
+}
+
+/* === FOOTER === */
+.footer {
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+	position: absolute;
+	bottom: 40pt; /* reduced from 60pt */
+	text-align: center;
+	margin-top: 0;
+}
+
+.date {
+	font-size: 12pt;
+	color: #2c3e50;
+	text-align: left;
+	display: table-cell;
+}
+
+.seal {
+	width: 35mm;
+	opacity: 0.7;
+	display: table-cell;
+	text-align: right;
+}
+
+/* === BOTTOM BAR === */
+.bottom-bar {
+	position: absolute;
+	bottom: 50pt; /* keep 10pt from page bottom */
+	right: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: right;
+	padding: 0 10mm;
+	box-sizing: border-box;
+}
+
+.bottom-bar .verification {
+	font-size: 9pt;
+	font-style: italic;
+	color: gray;
+}
+
+.bottom-bar .qr-container img {
+	width: 100px;
+	height: 100px;
+}
+</style>
+</head>
+<body>
+	<div class="certificate-page">
+
+		<!-- === TOP BAR === -->
+		<div class="top-bar">
+
+		    <div class="affiliation-top">
+
+		        <!-- District -->
+		        <div class="federation-row">
+
+					<img
+					    class="logo-small"
+					    th:if="${nationalLogo != null}"
+					    th:src="${nationalLogo}"
+					    alt="National Logo"/>
+
+		            <div
+		                class="federation-text"
+		                th:text="${districtName}">
+		                DISTRICT NAME
+		            </div>
+
+					<img
+					    class="logo-small"
+					    th:if="${districtLogo != null}"
+					    th:src="${districtLogo}"
+					    alt="District Logo"/>
+						
+					
+
+		        </div>
+
+
+		        <!-- State -->
+		        <div class="affiliation-text">
+		            Recognized by
+		        </div>
+
+		        <div
+		            class="federation-text federation-text-small"
+		            th:text="${stateName}">
+		            STATE NAME
+		        </div>
+
+
+		        <!-- National -->
+		        <div class="affiliation-text">
+		            Affiliated to
+		        </div>
+
+		        <div
+		            class="federation-text federation-text-small"
+		            th:text="${nationalName}">
+		            NATIONAL NAME
+		        </div>
+
+
+		        <div class="affiliation-text">
+		            Recognized by the Ministry of Youth Affairs and Sports,
+		            Govt. of India
+		            <br />
+		            Affiliated to the All India Council of Sports &amp;
+		            International Kalarippayattu Federation
+		        </div>
+
+		    </div>
+
+		</div>
+
+		<!-- === TITLE SECTION === -->
+		<div class="title-container" style="margin-top: 25mm;">
+			<div class="title">Trivandrum District Kalarippayattu
+				Championship - 2025</div>
+			<img class="medal-image"
+				th:src="@{classpath:/static/images/GOLD.png}"
+				th:alt="${medalType} + ' Medal'" />
+		</div>
+
+		<div class="subtitle">Certificate of Achievement</div>
+
+		<div class="recipient"
+			th:text="'Sri/Smt/Kumari: ' + ${participantName}">
+			Sri/Smt/Kumari: Ranjith K.</div>
+
+		<div class="event-description"
+			th:text="'has participated in the ' + ${eventName} + ' held at ' + ${eventLocation} + ' on ' + ${#temporals.format(resultDate, 'dd MMMM yyyy')}">
+			has participated in the National Kalarippayattu Seminar held at India
+			Habitat Centre, New Delhi on 28th March 2018.</div>
+
+		<div class="certificate-number" style="margin-top: 15mm;">
+			 <span th:text="${certificateNumber}">No. Delhi/18</span>
+		</div>
+
+		<div class="signatories" style="margin-top: 27mm;">
+			<div class="signatory">
+				M. Krishnamoorthy IPS<br /> <i>DGP (Retd.), Chairman,
+					Organizing Committee</i>
+			</div>
+			<div class="signatory">
+				P. Jayaraj<br /> <i>Organizing Secretary</i>
+			</div>
+			<div class="signatory">
+				K. Jayaraj<br /> <i>Chairman, Indian Kalarippayattu Federation</i>
+			</div>
+			<div class="signatory">
+				Adv. Poonthura Soman<br /> <i>General Secretary, Indian
+					Kalarippayattu Federation</i>
+			</div>
+		</div>
+
+		<!-- === FOOTER === -->
+		<div class="footer">
+			<div class="date"
+				th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}">Date</div>
+			<img class="seal" th:src="@{classpath:/static/images/seal.png}"
+				alt="Official Seal" />
+		</div>
+
+		<!-- === BOTTOM BAR === -->
+		<div class="bottom-bar">
+			<div class="verification">
+				<i>Verification ID: <span th:text="${verificationIdMasked}"></span></i><br />
+				<small class="sig-note">(Digitally signed by IKF Authority)</small>
+			</div>
+			<div class="qr-container">
+				<img th:src="@{${qrImagePath}}" alt="QR Code" />
+			</div>
+		</div>
+
+
+	</div>
+</body>
+</html>

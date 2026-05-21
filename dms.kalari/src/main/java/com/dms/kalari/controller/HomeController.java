@@ -41,10 +41,10 @@ public class HomeController {
         long userId   = principal.getUserId();   // instead of USER_ID
 
         List<Object[]> eventList = eventService.findByHostNodeHierarchy(parentId, userId);
-        List<Object[]> resultList = eventService.getMemberEventsWithFilters(
+        /*List<Object[]> resultList = eventService.getMemberEventsWithFilters(
                 null, null, userId, null, null, true, null);
 
-        model.addAttribute("resultList", resultList);
+        model.addAttribute("resultList", resultList);*/
         model.addAttribute("eventList", eventList);
         model.addAttribute("pageTitle", "Home ");
 

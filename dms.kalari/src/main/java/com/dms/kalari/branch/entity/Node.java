@@ -105,6 +105,10 @@ public class Node extends BaseEntity {
     @Column(name = "branch_random_id", insertable = false, updatable = false, nullable = false, unique = true)
     private UUID branchRandomId;
     
+    @Column(name = "branch_cert_tagline", nullable = true,length = 200)
+    private String branchCertTagLine;
+    
+    
  
 }
 

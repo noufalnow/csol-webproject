@@ -242,6 +242,51 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	        @Param("eventId") Long eventId,
 	        @Param("memberId") Long memberId
 	);
+	
+        /*'IKF-',*/
+	
+	@Query(value = """
+		UPDATE member_events_items mei
+		SET mei_certificate_no =
+		(
+		    SELECT CONCAT(
+
+		        mei.mei_event_year,
+		        '-E',
+		        LPAD(
+		            CAST(mei.mei_event_id AS TEXT),
+		            5,
+		            '0'
+		        ),
+		        '-C',
+		        LPAD(
+		            CAST(
+		                COALESCE(
+		                    (
+		                        SELECT COUNT(*) + 1
+		                        FROM member_events_items x
+		                        WHERE x.mei_event_id =
+		                              mei.mei_event_id
+		                        AND x.mei_certificate_no
+		                            IS NOT NULL
+		                    ),
+		                    1
+		                )
+		                AS TEXT
+		            ),
+		            6,
+		            '0'
+		        )
+		    )
+		)
+		WHERE mei_id=:meiId
+		AND mei_certificate_no IS NULL
+		RETURNING mei_certificate_no
+		""", nativeQuery = true)
+		String generateCertificateNumber(
+		        @Param("meiId")
+		        Long meiId
+		);
 
 
 

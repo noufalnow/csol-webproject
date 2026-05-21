@@ -1,313 +1,531 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<meta charset="UTF-8" />
-<style>
-@page {
-	size: A4 landscape;
-	margin: 1mm;
-}
+	<meta charset="UTF-8" />
+	<style>
+		@page {
+			size: A4 landscape;
+			margin: 1mm;
+		}
 
-body {
-	font-family: 'Times New Roman', serif;
-	margin: 0;
-	padding: 0;
-	background-color: #f9f3e0;
-}
+		body {
+			font-family: 'Times New Roman', serif;
+			margin: 0;
+			padding: 0;
+			background-color: #f9f3e0;
+		}
 
-.certificate-page {
-	width: 100%;
-	height: 100%;
-	background-color: #fff;
-	border: 12px double #d0b152;
-	box-sizing: border-box;
-	padding: 0; /* remove 4mm padding to avoid extra bottom space */
-	position: relative;
-	overflow: hidden;
-}
+		.certificate-page {
+			width: 100%;
+			/* FIX: use min-height instead of height to avoid blank space */
+			min-height: 100vh;
+			background-color: #fff;
+			border: 12px double #d0b152;
+			box-sizing: border-box;
+			padding: 0;
+			position: relative;
+			overflow: hidden;
+		}
 
-/* === TOP BAR === */
-.top-bar {
-	width: 100%;
-	display: table;
-	table-layout: fixed;
-	margin-bottom: 10mm;
-}
+		/* === TOP BAR === */
+		.top-bar {
+			width: 100%;
+			display: table;
+			table-layout: fixed;
+			margin-bottom: 10mm;
+		}
 
-.affiliation-top {
-	text-align: center;
-	color: #2c3e50;
-	width: 100%;
-}
+		.affiliation-top {
+			text-align: center;
+			color: #2c3e50;
+			width: 100%;
+			padding-top: 7mm;
+		}
 
-.affiliation-top .federation-row {
-	display: table;
-	margin: 0 auto 2mm;
-	width: auto;
-	padding-top: 5mm;
-}
+		.affiliation-top .federation-row {
+			display: table;
+			margin: 0 auto 2mm;
+			width: auto;
+		}
 
-.affiliation-top .federation-row>div, .affiliation-top .federation-row>img
-	{
-	display: table-cell;
-	vertical-align: middle;
-	padding: 0 5mm;
-}
+		.affiliation-top .federation-row>div,
+		.affiliation-top .federation-row>img {
+			display: table-cell;
+			vertical-align: middle;
+			padding: 0 5mm;
+		}
 
-.affiliation-top .federation-text {
-	font-size: 25pt;
-	font-weight: bold;
-}
+		.affiliation-top .federation-text {
+			font-size: 22pt;
+			font-weight: bold;
+			text-transform: uppercase;
+			line-height: 1.1;
+		}
 
-.affiliation-top .federation-text-medium {
-	font-size: 18pt;
-}
+		.affiliation-top .federation-text-medium {
+			font-size: 12pt;
+			font-weight: bold;
+			text-transform: uppercase;
+			margin-top: 2mm;
+		}
 
-.affiliation-top .federation-text-small {
-	font-size: 12pt;
-}
+		.affiliation-top .federation-text-small {
+			font-size: 12pt;
+			font-weight: bold;
+			text-transform: uppercase;
+			margin-top: 1mm;
+		}
 
-.affiliation-top .logo-small {
-	height: 25mm;
-}
+		.logo-container {
+			width: 100%;
+			text-align: center;
+			margin: 6mm 0 8mm;
+		}
 
-.affiliation-top .affiliation-text {
-	font-size: 11pt;
-	font-style: italic;
-	line-height: 1.4;
-}
+		.affiliation-top .logo-small {
+			height: 22mm;
+			width: auto;
+			display: inline-block;
+		}
+		
+		
+		
+		.affiliation-top .affiliation-text {
+			font-size: 11pt;
+			font-style: italic;
+			line-height: 1.4;
+			margin-top: 2mm;
+			margin-bottom: 2mm;
+		}
 
-/* === TITLE + MEDAL === */
-.title-container {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 10mm;
-	margin-top: 25mm;
-	margin-bottom: 2mm;
-}
+		.certificate-title {
+		    font-size: 13pt;
+		    font-weight: bold;
+		    color: #2c3e50;
+		    text-transform: uppercase;
+		    margin-top: 2mm;
+		    letter-spacing: 1px;
+		}
 
-.title-container .medal-image {
-	height: 25mm;
-	margin-left: 10mm;
-	margin-top: 10mm;
-	flex-shrink: 0;
-}
+		.certificate-subtitle {
+		    font-size: 20pt;        /* big like a title */
+		    font-weight: bold;
+		    color: #8b0000;
+		    text-transform: uppercase;
+		    margin-top: 3mm;        /* gap between the two */
+		    margin-bottom: 2mm;
+		    letter-spacing: 2px;
+		}
 
-.title-container .title {
-	font-size: 22pt;
-	font-weight: bold;
-	color: #8b0000;
-	text-transform: uppercase;
-	letter-spacing: 2px;
-	text-align: center;
-}
+		/* === TITLE + MEDAL === */
+		.title-container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10mm;
+			margin-top: 25mm;
+			margin-bottom: 2mm;
+		}
 
-.subtitle {
-	margin-top: -25mm;
-	font-size: 18pt;
-	font-weight: bold;
-	color: #2c3e50;
-	margin-bottom: 8mm;
-	text-align: center;
-}
+		.title-container .medal-image {
+			flex-shrink: 0;
+			max-height: 25mm;
+			width: auto;
+		}
+		
+		
 
-.recipient {
-	font-size: 18pt;
-	font-weight: bold;
-	color: #2c3e50;
-	margin: 3mm 0;
-	text-align: center;
-}
+		.title-container .title {
+			font-size: 22pt;
+			font-weight: bold;
+			color: #8b0000;
+			text-transform: uppercase;
+			letter-spacing: 2px;
+			text-align: center;
+		}
 
-.event-description {
-	font-size: 14pt;
-	color: #2c3e50;
-	margin-bottom: 8mm;
-	width: 85%;
-	margin-left: auto;
-	margin-right: auto;
-	line-height: 1.4;
-	text-align: center;
-}
+		.subtitle {
+			margin-top: -25mm;
+			font-size: 18pt;
+			font-weight: bold;
+			color: #2c3e50;
+			margin-bottom: 8mm;
+			text-align: center;
+		}
 
-.certificate-number {
-	font-size: 11pt;
-	font-style: italic;
-	color: gray;
-	margin-bottom: 8mm;
-	text-align: center;
-}
+		.recipient {
+			font-size: 18pt;
+			font-weight: bold;
+			color: #2c3e50;
+			margin: 3mm 0;
+			text-align: center;
+		}
 
-/* === SIGNATORIES === */
-.signatories {
-	margin-top: 10mm;
-	font-size: 12pt;
-	color: #2c3e50;
-	width: 100%;
-	display: table;
-	table-layout: fixed;
-}
+		.event-description {
+			font-size: 14pt;
+			color: #2c3e50;
+			margin-bottom: 8mm;
+			width: 85%;
+			margin-left: auto;
+			margin-right: auto;
+			line-height: 1.4;
+			text-align: center;
+		}
 
-.signatory {
-	display: table-cell;
-	text-align: center;
-	padding: 0 5mm;
-}
+		.certificate-number {
+			margin-left: 8mm;
+			font-size: 9pt;
+			text-align: right;
+		}
 
-.signatory i {
-	font-size: 10pt;
-	color: gray;
-}
+		/* === SIGNATORIES === */
+		.signatories {
+			margin-top: 0;
+			padding-top: 0;
+			font-size: 12pt;
+			color: #2c3e50;
+			width: 100%;
+			display: table;
+			table-layout: fixed;
+		}
 
-/* === FOOTER === */
-.footer {
-	width: 100%;
-	display: table;
-	table-layout: fixed;
-	position: absolute;
-	bottom: 40pt; /* reduced from 60pt */
-	text-align: center;
-	margin-top: 0;
-}
+		.signatory {
+			display: table-cell;
+			text-align: center;
+			padding: 0 5mm;
+		}
 
-.date {
-	font-size: 12pt;
-	color: #2c3e50;
-	text-align: left;
-	display: table-cell;
-}
+		.signatory i {
+			font-size: 10pt;
+			color: gray;
+		}
 
-.seal {
-	width: 35mm;
-	opacity: 0.7;
-	display: table-cell;
-	text-align: right;
-}
+		/* === FOOTER === */
+		.footer {
+			width: 100%;
+			display: table;
+			table-layout: fixed;
+			position: absolute;
+			bottom: 40pt;
+			text-align: center;
+			margin-top: 0;
+		}
 
-/* === BOTTOM BAR === */
-.bottom-bar {
-	position: absolute;
-	bottom: 50pt; /* keep 10pt from page bottom */
-	right: 0;
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	align-items: right;
-	padding: 0 10mm;
-	box-sizing: border-box;
-}
+		.date {
+			font-size: 12pt;
+			color: #2c3e50;
+			text-align: left;
+			display: table-cell;
+		}
 
-.bottom-bar .verification {
-	font-size: 9pt;
-	font-style: italic;
-	color: gray;
-}
+		.seal {
+			width: 35mm;
+			opacity: 0.7;
+			display: table-cell;
+			text-align: right;
+		}
 
-.bottom-bar .qr-container img {
-	width: 100px;
-	height: 100px;
-}
-</style>
+		/* === BOTTOM BAR === */
+		/* FIX: remove absolute positioning to stay with content flow */
+		.bottom-bar {
+			width: 100%;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			padding: 0 10mm;
+			box-sizing: border-box;
+			margin-top: 4mm;
+			padding-bottom: 4mm;
+		}
+
+		.bottom-bar .verification {
+			font-size: 9pt;
+			font-style: italic;
+			color: gray;
+		}
+
+		.bottom-bar .qr-container img {
+			width: 100px;
+			height: 100px;
+		}
+
+		/* === PLACE/DATE + BOTTOM-BAR COMBINED ROW === */
+		/* FIX: wrapper to put place/date left and bottom-bar right on same level */
+		.info-and-bottom-row {
+			display: table;
+			width: 95%;
+			margin: 4mm auto 0;
+			padding: 0 5mm 2mm 8mm;
+			table-layout: fixed;
+			box-sizing: border-box;
+		}
+
+		.place-date-block {
+			display: table-cell;
+			width: 32%;
+			vertical-align: top;
+			text-align: left;
+			font-size: 12pt;
+		}
+
+		.verification-block {
+			display: table-cell;
+			width: 68%;
+			text-align: right;
+			/*vertical-align: top;*/
+		}
+
+		/* subheading row: medal left, text centered on page */
+		.subheading-row {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+
+			margin-top: -8mm;
+			margin-bottom: -2mm;
+		}
+
+		.subheading-row .medal-left {
+			height: 20mm;
+			position: absolute;
+			left: 10mm;
+		}
+
+		.subheading-row .subheading-text {
+			text-align: center;
+		}
+	</style>
 </head>
+
 <body>
 	<div class="certificate-page">
 
-		<!-- === TOP BAR === -->
-		<div class="top-bar">
-			<div class="affiliation-top">
-				<div class="federation-row">
-					<img class="logo-small"
-						th:src="@{classpath:/static/images/logo.png}"
-						alt="Organization Logo" />
+	    <div class="top-bar">
+	        <div class="affiliation-top">
 
-					<div class="federation-text">THIRUVANANTHAPURAM KALARIPPAYATTU ASSOCIATION
-						</div>
-					<img class="logo-small"
-						th:src="@{classpath:/static/images/branch.png}"
-						alt="Organization Logo" />
-				</div>
-				
-				<div class="affiliation-text">
-					Recognized by 
-				</div>
-				
-				<div class="federation-text federation-text-small">KERLA KALARIPPAYATTU ASSOCIATION</div>
-								<div class="affiliation-text">
-					Affilated to  
-				</div>
-				
-				<div class="federation-text federation-text-small">INDIAN KALARIPPAYATTU FEDERATION</div>
-				<div class="affiliation-text">
-					Recognized by the Ministry of Youth Affairs and Sports, Govt. of
-					India<br /> Affiliated to the All India Council of Sports &amp;
-					International Kalarippayattu Federation
-				</div>
-				
-			</div>
-		</div>
+	            <!-- Association Name -->
+	            <div class="federation-text" th:text="${districtName}">
+	                TRIVANDRUM DISTRICT KALARIPPAYATTU ASSOCIATION
+	            </div>
 
-		<!-- === TITLE SECTION === -->
-		<div class="title-container" style="margin-top: 25mm;">
-			<div class="title">Trivandrum District Kalarippayattu
-				Championship - 2025</div>
-			<img class="medal-image"
-				th:src="@{classpath:/static/images/GOLD.png}"
-				th:alt="${medalType} + ' Medal'" />
-		</div>
+	            <!-- Tagline -->
+	            <div class="affiliation-text" th:text="${branchCertTagLine}">
+	                Affiliated to the District Sports Council, Thiruvananthapuram
+	            </div>
 
-		<div class="subtitle">Certificate of Achievement</div>
+	            <!-- State Logo -->
+	            <div class="logo-container">
+	                <img
+	                    class="logo-small logo-state"
+	                    style="
+	                        height: 32mm;
+	                        width: auto;
+	                        position: relative;
+	                        top: -5mm;
+	                        align-self: flex-start;
+	                    "
+	                    th:if="${stateLogo != null}"
+	                    th:src="${stateLogo}"
+	                    alt="State Logo" />
+	            </div>
 
-		<div class="recipient"
-			th:text="'Sri/Smt/Kumari: ' + ${participantName}">
-			Sri/Smt/Kumari: Ranjith K.</div>
+	            <!-- Championship + Medal badge row -->
+	            <div class="subheading-row">
 
-		<div class="event-description"
-			th:text="'has participated in the ' + ${eventName} + ' held at ' + ${eventLocation} + ' on ' + ${#temporals.format(resultDate, 'dd MMMM yyyy')}">
-			has participated in the National Kalarippayattu Seminar held at India
-			Habitat Centre, New Delhi on 28th March 2018.</div>
+	                <!-- Medal: hidden for PARTICIPATION -->
+	                <img
+	                    class="medal-left"
+	                    style="
+	                        height: 25mm;
+	                        width: auto;
+	                        position: absolute;
+	                        left: 25mm;
+	                        top: 0;
+	                        align-self: flex-start;
+	                    "
+	                    th:if="${medalType != 'PARTICIPATION'}"
+	                    th:src="${medalImage}"
+	                    th:alt="${medalType} + ' Medal'" />
+						
+						
+						<!-- Participant Photo -->
+						<img
+						    class="participant-right"
+						    style="
+						        height:40mm;
+						        width:auto;
 
-		<div class="certificate-number" style="margin-top: 15mm;">
-			 <span th:text="${certificateNumber}">No. Delhi/18</span>
-		</div>
+						        position:absolute;
+								right:15mm;
+								top:-10mm;
 
-		<div class="signatories" style="margin-top: 27mm;">
-			<div class="signatory">
-				M. Krishnamoorthy IPS<br /> <i>DGP (Retd.), Chairman,
-					Organizing Committee</i>
-			</div>
-			<div class="signatory">
-				P. Jayaraj<br /> <i>Organizing Secretary</i>
-			</div>
-			<div class="signatory">
-				K. Jayaraj<br /> <i>Chairman, Indian Kalarippayattu Federation</i>
-			</div>
-			<div class="signatory">
-				Adv. Poonthura Soman<br /> <i>General Secretary, Indian
-					Kalarippayattu Federation</i>
-			</div>
-		</div>
+						        align-self:flex-start;
 
-		<!-- === FOOTER === -->
-		<div class="footer">
-			<div class="date"
-				th:text="${#temporals.format(resultDate, 'MMMM dd, yyyy')}">Date</div>
-			<img class="seal" th:src="@{classpath:/static/images/seal.png}"
-				alt="Official Seal" />
-		</div>
+						        border:1px solid #c9b26d;
+						        padding:1mm;
 
-		<!-- === BOTTOM BAR === -->
-		<div class="bottom-bar">
-			<div class="verification">
-				<i>Verification ID: <span th:text="${verificationIdMasked}"></span></i><br />
-				<small class="sig-note">(Digitally signed by IKF Authority)</small>
-			</div>
-			<div class="qr-container">
-				<img th:src="@{${qrImagePath}}" alt="QR Code" />
-			</div>
-		</div>
+						        background:#fff;
+						    "
+						    th:if="${participantPhoto != null}"
+						    th:src="${participantPhoto}"
+						    alt="Participant Photo"/>
 
+	                <div class="subheading-text">
+	                    <div class="certificate-title">District Championship</div>
+	                    <!-- Title switches based on medalType -->
+	                    <div class="certificate-subtitle"
+	                         th:text="${medalType == 'PARTICIPATION'} ? 'Certificate [SAMPLE] of Participation' : 'Merit Certificate [SAMPLE]'">
+	                        Merit Certificate
+	                    </div>
+	                </div>
+					
+					
+	            </div>
+
+	        </div>
+	    </div>
+
+	    <!-- Event description: MERIT (GOLD/SILVER/BRONZE) -->
+	    <div class="event-description"
+	         th:if="${medalType != 'PARTICIPATION'}"
+	         style="line-height: 1.6;">
+	        This is to certify that
+	        <b th:text="${participantTitle}">Mr</b>
+	        <b th:text="${participantName}">Participant</b>,
+	        representing
+	        <b th:text="${certificateDistrict}">Thiruvananthapuram</b>,
+
+	        <div>
+	            secured
+	            <b th:text="${securedPlace}">First</b>
+	            Place in the
+	            <b th:text="${certificateDistrict}">District</b>
+	            District Kalarippayattu Competitions
+	            <b th:text="${certificateYear}">2026</b>
+	        </div>
+
+	        <div>
+	            in the
+	            <b th:text="${certificateCategory}">SENIOR MALE</b>
+	            Category in the
+	            <b th:text="${certificateItem}">Chuvadukal</b>
+	            event.
+	        </div>
+	    </div>
+
+	    <!-- Event description: PARTICIPATION -->
+	    <div class="event-description"
+	         th:if="${medalType == 'PARTICIPATION'}"
+	         style="line-height: 1.6;">
+	        This is to certify that
+	        <b th:text="${participantTitle}">Mr</b>
+	        <b th:text="${participantName}">Participant</b>,
+	        representing
+	        <b th:text="${certificateDistrict}">Thiruvananthapuram</b>,
+
+	        <div>
+	            participated in the
+	            <b th:text="${certificateDistrict}">District</b>
+	            District Kalarippayattu Competitions
+	            <b th:text="${certificateYear}">2026</b>
+	        </div>
+
+	        <div>
+	            in the
+	            <b th:text="${certificateCategory}">SENIOR MALE</b>
+	            Category in the
+	            <b th:text="${certificateItem}">Chuvadukal</b>
+	            event.
+	        </div>
+	    </div>
+
+
+	    <!-- Place/date LEFT + bottom-bar RIGHT — unchanged -->
+	    <div class="info-and-bottom-row" style="margin-top:18mm;">
+
+	        <div class="place-date-block" style="margin-top:5mm;">
+	            <div>
+	                <b>Place:</b>
+	                <span th:text="${certificatePlace}">Thiruvananthapuram</span>
+	            </div>
+	            <div>
+	                <b>Date:</b>
+	                <span th:text="${#temporals.format(certificateDate,'dd MMM yyyy')}">23 May 2026</span>
+	            </div>
+	        </div>
+
+	        <div class="verification-block">
+	            <div style="display:inline-flex; align-items:flex-start; gap:8mm;">
+
+	                <div class="qr-container" style="position:relative; top:-10mm;">
+	                    <img th:src="@{${qrImagePath}}" alt="QR Code"/>
+	                </div>
+
+	                <div class="certificate-number" style="position:relative; top:-8mm;">
+						Certificate No:
+						<span th:text="${certificateNo}"></span>
+	                </div>
+
+					<div style="position:relative; top:-8mm; font-size:9px; color:#777; opacity:0.65;">
+					    <i>
+					        Verification ID:
+					        <span th:text="${verificationIdMasked}"></span>
+					    </i>
+					</div>
+
+	            </div>
+	        </div>
+
+	    </div>
+
+
+	    <div class="signatories" style="margin-top: -5mm; margin-bottom: 3mm;">
+
+	        <!-- President — unchanged -->
+	        <div class="signatory">
+	            <div style="height:22mm; display:flex; justify-content:center; align-items:center; margin-bottom:1mm;">
+	                <img
+	                    th:if="${signatories.size() > 0 and signatories[0].signature != null}"
+	                    th:src="${signatories[0].signature}"
+	                    style="max-height:20mm; max-width:38mm; display:block;"
+	                    alt="Signature"/>
+	                <div th:unless="${signatories.size() > 0 and signatories[0].signature != null}"
+	                     style="height:16mm;"></div>
+	            </div>
+	            <div th:text="${signatories.size() > 0 ? signatories[0].name : ''}">R. Sreedharan Nair</div>
+	            <i th:text="${signatories.size() > 0 ? signatories[0].designation : ''}">President</i>
+	            <div><i th:text="${districtName}">Branch</i></div>
+	        </div>
+
+	        <!-- Secretary — unchanged -->
+	        <div class="signatory">
+	            <div style="height:22mm; display:flex; justify-content:center; align-items:center; margin-bottom:1mm;">
+	                <img
+	                    th:if="${signatories.size() > 1 and signatories[1].signature != null}"
+	                    th:src="${signatories[1].signature}"
+	                    style="max-height:14mm; max-width:38mm; display:block;"
+	                    alt="Signature"/>
+	                <div th:unless="${signatories.size() > 1 and signatories[1].signature != null}"
+	                     style="height:16mm;"></div>
+	            </div>
+	            <div th:text="${signatories.size() > 1 ? signatories[1].name : ''}">G. Radhakrishnan</div>
+	            <i th:text="${signatories.size() > 1 ? signatories[1].designation : ''}">Secretary</i>
+	            <div><i th:text="${districtName}">Branch</i></div>
+	        </div>
+
+	        <!-- Observer — unchanged -->
+	        <div class="signatory">
+	            <div style="height:18mm;"></div>
+	            <div>Observer</div>
+	            <i>District Sports Council,</i>
+	            <div><i th:text="${certificatePlace}">Branch</i></div>
+	        </div>
+
+	    </div>
 
 	</div>
 </body>
+
 </html>

@@ -171,6 +171,10 @@ public class MemberEventItem extends BaseEntity {
     private String memberEventTeamCode;
     
     
+    @Column(name="mei_certificate_no")
+    private String meiCertificateNo;
+    
+    
     // Use a single, static ObjectMapper with JavaTimeModule
     @Transient
     private static final ObjectMapper mapper = new ObjectMapper()

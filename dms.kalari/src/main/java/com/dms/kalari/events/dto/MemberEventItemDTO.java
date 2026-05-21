@@ -61,4 +61,7 @@ public class MemberEventItemDTO extends BaseDTO {
     
     private String memberEventTeamCode;    
     
+    private String meiCertificateNo;  
+    
+    
 }

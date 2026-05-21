@@ -82,6 +82,8 @@ public class NodeDTO extends BaseDTO {
     
     private String branchCode;
     
+    private String branchCertTagLine;
+    
     private UUID branchRandomId;
     
     

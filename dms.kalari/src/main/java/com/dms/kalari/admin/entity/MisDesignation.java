@@ -40,4 +40,11 @@ public class MisDesignation extends BaseEntity {
     @Column(name = "desig_level")
     private Node.Type desigLevel;
     
+    @Column(name = "desig_order")
+    private Integer desigOrder;
+
+    // Y / N flag
+    @Column(name = "desig_signatories", length = 1)
+    private String desigSignatories;
+    
 }

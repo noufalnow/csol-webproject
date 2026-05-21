@@ -1,6 +1,9 @@
 package com.dms.kalari.branch.controller;
 
 import jakarta.validation.Valid;
+import net.coobird.thumbnailator.Thumbnails;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,13 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dms.kalari.branch.dto.NodeDTO;
-import com.dms.kalari.branch.dto.NodeFlatDTO;
 import com.dms.kalari.branch.entity.Node;
 import com.dms.kalari.branch.repository.NodeRepository;
 import com.dms.kalari.branch.service.NodeService;
@@ -25,9 +26,9 @@ import com.dms.kalari.core.entity.CoreFile;
 import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
-
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,11 +41,15 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 	
 	private final NodeRepository nodeRepository;
 	private final CoreFileRepository coreFileRepository;
+	
+	@Value("${app.upload.base-path}")
+	private String BASE_PATH;
 
 	public NodeController(NodeService nodeService,NodeRepository nodeRepository,CoreFileRepository coreFileRepository) {
 		super(nodeService);
 		this.nodeRepository = nodeRepository;
 		this.coreFileRepository = coreFileRepository;
+		
 	}
 	
 	
@@ -266,10 +271,118 @@ public class NodeController extends BaseController<NodeDTO, NodeService> {
 		model.addAttribute("groupedTree", treeData.get("grouped"));
 		model.addAttribute("rootNode", treeData.get("rootNode"));
 		model.addAttribute("parentId", treeData.get("parentId")); // 👈 pass to view
+		
+
 
 	    
 		model.addAttribute("pageTitle", "Organizational Structure");
 		return "fragments/nodes/node_tree";
+	}
+	
+	
+	private String resolveNodeLogoPath(Node ignored) {
+
+	    Long testNodeId = 9L; // temporary
+
+	    Node node =
+	            nodeRepository
+	                    .findByIdAndNotDeleted(testNodeId)
+	                    .orElse(null);
+
+	    if (node == null) {
+	        System.out.println("NODE NOT FOUND");
+	        return null;
+	    }
+
+	    System.out.println("NODE=" + node.getNodeName());
+	    System.out.println("PHOTO FILE=" + node.getPhotoFile());
+
+	    if (node.getPhotoFile() == null) {
+	        return null;
+	    }
+
+	    CoreFile file =
+	            coreFileRepository
+	                    .findById(node.getPhotoFile())
+	                    .orElse(null);
+
+	    if (file == null || file.getFilePath() == null) {
+	        System.out.println("FILE NULL");
+	        return null;
+	    }
+
+	    String relativePath =
+	            file.getFilePath();
+
+
+	    System.out.println("PATH=" + relativePath);
+
+	    File originalFile =
+		        new File(
+		                BASE_PATH,
+		                relativePath
+		        );
+
+	    System.out.println("ABS=" + originalFile.getAbsolutePath());
+	    System.out.println("EXISTS=" + originalFile.exists());
+	    System.out.println("IS FILE=" + originalFile.isFile());
+	    System.out.println("CAN READ=" + originalFile.canRead());
+
+	    if (!originalFile.exists()
+	            || !originalFile.isFile()
+	            || !originalFile.canRead()) {
+
+	        System.out.println("ORIGINAL NOT FOUND");
+
+	        return null;
+	    }
+
+	    File thumbnailDir =
+	            new File(
+	                    originalFile.getParentFile(),
+	                    "thumbnails"
+	            );
+
+	    if (!thumbnailDir.exists()) {
+	        thumbnailDir.mkdirs();
+	    }
+
+	    File thumbnail =
+	            new File(
+	                    thumbnailDir,
+	                    node.getPhotoFile() + ".jpg"
+	            );
+
+	    try {
+
+	        if (!thumbnail.exists()) {
+
+	            Thumbnails.of(originalFile)
+	                    .size(300, 300)
+	                    .outputFormat("jpg")
+	                    .toFile(thumbnail);
+
+	            System.out.println(
+	                    "CREATED="
+	                    + thumbnail.getAbsolutePath()
+	            );
+	        }
+
+	    } catch (Exception e) {
+
+	        e.printStackTrace();
+
+	        thumbnail =
+	                originalFile;
+	    }
+
+	    String uri =
+		    "file:" +
+		    thumbnail.toURI().getPath();
+
+		System.out.println("RETURN=" + uri);
+
+		return uri;
 	}
 	
 	

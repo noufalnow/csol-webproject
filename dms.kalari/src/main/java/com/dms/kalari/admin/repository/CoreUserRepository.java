@@ -81,6 +81,22 @@ public interface CoreUserRepository extends BaseRepository<CoreUser, Long> {
     	        @Param("userType") UserType userType);
     
     
+    @Query("""
+	    SELECT u
+	    FROM CoreUser u
+	    LEFT JOIN FETCH u.designation d
+	    WHERE u.userNode.id = :nodeId
+	      AND u.userType = :userType
+	      AND u.deleted = false
+	      AND u.userStatus = 1
+	      AND d.desigSignatories = 'Y'
+	    ORDER BY d.desigOrder ASC, u.userFname ASC
+	""")
+	List<CoreUser> findBranchSignatories(
+	        @Param("nodeId") Long nodeId,
+	        @Param("userType") UserType userType);
+    
+    
     // Fetch users by node ID and type with related entities
     @Query("SELECT u FROM CoreUser u " +
            "LEFT JOIN FETCH u.designation " +

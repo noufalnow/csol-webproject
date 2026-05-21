@@ -293,6 +293,75 @@ public class EventService implements BaseService<EventDTO> {
 	}
 	
 	
+	public List<Object[]> getMemberEventVerification(Long meiId) {
+
+	    String sql = """
+	        SELECT
+
+	            mei.mei_id,
+
+	            mei.mei_event_id,
+	            mei.mei_member_id,
+	            mei.mei_member_node,
+
+	            mei.mei_item_id,
+	            mei.mei_item_name,
+
+	            mei.mei_score,
+	            mei.mei_grade,
+
+
+	            cu.user_fname || ' ' || cu.user_lname
+	                AS member_name,
+
+	            n.node_name
+	                AS member_node_name,
+
+	            e.event_name,
+
+	            mei.mei_event_year,
+
+	            mei.mei_certificate_status,
+
+	            mei.mei_category,
+	            mei.mei_gender,
+	            mei.mei_chest_no,
+
+	            TO_CHAR(
+	                mei.t_created,
+	                'DD/MM/YYYY'
+	            ) AS certificate_date
+
+	        FROM member_events_items mei
+
+	        LEFT JOIN core_users cu
+	            ON cu.user_id = mei.mei_member_id
+
+	        LEFT JOIN nodes n
+	            ON n.node_id = mei.mei_member_node
+
+	        LEFT JOIN events e
+	            ON e.event_id = mei.mei_event_id
+
+	        WHERE COALESCE(mei.deleted,false)=false
+	        AND mei.mei_id=:meiId
+	        """;
+
+	    Query query =
+	        entityManager.createNativeQuery(
+	            sql,
+	            Tuple.class
+	        );
+
+	    query.setParameter(
+	        "meiId",
+	        meiId
+	    );
+
+	    return query.getResultList();
+	}
+	
+	
 	public List<Object[]> findAllEventsApplicable(Long nodeId) {
 		// return eventRepository.findEventsByMemberAndNodeHierarchy(nodeId, userId);
 
