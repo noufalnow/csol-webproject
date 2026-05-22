@@ -96,13 +96,17 @@
 
 								<!-- Grade -->
 								<div class="col-md-2 text-center">
-									<label class="form-label">Grade</label>
-									<div class="fw-semibold text-success"
-										th:text="${mei.memberEventGrade != null ? mei.memberEventGrade.name() : '-'}"></div>
+								    <label class="form-label">Grade</label>
+								    <div class="fw-semibold text-success"
+								         th:text="${mei.memberEventGrade != null ? mei.memberEventGrade.name() : '-'}">
+								    </div>
 								</div>
 
-								<div class="col-md-2 text-center">
+								<div class="col-md-2 text-center"
+								     th:if="${mei.memberEventGrade != null}">
+								    
 								    <label class="form-label d-block">Approve</label>
+
 								    <input type="checkbox"
 								           class="form-check-input custom-approve-checkbox"
 								           th:name="${'approved[' + mei.meiId + ']'}"
