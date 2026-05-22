@@ -328,13 +328,67 @@
 	  }
 	  
 	  
+	  table {
+	    font-size: 7.5pt;
+	    border-collapse: collapse !important;
+	    width: 100% !important;
+	  }
+
+	  th, td {
+	    padding: 2px 6px !important;
+	    line-height: 1.15 !important;
+	  }
+
+	  .custom-score-table thead th {
+	    font-size: 7pt;
+	    padding: 2px 6px !important;
+	  }
+
+	  .custom-score-table tbody td {
+	    font-size: 7.5pt;
+	    padding: 2px 6px !important;
+	  }
+	  
+	  
+	  .item-heading {
+	    padding: 6px 10px !important;
+	    font-size: 10pt !important;
+	  }
+
+	  .gender-heading {
+	    padding: 4px 10px !important;
+	    font-size: 9pt !important;
+	    margin-bottom: 4px !important;
+	  }
+
+	  .category-heading {
+	    padding: 4px 10px !important;
+	    font-size: 9pt !important;
+	    margin-bottom: 4px !important;
+	  }
+
+	  .gender-block {
+	    padding: 6px 8px 4px !important;
+	  }
+
+	  .summary-bar {
+	    padding: 4px 10px !important;
+	    margin-top: 4px !important;
+	    font-size: 7.5pt !important;
+	  }
+
+	  .mb-4 {
+	    margin-bottom: 8px !important;
+	  }
+	  
+	  
 	}
 
 	/* ══════════════════════════════════
 	   MOBILE  ≤ 767px
 	   ONE clean block — no duplicates
 	══════════════════════════════════ */
-	@media (max-width: 767px) {
+	@media screen and (max-width: 767px) {
 		
 		
 		/* MOBILE SCROLL FREEZE FIX */
@@ -390,13 +444,13 @@
 	  }
 	}
 
-	@media (max-width: 400px) {
+	@media screen and (max-width: 400px) {
 	  .event-header .event-name { font-size: 15px; }
 	  .item-heading { font-size: 12px; }
 	}
 
 	/* ── Desktop ≥ 768px ── */
-	@media (min-width: 768px) {
+	@media screen and (min-width: 768px) {
 	  .item-block .participant-cards { display: none !important; }
 	  .item-block .table-responsive { display: block !important; }
 	  .page-wrapper { padding-bottom: 72px; }
