@@ -97,74 +97,90 @@
 						            </div>
 
 						            <!-- Judge Scores -->
-						            <div class="col-12 col-md-9">
-						                <div class="score-panel">
-						                    <div class="judge-wrapper d-flex flex-wrap gap-1 align-items-center">
+							            <div class="col-12 col-md-9">
+							                <div class="score-panel">
+							                    <div class="judge-wrapper d-flex flex-wrap gap-1 align-items-center">
+	
+							                        <!-- GENERATED -->
+							                        <div th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+							                            class="d-flex flex-wrap align-items-center gap-2">
+							                            <div class="avg-box">
+							                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+							                            </div>
+							                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
+							                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
+							                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
+														<a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+														   download
+														   class="badge bg-warning text-dark text-decoration-none">
 
-						                        <!-- GENERATED -->
-						                        <div th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
-						                            class="d-flex flex-wrap align-items-center gap-2">
-						                            <div class="avg-box">
-						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
-						                            </div>
-						                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
-						                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
-						                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
-						                            <span class="badge bg-dark" th:text="${mei.memberEventGrade?.name()}"></span>
-						                            <a th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
-						                               download class="badge bg-warning text-dark text-decoration-none">
-						                                <i class="fas fa-download me-1"></i> Download
-						                            </a>
-						                        </div>
+														    <span th:text="${mei.memberEventGrade?.name()}"></span>
+														    <span class="mx-1">|</span>
+														    <i class="fas fa-download"></i>
 
-						                        <!-- APPROVED -->
-						                        <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
-						                                     and mei.certificateStatus?.name() != 'GENERATED'}"
-						                            class="d-flex flex-wrap align-items-center gap-2">
-						                            <div class="avg-box">
-						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
-						                            </div>
-						                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
-						                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
-						                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
-						                            <span class="badge bg-success">Approved</span>
-						                        </div>
+														</a>
+							                        </div>
+	
+							                        <!-- APPROVED -->
+							                        <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
+							                                     and mei.certificateStatus?.name() != 'GENERATED'}"
+							                            class="d-flex flex-wrap align-items-center gap-2">
+							                            <div class="avg-box">
+							                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+							                            </div>
+							                            <span class="badge bg-secondary">J1: <span th:text="${mei.memberScore1}"></span></span>
+							                            <span class="badge bg-secondary">J2: <span th:text="${mei.memberScore2}"></span></span>
+							                            <span class="badge bg-secondary">J3: <span th:text="${mei.memberScore3}"></span></span>
+							                            <span class="badge bg-success">Approved</span>
+							                        </div>
+	
+							                        <!-- EDITABLE -->
+							                        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
+							                            class="d-flex flex-wrap gap-1 align-items-center">
+	
+														<input type="text"
+														       class="form-control judge-score"
+														       th:name="${'score1[' + mei.meiId + ']'}"
+														       th:value="${mei.memberScore1}"
+														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
+														       placeholder="Judge 1"
+														       oninput="validateScore(this)"
+														       onblur="calculateAverage(this)" />
 
-						                        <!-- EDITABLE -->
-						                        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
-						                            class="d-flex flex-wrap gap-1 align-items-center">
+														<input type="text"
+														       class="form-control judge-score"
+														       th:name="${'score2[' + mei.meiId + ']'}"
+														       th:value="${mei.memberScore2}"
+														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
+														       placeholder="Judge 2"
+														       oninput="validateScore(this)"
+														       onblur="calculateAverage(this)" />
 
-						                            <input type="text" class="form-control judge-score"
-						                                   th:name="${'score1[' + mei.meiId + ']'}"
-						                                   th:value="${mei.memberScore1}"
-						                                   placeholder="Judge 1" onblur="calculateAverage(this)" />
-
-						                            <input type="text" class="form-control judge-score"
-						                                   th:name="${'score2[' + mei.meiId + ']'}"
-						                                   th:value="${mei.memberScore2}"
-						                                   placeholder="Judge 2" onblur="calculateAverage(this)" />
-
-						                            <input type="text" class="form-control judge-score"
-						                                   th:name="${'score3[' + mei.meiId + ']'}"
-						                                   th:value="${mei.memberScore3}"
-						                                   placeholder="Judge 3" onblur="calculateAverage(this)" />
-
-						                            <!-- Hidden inputs for remaining members sharing same chest number -->
-						                            <th:block th:each="extraMei, iterStat : ${chestEntry.value}"
-						                                      th:if="${iterStat.index > 0}">
-						                                <input type="hidden" th:name="${'score1[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore1}" />
-						                                <input type="hidden" th:name="${'score2[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore2}" />
-						                                <input type="hidden" th:name="${'score3[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore3}" />
-						                            </th:block>
-
-						                            <div class="avg-box">
-						                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
-						                            </div>
-						                        </div>
-
-						                    </div>
-						                </div>
-						            </div>
+														<input type="text"
+														       class="form-control judge-score"
+														       th:name="${'score3[' + mei.meiId + ']'}"
+														       th:value="${mei.memberScore3}"
+														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
+														       placeholder="Judge 3"
+														       oninput="validateScore(this)"
+														       onblur="calculateAverage(this)" />
+	
+							                            <!-- Hidden inputs for remaining members sharing same chest number -->
+							                            <th:block th:each="extraMei, iterStat : ${chestEntry.value}"
+							                                      th:if="${iterStat.index > 0}">
+							                                <input type="hidden" th:name="${'score1[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore1}" />
+							                                <input type="hidden" th:name="${'score2[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore2}" />
+							                                <input type="hidden" th:name="${'score3[' + extraMei.meiId + ']'}" th:value="${extraMei.memberScore3}" />
+							                            </th:block>
+	
+							                            <div class="avg-box">
+							                                <span class="avg-score" th:text="${mei.memberEventScore}">0.00</span>
+							                            </div>
+							                        </div>
+	
+							                    </div>
+							                </div>
+							            </div>
 
 
 						        </div>
@@ -284,42 +300,46 @@
 
 
 	function validateScore(input) {
-		let value = input.value;
 
-		// Remove any non-digit or non-dot characters
-		value = value.replace(/[^0-9.]/g, '');
+	    let value = input.value;
 
-		// Ensure only one decimal point
-		const parts = value.split('.');
-		if (parts.length > 2) {
-			value = parts[0] + '.' + parts.slice(1).join('');
+	    //const evitemId = Number(input.dataset.evitemId);
+
+	    // ids with max=12
+		const evitemId = input.dataset.evitemId ? Number(input.dataset.evitemId) : null;
+		const maxScore = [3, 12].includes(evitemId) ? 12 : 10;
+
+	    value = value.replace(/[^0-9.]/g, '');
+
+	    const parts = value.split('.');
+	    if (parts.length > 2) {
+	        value = parts[0] + '.' + parts.slice(1).join('');
+	    }
+
+	    const updatedParts = value.split('.');
+
+	    if (updatedParts.length === 2 && updatedParts[1].length > 2) {
+	        value = updatedParts[0] + '.' + updatedParts[1].substring(0, 2);
+	    }
+
+	    const num = parseFloat(value);
+
+	    if (!isNaN(num) && num > maxScore) {
+	        value = maxScore.toFixed(2);
+	    }
+
+	    input.value = value;
+
+		if (value === '') {
+		    input.classList.remove('is-valid', 'is-invalid');
 		}
-
-		// Re-split after cleanup
-		let updatedParts = value.split('.');
-
-		// Limit decimal places to 2
-		if (updatedParts.length === 2 && updatedParts[1].length > 2) {
-			value = updatedParts[0] + '.' + updatedParts[1].substring(0, 2);
+		else if (!isNaN(num) && num <= maxScore) {
+		    input.classList.remove('is-invalid');
+		    input.classList.add('is-valid');
 		}
-
-		// Enforce max score = 10
-		if (parseFloat(value) > 10) {
-			value = '00';
-		}
-
-		input.value = value;
-
-		// Visual feedback
-		if (
-			value === '' ||
-			(/^\d*\.?\d*$/.test(value) && parseFloat(value) <= 10)
-		) {
-			input.classList.remove('is-invalid');
-			input.classList.add('is-valid');
-		} else {
-			input.classList.remove('is-valid');
-			input.classList.add('is-invalid');
+		else {
+		    input.classList.remove('is-valid');
+		    input.classList.add('is-invalid');
 		}
 	}
 

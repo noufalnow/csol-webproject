@@ -711,7 +711,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	    model.addAttribute("isNotKalari", true);
 
-	    matrix = memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category);
+	    matrix = memberEventItemService.getParticipationMatrix(eventId, itemId, gender, category,null,viewType);
 	}
 
 	model.addAttribute("eventRecord", eventRecord);
@@ -744,7 +744,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	case "tabsheet":
 	    model.addAttribute("pageTitle", "Tab Sheet");
-	    model.addAttribute("distinctMatrix", deduplicateMatrix(matrix));
+	    model.addAttribute("distinctMatrix", deduplicateMatrixScore(matrix));
 	    return "events/tabsheet";
 
 	case "finallist":
@@ -858,6 +858,33 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
 	return result;
     }
+    
+    private Map<String, Map<String, Map<String, List<MemberEventItem>>>> deduplicateMatrixScore(
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix) {
+
+	    Map<String, Map<String, Map<String, List<MemberEventItem>>>> result = new LinkedHashMap<>();
+
+	    matrix.forEach((itemName, genderMap) -> {
+	        Map<String, Map<String, List<MemberEventItem>>> newGenderMap = new LinkedHashMap<>();
+	        genderMap.forEach((gender, categoryMap) -> {
+	            Map<String, List<MemberEventItem>> newCategoryMap = new LinkedHashMap<>();
+	            categoryMap.forEach((category, meiList) -> {
+	                // Deduplicate by chestNo, but preserve query order (score DESC)
+	        	Map<Long, MemberEventItem> seen = new LinkedHashMap<>();
+	        	for (MemberEventItem mei : meiList) {
+	        	    if (mei.getMemberChestNo() != null) {
+	        	        seen.putIfAbsent(mei.getMemberChestNo(), mei);
+	        	    }
+	        	}
+	                newCategoryMap.put(category, new ArrayList<>(seen.values()));
+	            });
+	            newGenderMap.put(gender, newCategoryMap);
+	        });
+	        result.put(itemName, newGenderMap);
+	    });
+
+	    return result;
+	}
 
     @GetMapping("/participants_score/{eventid}")
     public String eventScoreEntry(@PathVariable("eventid") Long mEventId, @RequestParam(required = false) Long itemId,

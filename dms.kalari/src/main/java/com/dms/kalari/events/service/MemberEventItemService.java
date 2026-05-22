@@ -672,6 +672,23 @@ public class MemberEventItemService {
 	            itemId,
 	            fGender,
 	            fCategory,
+	            null,
+	            null
+	    );
+	}
+	
+	public Map<String, Map<String, Map<String, List<MemberEventItem>>>> getParticipationMatrix(
+	        Long eventId,
+	        Long itemId,
+	        CoreUser.Gender fGender,
+	        EventItemMap.Category fCategory,Long opMyNodeId) {
+
+	    return getParticipationMatrix(
+	            eventId,
+	            itemId,
+	            fGender,
+	            fCategory,
+	            opMyNodeId,
 	            null
 	    );
 	}
@@ -681,10 +698,11 @@ public class MemberEventItemService {
 	        Long itemId,
 	        CoreUser.Gender fGender,
 	        EventItemMap.Category fCategory,
-	        Long opMyNodeId) {
+	        Long opMyNodeId,
+	        String viewType) {
 
 	    List<MemberEventItem> items = memberEventItemRepository
-	            .findByEventIdWithFilters(eventId, itemId, fGender, fCategory, opMyNodeId);
+	            .findByEventIdWithFilters(eventId, itemId, fGender, fCategory, opMyNodeId, viewType);
 
         Map<String, Map<String, Map<String, List<MemberEventItem>>>> matrix = new LinkedHashMap<>();
         
