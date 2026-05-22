@@ -83,6 +83,7 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 	          AND (:category IS NULL OR mei.memberEventCategory = :category)
 	          AND (:memberNode IS NULL OR n.nodeId = :memberNode)
 	        ORDER BY
+		    mei.memberChestNo ASC,
 	            n.nodeName ASC,
 	            ei.evitemName ASC,
 	            mei.memberEventGender ASC,
