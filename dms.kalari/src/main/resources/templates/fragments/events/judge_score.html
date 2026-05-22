@@ -145,7 +145,7 @@
 														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
 														       placeholder="Judge 1"
 														       oninput="validateScore(this)"
-														       onblur="calculateAverage(this)" />
+														       onblur="calculateSum(this)" />
 
 														<input type="text"
 														       class="form-control judge-score"
@@ -154,7 +154,7 @@
 														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
 														       placeholder="Judge 2"
 														       oninput="validateScore(this)"
-														       onblur="calculateAverage(this)" />
+														       onblur="calculateSum(this)" />
 
 														<input type="text"
 														       class="form-control judge-score"
@@ -163,7 +163,7 @@
 														       th:data-evitem-id="${mei.memberEventItem.evitemId}"
 														       placeholder="Judge 3"
 														       oninput="validateScore(this)"
-														       onblur="calculateAverage(this)" />
+														       onblur="calculateSum(this)" />
 	
 							                            <!-- Hidden inputs for remaining members sharing same chest number -->
 							                            <th:block th:each="extraMei, iterStat : ${chestEntry.value}"
@@ -391,7 +391,7 @@
 
 <script>
 
-	function calculateAverage(input) {
+	function calculateSum(input) {
 
 		validateScore(input);
 
@@ -402,25 +402,17 @@
 		const inputs = wrapper.querySelectorAll('.judge-score');
 
 		let sum = 0;
-		let count = 0;
 
 		inputs.forEach(field => {
-
 			const value = parseFloat(field.value);
 
 			if (!isNaN(value)) {
 				sum += value;
-				count++;
 			}
-
 		});
 
-		const average = count > 0
-			? (sum / count).toFixed(2)
-			: "0.00";
-
 		// update UI
-		wrapper.querySelector('.avg-score').textContent = average;
+		wrapper.querySelector('.avg-score').textContent = sum.toFixed(2);
 	}
 
 </script>

@@ -935,75 +935,69 @@ public class MemberEventItemService {
 
 	    for (MemberEventItem mei : allMei) {
 
-	        if (mei.getVerificationStatus()
-	                == MemberEventItem.VerificationStatus.APPROVED) {
-	            continue;
-	        }
+		    if (mei.getVerificationStatus()
+		            == MemberEventItem.VerificationStatus.APPROVED) {
+		        continue;
+		    }
 
-	        boolean changed = false;
+		    boolean changed = false;
 
-	        Long meiId = mei.getMeiId();
+		    Long meiId = mei.getMeiId();
 
-	        Double s1 = score1.get(meiId);
-	        Double s2 = score2.get(meiId);
-	        Double s3 = score3.get(meiId);
+		    Double s1 = score1.get(meiId);
+		    Double s2 = score2.get(meiId);
+		    Double s3 = score3.get(meiId);
 
-	        if (!Objects.equals(mei.getMemberScore1(), s1)) {
-	            mei.setMemberScore1(s1);
-	            changed = true;
-	        }
+		    if (!Objects.equals(mei.getMemberScore1(), s1)) {
+		        mei.setMemberScore1(s1);
+		        changed = true;
+		    }
 
-	        if (!Objects.equals(mei.getMemberScore2(), s2)) {
-	            mei.setMemberScore2(s2);
-	            changed = true;
-	        }
+		    if (!Objects.equals(mei.getMemberScore2(), s2)) {
+		        mei.setMemberScore2(s2);
+		        changed = true;
+		    }
 
-	        if (!Objects.equals(mei.getMemberScore3(), s3)) {
-	            mei.setMemberScore3(s3);
-	            changed = true;
-	        }
+		    if (!Objects.equals(mei.getMemberScore3(), s3)) {
+		        mei.setMemberScore3(s3);
+		        changed = true;
+		    }
 
-	        // calculate average
-	        int count = 0;
-	        double sum = 0.0;
+		    // calculate sum
+		    double sum = 0.0;
 
-	        if (s1 != null) {
-	            sum += s1;
-	            count++;
-	        }
+		    if (s1 != null) {
+		        sum += s1;
+		    }
 
-	        if (s2 != null) {
-	            sum += s2;
-	            count++;
-	        }
+		    if (s2 != null) {
+		        sum += s2;
+		    }
 
-	        if (s3 != null) {
-	            sum += s3;
-	            count++;
-	        }
+		    if (s3 != null) {
+		        sum += s3;
+		    }
 
-	        Double average = count > 0
-	                ? Math.round((sum / count) * 100.0) / 100.0
-	                : 0.0;
+		    Double total = Math.round(sum * 100.0) / 100.0;
 
-	        if (!Objects.equals(mei.getMemberEventScore(), average)) {
-	            mei.setMemberEventScore(average);
-	            changed = true;
-	        }
+		    if (!Objects.equals(mei.getMemberEventScore(), total)) {
+		        mei.setMemberEventScore(total);
+		        changed = true;
+		    }
 
-	        if (changed) {
+		    if (changed) {
 
-	            mei.setCertificateStatus(
-	                    MemberEventItem.CertificateStatus.PENDING
-	            );
+		        mei.setCertificateStatus(
+		                MemberEventItem.CertificateStatus.PENDING
+		        );
 
-	            mei.setVerificationStatus(
-	                    MemberEventItem.VerificationStatus.PENDING
-	            );
+		        mei.setVerificationStatus(
+		                MemberEventItem.VerificationStatus.PENDING
+		        );
 
-	            toUpdate.add(mei);
-	        }
-	    }
+		        toUpdate.add(mei);
+		    }
+		}
 
 	    if (!toUpdate.isEmpty()) {
 	        memberEventItemRepository.saveAll(toUpdate);
