@@ -596,11 +596,24 @@
 			                </span>
 			            </td>
 
-			            <td class="text-center">
-			                <span class="grade-pill"
-			                      th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
-			                </span>
-			            </td>
+						<td class="text-center">
+
+						    <!-- Downloadable grade pill when certificate is generated -->
+						    <a th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+						       th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+						       download
+						       class="grade-pill text-decoration-none">
+
+						        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+						    </a>
+
+						    <!-- Normal grade pill otherwise -->
+						    <span th:unless="${mei.certificateStatus?.name() == 'GENERATED'}"
+						          class="grade-pill"
+						          th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
+						    </span>
+
+						</td>
 
 			        </tr>
 			    </tbody>

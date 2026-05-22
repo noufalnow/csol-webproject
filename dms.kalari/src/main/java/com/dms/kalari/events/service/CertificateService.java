@@ -58,6 +58,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.net.URI;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
+import org.springframework.core.io.ClassPathResource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,6 +165,12 @@ public class CertificateService {
 
 	return new CertificateGenerationResultDTO(filePath.getFileName().toString(), true, filePathString);
     }
+    
+	private String toProperCase(String value) {
+	    return value == null || value.isEmpty()
+	        ? value
+	        : value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+	}
 
     // Prepare all certificate data for the template
     private Map<String, Object> prepareCertificateData(MemberEventItem mei, String fileName) throws Exception {
@@ -166,7 +179,13 @@ public class CertificateService {
 
 	data.put("meiId", mei.getMeiId());
 
-	data.put("participantName", mei.getMemberEventMember().getUserFname());
+	String firstName = mei.getMemberEventMember().getUserFname();
+	String lastName = mei.getMemberEventMember().getUserLname();
+
+	data.put(
+	    "participantName",
+	    firstName.toUpperCase() + " " + lastName.toUpperCase()
+	);
 
 	data.put("eventName", mei.getMemberEvent().getEventName());
 
@@ -350,9 +369,13 @@ public class CertificateService {
 	// Category
 	String certificateCategory = "";
 
+
+
 	if (mei.getMemberEventCategory() != null && mei.getMemberEventGender() != null) {
 
-	    certificateCategory = mei.getMemberEventCategory().name() + " " + mei.getMemberEventGender().name();
+	    certificateCategory =
+	        toProperCase(mei.getMemberEventCategory().name()) + " " +
+	        toProperCase(mei.getMemberEventGender().name());
 	}
 
 	data.put("certificateCategory", certificateCategory);
@@ -376,17 +399,39 @@ public class CertificateService {
 	//data.put("medalImage", "/static/images/" + mei.getMemberEventGrade().name() + ".png");
 	
 	if (mei.getMemberEventGrade() != MemberEventItem.Grade.PARTICIPATION) {
-	    File medalFile = ResourceUtils.getFile(
-	            "classpath:static/images/"
-	            + mei.getMemberEventGrade().name()
-	            + ".png"
+
+	    ClassPathResource resource =
+	            new ClassPathResource(
+	                    "static/images/"
+	                    + mei.getMemberEventGrade().name()
+	                    + ".png"
+	            );
+
+	    Path temp = Files.createTempFile(
+	            "medal-",
+	            ".png"
 	    );
+
+	    try (InputStream in = resource.getInputStream()) {
+
+	        Files.copy(
+	                in,
+	                temp,
+	                StandardCopyOption.REPLACE_EXISTING
+	        );
+	    }
+
 	    data.put(
 	            "medalImage",
-	            "file:" + medalFile.toURI().getPath()
+	            temp.toUri().toString()
 	    );
+
 	} else {
-	    data.put("medalImage", null);
+
+	    data.put(
+	            "medalImage",
+	            null
+	    );
 	}
 
 	/*
