@@ -278,8 +278,6 @@ public class EventChestConfigService {
                 continue;
             }
 
-            Long currentNo = config.getStartNo();
-
             List<MemberEventItem> members =
                     memberEventItemRepository
                             .findAllByEventItemAndGender(
@@ -287,105 +285,380 @@ public class EventChestConfigService {
                                     config.getGender()
                             );
 
-            /*
-             * Reserve already used chest numbers
-             * (only from scored participants)
-             */
-            Set<Long> usedNumbers = members.stream()
-                    .filter(this::hasScores)
-                    .map(MemberEventItem::getMemberChestNo)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            List<MemberEventItem> toUpdate = new ArrayList<>();
+            if (members.isEmpty()) {
+                continue;
+            }
 
             /*
-             * GROUP TEAM MEMBERS
+             * FIRST GENERATION:
+             * nobody has chest number
              */
-            Map<Object, List<MemberEventItem>> groupedTeams =
-        	        members.stream()
+            boolean firstGeneration =
 
-        	                .filter(m -> !hasScores(m))
+                    members.stream()
 
-        	                .filter(m ->
-        	                        m.getMemberEventTeamCode() != null
-        	                        && !m.getMemberEventTeamCode().trim().isEmpty()
-        	                )
+                            .noneMatch(
+                                    m ->
+                                            m.getMemberChestNo()
+                                                    != null
+                            );
 
-        	                /*
-        	                 * UNIQUE TEAM KEY
-        	                 * nodeId + teamCode
-        	                 */
-        	                .sorted(Comparator.comparing(m ->
+            /*
+             * ONLY DURING INITIAL GENERATION
+             * ORDER:
+             * TEAM → NAME
+             */
+            if (firstGeneration) {
+        	
+                 members =
+                        memberEventItemRepository
+                                .findAllByEventItemAndGenderOrderTeamAndName(
+                                        config.getEventItemMap().getEimId(),
+                                        config.getGender()
+                                );
+        	
+        	
+            }
 
-        	                	m.getMemberEventNode().getNodeId()
-        	                        + "-"
-        	                        + m.getMemberEventTeamCode()
-        	                ))
+            /*
+             * RESERVE EXISTING CHEST NUMBERS
+             */
+            Set<Long> usedNumbers =
 
-        	                .collect(Collectors.groupingBy(
+                    members.stream()
 
-        	                        m ->
-        	                                m.getMemberEventMember().getUserNode().getNodeId()
-        	                                + "-"
-        	                                + m.getMemberEventTeamCode(),
+                            .map(
+                                    MemberEventItem
+                                            ::getMemberChestNo
+                            )
 
-        	                        LinkedHashMap::new,
+                            .filter(
+                                    Objects::nonNull
+                            )
 
-        	                        Collectors.toList()
-        	                ));
+                            .collect(
+                                    Collectors.toSet()
+                            );
+
+            Long currentNo;
+
+            if (firstGeneration) {
+
+                currentNo =
+                        config.getStartNo();
+
+            } else {
+
+                currentNo =
+
+                        usedNumbers.stream()
+
+                                .max(
+                                        Long::compare
+                                )
+
+                                .orElse(
+                                        config.getStartNo()
+                                                - 1
+                                )
+
+                                + 1;
+            }
+
+            List<MemberEventItem> toUpdate =
+                    new ArrayList<>();
+
+            /*
+             * INHERIT TEAM CHEST
+             * FOR REPLACED TEAM MEMBERS
+             */
+            Map<String, Long> existingTeamChestMap =
+
+                    members.stream()
+
+                            .filter(
+                                    m ->
+                                            m.getMemberChestNo()
+                                                    != null
+                            )
+
+                            .filter(
+                                    m ->
+
+                                            m.getMemberEventTeamCode()
+                                                    != null
+
+                                                    &&
+
+                                                    !m.getMemberEventTeamCode()
+                                                            .trim()
+                                                            .isEmpty()
+                            )
+
+                            .collect(
+
+                                    Collectors.toMap(
+
+                                            m ->
+
+                                                    m.getMemberEventMember()
+                                                            .getUserNode()
+                                                            .getNodeId()
+
+                                                            + "-"
+
+                                                            +
+
+                                                            m.getMemberEventTeamCode()
+                                                                    .trim(),
+
+                                            MemberEventItem
+                                                    ::getMemberChestNo,
+
+                                            (a, b) -> a
+
+                                    )
+
+                            );
+
+            /*
+             * APPLY TEAM INHERITANCE
+             */
+            for (MemberEventItem member : members) {
+
+                if (
+                        member.getMemberChestNo()
+                                != null
+                ) {
+                    continue;
+                }
+
+                String teamCode =
+                        member.getMemberEventTeamCode();
+
+                if (
+                        teamCode == null
+
+                        ||
+
+                        teamCode.trim()
+                                .isEmpty()
+                ) {
+                    continue;
+                }
+
+                String key =
+
+                        member.getMemberEventMember()
+                                .getUserNode()
+                                .getNodeId()
+
+                                + "-"
+
+                                +
+
+                                teamCode.trim();
+
+                Long inherited =
+
+                        existingTeamChestMap
+                                .get(key);
+
+                if (
+                        inherited
+                                != null
+                ) {
+
+                    member.setMemberChestNo(
+                            inherited
+                    );
+
+                    toUpdate.add(
+                            member
+                    );
+                }
+            }
+
+            /*
+             * NEW TEAMS
+             */
+            Map<String,
+                    List<MemberEventItem>>
+
+                    groupedTeams =
+
+                    members.stream()
+
+                            .filter(
+                                    m ->
+                                            m.getMemberChestNo()
+                                                    == null
+                            )
+
+                            .filter(
+                                    m ->
+
+                                            m.getMemberEventTeamCode()
+                                                    != null
+
+                                                    &&
+
+                                                    !m.getMemberEventTeamCode()
+                                                            .trim()
+                                                            .isEmpty()
+                            )
+
+                            .collect(
+
+                                    Collectors.groupingBy(
+
+                                            m ->
+
+                                                    m.getMemberEventMember()
+                                                            .getUserNode()
+                                                            .getNodeId()
+
+                                                            + "-"
+
+                                                            +
+
+                                                            m.getMemberEventTeamCode()
+                                                                    .trim(),
+
+                                            LinkedHashMap::new,
+
+                                            Collectors.toList()
+
+                                    )
+
+                            );
 
             /*
              * ASSIGN ONE NUMBER PER TEAM
              */
-            for (Entry<Object, List<MemberEventItem>> entry
-                    : groupedTeams.entrySet()) {
+            for (
 
-                while (usedNumbers.contains(currentNo)) {
+                    Entry<String,
+                            List<MemberEventItem>>
+
+                            entry
+
+                    : groupedTeams.entrySet()
+
+            ) {
+
+                while (
+
+                        usedNumbers.contains(
+                                currentNo
+                        )
+
+                ) {
+
                     currentNo++;
                 }
 
-                Long teamChestNo = currentNo;
+                Long teamChestNo =
+                        currentNo;
 
-                for (MemberEventItem member : entry.getValue()) {
+                for (
 
-                    member.setMemberChestNo(teamChestNo);
+                        MemberEventItem member
 
-                    toUpdate.add(member);
+                        : entry.getValue()
+
+                ) {
+
+                    member.setMemberChestNo(
+                            teamChestNo
+                    );
+
+                    toUpdate.add(
+                            member
+                    );
                 }
 
-                usedNumbers.add(teamChestNo);
+                usedNumbers.add(
+                        teamChestNo
+                );
 
                 currentNo++;
             }
 
             /*
-             * INDIVIDUAL ITEMS
+             * INDIVIDUAL MEMBERS
              */
-            List<MemberEventItem> individualMembers =
+            List<MemberEventItem>
+
+                    individualMembers =
+
                     members.stream()
-                            .filter(m -> !hasScores(m))
-                            .filter(m -> m.getMemberEventTeamCode() == null
-                                    || m.getMemberEventTeamCode().trim().isEmpty())
+
+                            .filter(
+                                    m ->
+                                            m.getMemberChestNo()
+                                                    == null
+                            )
+
+                            .filter(
+                                    m ->
+
+                                            m.getMemberEventTeamCode()
+                                                    == null
+
+                                                    ||
+
+                                                    m.getMemberEventTeamCode()
+                                                            .trim()
+                                                            .isEmpty()
+                            )
+
                             .toList();
 
-            for (MemberEventItem member : individualMembers) {
+            for (
 
-                while (usedNumbers.contains(currentNo)) {
+                    MemberEventItem member
+
+                    : individualMembers
+
+            ) {
+
+                while (
+
+                        usedNumbers.contains(
+                                currentNo
+                        )
+
+                ) {
+
                     currentNo++;
                 }
 
-                member.setMemberChestNo(currentNo);
+                member.setMemberChestNo(
+                        currentNo
+                );
 
-                usedNumbers.add(currentNo);
+                usedNumbers.add(
+                        currentNo
+                );
 
-                toUpdate.add(member);
+                toUpdate.add(
+                        member
+                );
 
                 currentNo++;
             }
 
-            if (!toUpdate.isEmpty()) {
-                memberEventItemRepository.saveAll(toUpdate);
+            if (
+
+                    !toUpdate.isEmpty()
+
+            ) {
+
+                memberEventItemRepository
+                        .saveAll(
+                                toUpdate
+                        );
             }
         }
     }

@@ -209,6 +209,20 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		        @Param("gender") Gender gender
 		);
 	
+	@Query("""
+		    SELECT mei
+		    FROM MemberEventItem mei
+		    WHERE mei.deleted = false
+		      AND mei.memberEventMap.eimId = :eimId
+		      AND mei.memberEventGender = :gender
+		    ORDER BY 
+			  mei.memberEventMember.userFname ASC
+		""")
+		List<MemberEventItem> findAllByEventItemAndGenderOrderTeamAndName(
+		        @Param("eimId") Long eimId,
+		        @Param("gender") Gender gender
+		);
+	
 	
 	@Query("""
 		    SELECT m
