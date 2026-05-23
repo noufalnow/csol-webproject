@@ -473,6 +473,7 @@ public class CertificateService {
 		    String signature = null;
 
 		    if (u.getSignatureFile() != null) {
+			
 
 			CoreFile sf = fileRepository.findById(u.getSignatureFile()).orElse(null);
 
@@ -482,7 +483,8 @@ public class CertificateService {
 
 			    if (signatureFile.exists()) {
 
-				signature = "file:" + signatureFile.toURI().getPath();
+				//signature = "file:" + signatureFile.toURI().getPath();
+				 signature = signatureFile.toURI().toString();
 			    }
 			}
 		    }
@@ -517,7 +519,7 @@ public class CertificateService {
 	                    .orElse(null);
 
 	    if (pf != null && pf.getFilePath() != null) {
-
+			
 		    File photoFile =
 		            new File(
 		                    BASE_PATH,
@@ -534,7 +536,7 @@ public class CertificateService {
 		                        + ".jpg"
 		                );
 
-		        participantPhoto =
+		        /*participantPhoto =
 		                "file:"
 		                + (
 		                    thumbnailFile.exists()
@@ -542,7 +544,10 @@ public class CertificateService {
 		                    : photoFile
 		                )
 		                .toURI()
-		                .getPath();
+		                .getPath();*/
+		        
+		        participantPhoto = (thumbnailFile.exists() ? thumbnailFile : photoFile)
+		                .toURI().toString(); 
 		    }
 		}
 	}

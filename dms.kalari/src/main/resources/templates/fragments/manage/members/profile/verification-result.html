@@ -107,6 +107,75 @@
 			}
 
 		}
+		
+		
+		.logo-strip{
+
+		display:flex;
+
+		justify-content:center;
+
+		align-items:center;
+
+		gap:300px;
+
+		margin-bottom:18px;
+
+		}
+
+		.authority-logo{
+
+		object-fit:contain;
+
+		transition:.25s;
+
+		}
+
+		.side-logo{
+
+		height:70px;
+
+		max-width:120px;
+
+		opacity:.88;
+
+		}
+
+		.main-logo{
+
+		height:110px;
+
+		max-width:170px;
+
+		filter:
+		drop-shadow(
+		0 8px 20px
+		rgba(0,0,0,.18)
+		);
+
+		}
+
+		@media(max-width:768px){
+
+		.logo-strip{
+
+		gap:10px;
+
+		}
+
+		.side-logo{
+
+		height:50px;
+
+		}
+
+		.main-logo{
+
+		height:80px;
+
+		}
+
+		}
 	</style>
 </head>
 
@@ -128,22 +197,77 @@
 				<div th:if="${success}">
 
 					<!-- ISSUING AUTHORITY -->
-					<div class="text-center mb-3">
-						<div class="small text-uppercase text-muted">Official Certificate Issued By</div>
-						<h2 class="fw-bold mb-0" th:text="${verification.authorityName}"></h2>
-						<div class="text-muted" style="font-size:.95rem;" th:text="${verification.authorityType}"></div>
-						<div class="mb-2">
-							<img th:if="${verification.authorityLogoId != null}"
-								th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.authorityLogoId}|}"
-								onerror="this.style.display='none'"
-								style="max-height:85px; max-width:150px; object-fit:contain;" alt="Authority Logo">
+					<div class="text-center mb-10">
+
+					    <div class="small text-uppercase text-muted mb-2">
+
+					        Official Certificate Issued By
+
+					    </div>
+
+
+					    <!-- LOGO STRIP -->
+
+
+
+
+					    <h2
+					            class="fw-bold mb-1"
+					            th:text="${verification.authorityName}">
+					    </h2>
+
+					    <div
+					            class="text-muted"
+					            style="font-size:.95rem;"
+					            th:text="${verification.authorityType}">
+					    </div>
+
+
+						
+						<div class="logo-strip mb-3">
+
+						    <!-- LEFT : STATE -->
+
+						    <img
+						            th:if="${verification.stateLogoId != null}"
+						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.stateLogoId}|}"
+						            onerror="this.style.display='none'"
+						            class="authority-logo side-logo"
+						            alt="State">
+
+
+						    <!-- CENTER : DISTRICT / HOST -->
+
+						    <img
+						            th:if="${verification.authorityLogoId != null}"
+						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.authorityLogoId}|}"
+						            onerror="this.style.display='none'"
+						            class="authority-logo main-logo"
+						            alt="Host">
+
+
+						    <!-- RIGHT : NATIONAL -->
+
+						    <img
+						            th:if="${verification.nationalLogoId != null}"
+						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.nationalLogoId}|}"
+						            onerror="this.style.display='none'"
+						            class="authority-logo side-logo"
+						            alt="National">
+
 						</div>
-						<div class="text-muted" style="font-size:13px;" th:if="${verification.branchTagline}"
-							th:text="${verification.branchTagline}"></div>
+						
+						<div
+						        class="text-muted mt-2 "
+						        style="font-size:13px;"
+						        th:if="${verification.branchTagline}"
+						        th:text="${verification.branchTagline}">
+						</div>
+
 					</div>
 
 					<!-- PARTICIPANT -->
-					<div class="row align-items-center mb-3">
+					<div class="row align-items-center mb-3 mt-5">
 
 						<!-- PHOTO -->
 
@@ -159,7 +283,9 @@
 
 						<div class="col-md-6">
 
-							<h2 class="fw-bold mb-1" th:text="${verification.participantName}">
+							<h2
+							    class="fw-bold mb-1"
+							    th:text="${#strings.toUpperCase(verification.participantName)}">
 							</h2>
 
 							<div class="text-muted mb-2" style="font-size:13px;">

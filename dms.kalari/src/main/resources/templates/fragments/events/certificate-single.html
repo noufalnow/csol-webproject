@@ -296,6 +296,46 @@
 		.subheading-row .subheading-text {
 			text-align: center;
 		}
+		
+		.logo-strip{
+		    width:100%;
+		    text-align:center;
+		    margin:5mm 0;
+		}
+
+		/* one single rule */
+		.logo-strip img{
+		    display:inline-block;
+		    vertical-align:middle;
+
+		    /* increase horizontal spacing */
+		    margin-left:18mm;
+		    margin-right:18mm;
+
+		    /* same size for all */
+		    height:22mm;
+		    width:auto;
+		}
+
+		/* remove special sizing */
+		.federation-logo,
+		.main-logo{
+		    height:22mm;
+		    width:auto;
+		}
+
+		@media (max-width:768px){
+
+		    .logo-strip img{
+		        height:18mm;
+
+		        /* reduce spacing for mobile */
+		        margin-left:8mm;
+		        margin-right:8mm;
+		    }
+		}
+		
+		
 	</style>
 </head>
 
@@ -315,21 +355,30 @@
 	                Affiliated to the District Sports Council, Thiruvananthapuram
 	            </div>
 
-	            <!-- State Logo -->
-	            <div class="logo-container">
-	                <img
-	                    class="logo-small logo-state"
-	                    style="
-	                        height: 32mm;
-	                        width: auto;
-	                        position: relative;
-	                        top: -5mm;
-	                        align-self: flex-start;
-	                    "
-	                    th:if="${stateLogo != null}"
-	                    th:src="${stateLogo}"
-	                    alt="State Logo" />
-	            </div>
+				<div class="logo-strip" style="margin-bottom: 20mm;">
+
+				    <!-- Left -->
+				    <img
+				        th:if="${stateLogo != null}"
+				        th:src="${stateLogo}"
+				        class="federation-logo"
+				        alt="State Logo"/>
+
+				    <!-- Middle -->
+				    <img
+				        th:if="${districtLogo != null}"
+				        th:src="${districtLogo}"
+				        class="federation-logo main-logo"
+				        alt="District Logo"/>
+
+				    <!-- Right -->
+				    <img
+				        th:if="${nationalLogo != null}"
+				        th:src="${nationalLogo}"
+				        class="federation-logo"
+				        alt="National Logo"/>
+
+				</div>
 
 	            <!-- Championship + Medal badge row -->
 	            <div class="subheading-row">
@@ -342,7 +391,7 @@
 	                        width: auto;
 	                        position: absolute;
 	                        left: 25mm;
-	                        top: 0;
+	                        top: 8mm;
 	                        align-self: flex-start;
 	                    "
 	                    th:if="${medalType != 'PARTICIPATION'}"
@@ -485,15 +534,15 @@
 
 	        <!-- President — unchanged -->
 	        <div class="signatory">
-	            <div style="height:22mm; display:flex; justify-content:center; align-items:center; margin-bottom:1mm;">
-	                <img
-	                    th:if="${signatories.size() > 0 and signatories[0].signature != null}"
-	                    th:src="${signatories[0].signature}"
-	                    style="max-height:20mm; max-width:38mm; display:block;"
-	                    alt="Signature"/>
-	                <div th:unless="${signatories.size() > 0 and signatories[0].signature != null}"
-	                     style="height:16mm;"></div>
-	            </div>
+				<div style="height:20mm; width:38mm; overflow:hidden; display:flex; justify-content:center; align-items:center; margin-bottom:1mm; margin-left:10mm;">
+				    <img
+				        th:if="${signatories.size() > 0 and signatories[0].signature != null}"
+				        th:src="${signatories[0].signature}"
+				        style="height:20mm; width:38mm;"
+				        alt="Signature"/>
+				    <div th:unless="${signatories.size() > 0 and signatories[0].signature != null}"
+				         style="height:20mm;"></div>
+				</div>
 	            <div th:text="${signatories.size() > 0 ? signatories[0].name : ''}">R. Sreedharan Nair</div>
 	            <i th:text="${signatories.size() > 0 ? signatories[0].designation : ''}">President</i>
 	            <div><i th:text="${districtName}">Branch</i></div>
@@ -501,15 +550,15 @@
 
 	        <!-- Secretary — unchanged -->
 	        <div class="signatory">
-	            <div style="height:22mm; display:flex; justify-content:center; align-items:center; margin-bottom:1mm;">
-	                <img
-	                    th:if="${signatories.size() > 1 and signatories[1].signature != null}"
-	                    th:src="${signatories[1].signature}"
-	                    style="max-height:14mm; max-width:38mm; display:block;"
-	                    alt="Signature"/>
-	                <div th:unless="${signatories.size() > 1 and signatories[1].signature != null}"
-	                     style="height:16mm;"></div>
-	            </div>
+				<div style="height:20mm; width:38mm; overflow:hidden; display:flex; justify-content:center; align-items:center; margin-bottom:1mm; margin-left:10mm;">
+				    <img
+				        th:if="${signatories.size() > 1 and signatories[1].signature != null}"
+				        th:src="${signatories[1].signature}"
+				        style="height:20mm; width:38mm;"
+				        alt="Signature"/>
+				    <div th:unless="${signatories.size() > 1 and signatories[1].signature != null}"
+				         style="height:20mm;"></div>
+				</div>
 	            <div th:text="${signatories.size() > 1 ? signatories[1].name : ''}">G. Radhakrishnan</div>
 	            <i th:text="${signatories.size() > 1 ? signatories[1].designation : ''}">Secretary</i>
 	            <div><i th:text="${districtName}">Branch</i></div>
