@@ -144,45 +144,40 @@
 
 
 
-				<!-- Chest Card -->
+				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
+				   href="javascript:void(0);"
+				   class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center px-2 py-1"
 
-					<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}" href="javascript:void(0);"
-						class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center px-2 py-1"
-						th:onclick="'window.open(\'/champ_participants/' 
-            + ${xorMaskHelper.mask(event.eventId)} 
-            + '/' 
-            + ${xorMaskHelper.mask(event.eventHostId)}  
-            + '/chestcard\', 
-            \'chestCardWindow\', 
-            \'width=1200,height=800,scrollbars=yes,resizable=yes\')'">
+				   th:onclick="'openParticipantView(\'chestcard\','
+				       + ${xorMaskHelper.mask(event.eventId)}
+				       + ','
+				       + ${xorMaskHelper.mask(event.eventHostId)}
+				       + ',\'chestCardWindow\')'">
 
-						<i class="fas fa-id-badge"></i>
+				    <i class="fas fa-id-badge"></i>
 
-						<span class="ms-1">
-							Chest Card
-						</span>
+				    <span class="ms-1">
+				        Chest Card
+				    </span>
 
-					</a>
+				</a>
 
-
-				<!-- Judge Card -->
 
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
-					href="javascript:void(0);"
-					class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center px-2 py-1"
-					th:onclick="'window.open(\'/champ_participants/' 
-            + ${xorMaskHelper.mask(event.eventId)} 
-            + '/' 
-            + ${xorMaskHelper.mask(event.eventHostId)}  
-            + '/judgecard\', 
-            \'judgeCardWindow\', 
-            \'width=1200,height=800,scrollbars=yes,resizable=yes\')'">
+				   href="javascript:void(0);"
+				   class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center px-2 py-1"
 
-					<i class="fas fa-gavel"></i>
+				   th:onclick="'openParticipantView(\'judgecard\','
+				       + ${xorMaskHelper.mask(event.eventId)}
+				       + ','
+				       + ${xorMaskHelper.mask(event.eventHostId)}
+				       + ',\'judgeCardWindow\')'">
 
-					<span class="ms-1">
-						Judgment Sheet
-					</span>
+				    <i class="fas fa-gavel"></i>
+
+				    <span class="ms-1">
+				        Judgment Sheet
+				    </span>
 
 				</a>
 
@@ -198,23 +193,23 @@
 
 
 
-					<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}" href="javascript:void(0);"
-						class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
-						th:onclick="'window.open(\'/champ_participants/' 
-            + ${xorMaskHelper.mask(event.eventId)} 
-            + '/' 
-            + ${xorMaskHelper.mask(event.eventHostId)}  
-            + '/tabsheet\', 
-            \'tabSheetWindow\', 
-            \'width=1200,height=800,scrollbars=yes,resizable=yes\')'">
+				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
+				   href="javascript:void(0);"
+				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
 
-						<i class="fas fa-table"></i>
+				   th:onclick="'openParticipantView(\'tabsheet\','
+				       + ${xorMaskHelper.mask(event.eventId)}
+				       + ','
+				       + ${xorMaskHelper.mask(event.eventHostId)}
+				       + ',\'tabSheetWindow\')'">
 
-						<span class="ms-1">
-							Tab Sheet
-						</span>
+				    <i class="fas fa-table"></i>
 
-					</a>
+				    <span class="ms-1">
+				        Tab Sheet
+				    </span>
+
+				</a>
 
 
 
@@ -239,23 +234,23 @@
 				</a>
 				
 				
-						<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}" href="javascript:void(0);"
-							class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
-							th:onclick="'window.open(\'/champ_participants/' 
-				+ ${xorMaskHelper.mask(event.eventId)} 
-				+ '/' 
-				+ ${xorMaskHelper.mask(event.eventHostId)}  
-				+ '/finallist\', 
-				\'tabSheetWindow\', 
-				\'width=1200,height=800,scrollbars=yes,resizable=yes\')'">
+				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
+				   href="javascript:void(0);"
+				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
 
-							<i class="fas fa-table"></i>
+				   th:onclick="'openParticipantView(\'finallist\','
+				       + ${xorMaskHelper.mask(event.eventId)}
+				       + ','
+				       + ${xorMaskHelper.mask(event.eventHostId)}
+				       + ',\'finalListWindow\')'">
 
-							<span class="ms-1">
-								Final Result
-							</span>
+				    <i class="fas fa-table"></i>
 
-						</a>
+				    <span class="ms-1">
+				        Final Result
+				    </span>
+
+				</a>
 
 
 
@@ -351,6 +346,45 @@
 
 		// Load into modal2
 		loadContent(baseUrl, 'modal2');
+	}
+	
+	function openParticipantView(
+	    viewType,
+	    eventId,
+	    hostId,
+	    windowName = 'participantWindow',
+	    windowFeatures = 'width=1200,height=800,scrollbars=yes,resizable=yes'
+	) {
+
+	    let url = `/champ_participants/${eventId}/${hostId}/${viewType}`;
+
+	    const activeBadge = document.querySelector('.badge.active');
+
+	    if (activeBadge) {
+
+	        const params = new URLSearchParams();
+
+	        if (activeBadge.dataset.itemid)
+	            params.append('itemId', activeBadge.dataset.itemid);
+
+	        if (activeBadge.dataset.gender)
+	            params.append('gender', activeBadge.dataset.gender);
+
+	        if (activeBadge.dataset.category)
+	            params.append('category', activeBadge.dataset.category);
+
+	        if (params.toString()) {
+	            url += `?${params.toString()}`;
+	        }
+	    }
+
+	    console.log("Opening:", url);
+
+	    window.open(
+	        url,
+	        windowName,
+	        windowFeatures
+	    );
 	}
 
 
