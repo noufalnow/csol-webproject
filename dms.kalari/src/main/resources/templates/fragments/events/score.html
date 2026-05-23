@@ -158,15 +158,15 @@
 							        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
 							             class="d-flex align-items-center gap-2">
 
-							            <input type="text"
-							                   class="form-control"
-							                   th:name="${'scores[' + mei.meiId + ']'}"
-							                   th:value="${mei.memberEventScore}"
-							                   pattern="^\d*\.?\d*$"
-							                   inputmode="decimal"
-							                   placeholder="0.00"
-							                   oninput="validateScore(this)"
-							                   style="max-width: 90px;" />
+										 <input type="text"
+										        class="form-control"
+										        th:name="${'scores[' + mei.meiId + ']'}"
+										        th:value="${mei.memberEventScore}"
+										        th:data-evitem-id="${mei.memberEventItem.evitemId}"
+										        inputmode="decimal"
+										        placeholder="0.00"
+										        oninput="validateScore(this)"
+										        style="max-width: 90px;" />
 
 							            <select class="form-select"
 							                    th:name="${'grades[' + mei.meiId + ']'}">
@@ -205,10 +205,16 @@
 </div>
 
 <script>
+
+
 	function validateScore(input) {
 	    let value = input.value;
 
-	    // Remove any non-digit or non-dot characters
+	    // Resolve max score based on evitemId
+	    const evitemId = input.dataset.evitemId ? Number(input.dataset.evitemId) : null;
+	    const maxScore = [3, 12].includes(evitemId) ? 12 : 10;
+
+	    // Strip non-numeric characters except dot
 	    value = value.replace(/[^0-9.]/g, '');
 
 	    // Ensure only one decimal point
@@ -217,26 +223,24 @@
 	        value = parts[0] + '.' + parts.slice(1).join('');
 	    }
 
-	    // Re-split after cleanup
-	    let updatedParts = value.split('.');
-
-	    // Limit decimal places to 2
+	    // Limit to 2 decimal places
+	    const updatedParts = value.split('.');
 	    if (updatedParts.length === 2 && updatedParts[1].length > 2) {
 	        value = updatedParts[0] + '.' + updatedParts[1].substring(0, 2);
 	    }
 
-	    // Enforce max score = 10
-	    if (parseFloat(value) > 10) {
-	        value = '00';
+	    // Clamp to maxScore
+	    const num = parseFloat(value);
+	    if (!isNaN(num) && num > maxScore) {
+	        value = maxScore.toFixed(2);
 	    }
 
 	    input.value = value;
 
-	    // Visual feedback
-	    if (
-	        value === '' ||
-	        (/^\d*\.?\d*$/.test(value) && parseFloat(value) <= 10)
-	    ) {
+	    // Visual feedback — empty = neutral, valid = green, invalid = red
+	    if (value === '') {
+	        input.classList.remove('is-valid', 'is-invalid');
+	    } else if (!isNaN(num) && num <= maxScore) {
 	        input.classList.remove('is-invalid');
 	        input.classList.add('is-valid');
 	    } else {
