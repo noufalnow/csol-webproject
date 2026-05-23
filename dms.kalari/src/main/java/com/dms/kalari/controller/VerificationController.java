@@ -87,264 +87,107 @@ public class VerificationController {
 
     private Map<String, Object> prepareVerificationData(MemberEventItem mei) {
 
-	Map<String, Object> data = new HashMap<>();
+	    Map<String, Object> data = new HashMap<>();
 
-	Node eventNode = mei.getMemberEventHost();
+	    Node eventNode = mei.getMemberEventHost();
+	    CoreUser participant = mei.getMemberEventMember();
 
-	CoreUser participant = mei.getMemberEventMember();
-	
-	
-	
+	    // PARTICIPANT
+	    data.put("participantId",      participant.getUserId());
+	    data.put("participantName",    (participant.getUserFname() + " " + participant.getUserLname()).trim());
+	    data.put("participantPhotoId", participant.getPhotoFile());
+	    data.put("gender",             mei.getMemberEventGender());
+	    data.put("category",           mei.getMemberEventCategory());
+	    data.put("chestNo",            mei.getMemberChestNo());
+	    data.put("representing",       participant.getUserFname());
 
-	/*
-	 * PARTICIPANT
-	 */
+	    // CERTIFICATE
+	    data.put("certificateNo",  mei.getMeiCertificateNo());
+	    data.put("verificationId", mei.getMeiId());
+	    data.put("approvedDate",   mei.getApproveDateTime());
 
-	data.put("participantId", participant.getUserId());
+	    // EVENT
+	    data.put("eventName",  mei.getMemberEvent().getEventName());
+	    data.put("eventYear",  mei.getMemberEvent().getEventYear());
+	    data.put("eventStart", mei.getMemberEvent().getEventPeriodStart());
+	    data.put("eventEnd",   mei.getMemberEvent().getEventPeriodEnd());
+	    data.put("itemName",   mei.getMemberEventItemName());
+	    data.put("grade",      mei.getMemberEventGrade());
 
-	data.put("participantName",
+	    // HOST
+	    data.put("hostNodeName", eventNode.getNodeName());
+	    data.put("hostNodeType", eventNode.getNodeType());
 
-		(participant.getUserFname() + " " + participant.getUserLname()).trim());
+	    // HIERARCHY — resolve district / state / national nodes
+	    Node district = null, state = null, national = null;
 
-	data.put("participantPhotoId", participant.getPhotoFile());
-
-	data.put("gender", mei.getMemberEventGender());
-
-	data.put("category", mei.getMemberEventCategory());
-
-	data.put("chestNo", mei.getMemberChestNo());
-
-	/*
-	 * data.put( "memberCode", participant.getUserCode() );
-	 */
-
-	/*
-	 * CERTIFICATE
-	 */
-
-	data.put("certificateNo", mei.getMeiCertificateNo());
-
-	data.put("verificationId", mei.getMeiId());
-
-	data.put("approvedDate", mei.getApproveDateTime());
-
-	/*
-	 * EVENT
-	 */
-
-	data.put("eventName", mei.getMemberEvent().getEventName());
-
-	data.put("eventYear", mei.getMemberEvent().getEventYear());
-
-	data.put("eventStart", mei.getMemberEvent().getEventPeriodStart());
-
-	data.put("eventEnd", mei.getMemberEvent().getEventPeriodEnd());
-
-	data.put("itemName", mei.getMemberEventItemName());
-
-	data.put("grade", mei.getMemberEventGrade());
-
-	/*
-	 * HOST
-	 */
-
-	data.put("hostNodeName", eventNode.getNodeName());
-
-	data.put("hostNodeType", eventNode.getNodeType());
-
-	/*
-	 * HIERARCHY
-	 */
-
-	Node district = null;
-	Node state = null;
-	Node national = null;
-
-	switch (eventNode.getNodeType()) {
-
-	case DISTRICT:
-
-	    district = eventNode;
-
-	    if (district.getParent() != null) {
-
-		state = nodeRepository.findByIdAndNotDeleted(district.getParent().getNodeId()).orElse(null);
+	    switch (eventNode.getNodeType()) {
+	        case DISTRICT -> {
+	            district = eventNode;
+	            if (district.getParent() != null) {
+	                state = nodeRepository.findByIdAndNotDeleted(district.getParent().getNodeId()).orElse(null);
+	            }
+	            if (state != null && state.getParent() != null) {
+	                national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
+	            }
+	        }
+	        case STATE -> {
+	            state = eventNode;
+	            if (state.getParent() != null) {
+	                national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
+	            }
+	        }
+	        case NATIONAL -> national = eventNode;
 	    }
 
-	    if (state != null && state.getParent() != null) {
+	    // HIERARCHY VIEW
+	    data.put("districtName",    district != null ? district.getNodeName()  : null);
+	    data.put("stateName",       state    != null ? state.getNodeName()     : null);
+	    data.put("nationalName",    national != null ? national.getNodeName()  : null);
 
-		national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
-	    }
+	    Long districtLogoId = district != null ? district.getPhotoFile() : null;
+	    Long stateLogoId    = state    != null ? state.getPhotoFile()    : null;
+	    Long nationalLogoId = national != null ? national.getPhotoFile() : null;
 
-	    break;
+	    // District logo falls back to state logo if missing
+	    Long districtLogoIdEffective = districtLogoId != null ? districtLogoId
+	                                 : stateLogoId    != null ? stateLogoId
+	                                 : null;
 
-	case STATE:
+	    data.put("districtLogoId", districtLogoId);
+	    data.put("stateLogoId",    stateLogoId);
+	    data.put("nationalLogoId", nationalLogoId);
 
-	    state = eventNode;
+	    // AUTHORITY (header)
+	    data.put("authorityLogoId", districtLogoIdEffective != null ? districtLogoIdEffective
+	                               : stateLogoId           != null  ? stateLogoId
+	                               : nationalLogoId);
+	    data.put("authorityName",   eventNode.getNodeName());
+	    data.put("authorityType",   eventNode.getNodeType().name());
 
-	    if (state.getParent() != null) {
+	    // HEADER
+	    data.put("branchTagline", eventNode.getBranchCertTagLine());
+	    data.put("venue",         eventNode.getAddressLine3());
 
-		national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
-	    }
+	    // SIGNATORIES
+	    List<Map<String, Object>> signatories = coreUserRepository
+	        .findBranchSignatories(eventNode.getNodeId(), UserType.OFFICIAL)
+	        .stream()
+	        .map(u -> {
+	            Map<String, Object> s = new HashMap<>();
+	            s.put("name",        ((u.getUserFname() != null ? u.getUserFname() : "")
+	                                + (u.getUserLname() != null ? " " + u.getUserLname() : "")).trim());
+	            s.put("designation", u.getDesignation() != null ? u.getDesignation().getDesigName() : null);
+	            s.put("email",       u.getUserEmail());
+	            s.put("phone",       u.getMobileNumber());
+	            s.put("description", u.getOfficialDescription());
+	            return s;
+	        }).toList();
 
-	    break;
+	    data.put("signatories", signatories);
 
-	case NATIONAL:
-
-	    national = eventNode;
-
-	    break;
-
-	default:
+	    return data;
 	}
-
-	/*
-	 * AUTHORITY DISPLAY
-	 *
-	 * DISTRICT: name → district type → district logo → state logo (fallback
-	 * district)
-	 *
-	 * STATE: name/type/logo → state
-	 *
-	 * NATIONAL: name/type/logo → national
-	 */
-
-	Long authorityLogoId = eventNode.getPhotoFile();
-
-	String authorityName = eventNode.getNodeName();
-
-	String authorityType = eventNode.getNodeType().name();
-
-	switch (eventNode.getNodeType()) {
-
-	case DISTRICT:
-
-	    if (state != null && state.getPhotoFile() != null) {
-
-		authorityLogoId = state.getPhotoFile();
-	    }
-
-	    break;
-
-	case STATE:
-
-	    authorityLogoId = state != null ? state.getPhotoFile() : eventNode.getPhotoFile();
-
-	    break;
-
-	case NATIONAL:
-
-	    authorityLogoId = national != null ? national.getPhotoFile() : eventNode.getPhotoFile();
-
-	    break;
-
-	default:
-	}
-
-	data.put("authorityLogoId", authorityLogoId);
-
-	data.put("authorityName", authorityName);
-
-	data.put("authorityType", authorityType);
-	
-	
-	/*
-	 * HEADER
-	 */
-
-	data.put(
-	        "branchTagline",
-	        eventNode.getBranchCertTagLine()
-	);
-
-	data.put(
-	        "venue",
-	        eventNode.getAddressLine3()
-	);
-
-
-	/*
-	 * HIERARCHY VIEW
-	 */
-
-	data.put(
-	        "districtName",
-	        district != null
-	                ? district.getNodeName()
-	                : null
-	);
-
-	data.put(
-	        "districtLogoId",
-	        district != null
-	                ? district.getPhotoFile()
-	                : null
-	);
-
-	data.put(
-	        "stateName",
-	        state != null
-	                ? state.getNodeName()
-	                : null
-	);
-
-	data.put(
-	        "stateLogoId",
-	        state != null
-	                ? state.getPhotoFile()
-	                : null
-	);
-
-	data.put(
-	        "nationalName",
-	        national != null
-	                ? national.getNodeName()
-	                : null
-	);
-
-	data.put(
-	        "nationalLogoId",
-	        national != null
-	                ? national.getPhotoFile()
-	                : null
-	);
-
-	/*
-	 * REPRESENTING
-	 */
-
-	data.put("representing", participant.getUserFname());
-
-	/*
-	 * SIGNATORIES (NO signature image)
-	 */
-
-	List<Map<String, Object>> signatories = coreUserRepository
-		.findBranchSignatories(eventNode.getNodeId(), UserType.OFFICIAL).stream().map(u -> {
-
-		    Map<String, Object> s = new HashMap<>();
-
-		    s.put("name", ((u.getUserFname() != null ? u.getUserFname() : "")
-			    + (u.getUserLname() != null ? " " + u.getUserLname() : "")).trim());
-
-		    s.put("designation",
-
-			    u.getDesignation() != null ? u.getDesignation().getDesigName() : null);
-
-		    s.put("email", u.getUserEmail());
-
-		    s.put("phone", u.getMobileNumber());
-
-		    s.put("description", u.getOfficialDescription());
-
-		    return s;
-
-		}).toList();
-
-	data.put("signatories", signatories);
-
-	return data;
-    }
 
     private void logResults(List<Object[]> results) {
 	if (logger.isDebugEnabled()) {
