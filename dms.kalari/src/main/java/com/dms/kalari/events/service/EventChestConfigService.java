@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,7 +68,7 @@ public class EventChestConfigService {
          * EVENT ITEM MAPS
          */
         List<EventItemMap> itemMaps =
-                eventItemMapRepository.findByEvent_EventId(eventId);
+                eventItemMapRepository.findByEvent_EventIdOrderByItem_EvitemNameAsc(eventId);
 
         /*
          * EXISTING CONFIGS
@@ -267,7 +268,10 @@ public class EventChestConfigService {
     }
 
     @Transactional
-    public void regenerateChestNumbers(Long eventId) {
+    public void regenerateChestNumbers(
+            Long eventId,
+            boolean regenerate
+    ) {
 
         List<EventChestConfig> configs =
                 eventChestConfigRepository.findByEventId(eventId);
@@ -290,13 +294,20 @@ public class EventChestConfigService {
             }
 
             /*
-             * FIRST GENERATION:
-             * nobody has chest number
+             * REORDER GENERATION:
+             * true when regenerate is forced
+             * OR nobody has a chest number yet.
+             * controls:
+             *   → team→name ordering
+             *   → currentNo starts from startNo
              */
-            boolean firstGeneration =
+            boolean reorderGeneration =
+
+                    regenerate
+
+                    ||
 
                     members.stream()
-
                             .noneMatch(
                                     m ->
                                             m.getMemberChestNo()
@@ -304,28 +315,68 @@ public class EventChestConfigService {
                             );
 
             /*
-             * ONLY DURING INITIAL GENERATION
-             * ORDER:
+             * FETCH ORDERED LIST
              * TEAM → NAME
              */
-            if (firstGeneration) {
-        	
-                 members =
+            if (reorderGeneration) {
+
+                members =
                         memberEventItemRepository
                                 .findAllByEventItemAndGenderOrderTeamAndName(
                                         config.getEventItemMap().getEimId(),
                                         config.getGender()
                                 );
-        	
-        	
+            }
+
+            /*
+             * REGENERATE MODE:
+             * CLEAR CHEST NUMBERS IN MEMORY
+             * FOR ALL UNSCORED MEMBERS
+             *
+             * WHY:
+             * chest numbers are not cleared in DB here.
+             * without this, existing unscored members
+             * retain their old chestNo in memory,
+             * so downstream == null filters skip them.
+             * clearing in memory lets all downstream
+             * logic treat them as blank.
+             * inheritance re-assigns team members correctly.
+             * new numbers assigned to the rest.
+             */
+            if (regenerate) {
+
+                members.stream()
+
+                        .filter(
+                                m -> !hasScores(m)
+                        )
+
+                        .forEach(
+                                m ->
+                                        m.setMemberChestNo(
+                                                null
+                                        )
+                        );
             }
 
             /*
              * RESERVE EXISTING CHEST NUMBERS
+             * regenerate=false → reserve all assigned
+             * regenerate=true  → reserve scored only
              */
             Set<Long> usedNumbers =
 
                     members.stream()
+
+                            .filter(
+                                    m ->
+
+                                            !regenerate
+
+                                            ||
+
+                                            hasScores(m)
+                            )
 
                             .map(
                                     MemberEventItem
@@ -342,7 +393,7 @@ public class EventChestConfigService {
 
             Long currentNo;
 
-            if (firstGeneration) {
+            if (reorderGeneration) {
 
                 currentNo =
                         config.getStartNo();
@@ -365,12 +416,22 @@ public class EventChestConfigService {
                                 + 1;
             }
 
-            List<MemberEventItem> toUpdate =
-                    new ArrayList<>();
+            /*
+             * USING LinkedHashSet TO PREVENT
+             * DUPLICATE SAVES
+             * preserves insertion order
+             */
+            Set<MemberEventItem> toUpdate =
+                    new LinkedHashSet<>();
 
             /*
              * INHERIT TEAM CHEST
-             * FOR REPLACED TEAM MEMBERS
+             * FOR REPLACED / REGENERATED TEAM MEMBERS
+             *
+             * regenerate=false → inherit from any assigned member
+             * regenerate=true  → inherit from scored members only
+             *   (unscored were cleared above,
+             *    cannot serve as inheritance source)
              */
             Map<String, Long> existingTeamChestMap =
 
@@ -378,8 +439,19 @@ public class EventChestConfigService {
 
                             .filter(
                                     m ->
+
                                             m.getMemberChestNo()
                                                     != null
+
+                                            &&
+
+                                            (
+                                                    !regenerate
+
+                                                    ||
+
+                                                    hasScores(m)
+                                            )
                             )
 
                             .filter(
@@ -423,6 +495,8 @@ public class EventChestConfigService {
 
             /*
              * APPLY TEAM INHERITANCE
+             * skip members who already have a number
+             * (scored members, previously inherited)
              */
             for (MemberEventItem member : members) {
 
@@ -460,16 +534,19 @@ public class EventChestConfigService {
                                 teamCode.trim();
 
                 Long inherited =
+                        existingTeamChestMap.get(key);
 
-                        existingTeamChestMap
-                                .get(key);
-
-                if (
-                        inherited
-                                != null
-                ) {
+                if (inherited != null) {
 
                     member.setMemberChestNo(
+                            inherited
+                    );
+
+                    /*
+                     * reserve inherited number
+                     * so new assignments don't collide
+                     */
+                    usedNumbers.add(
                             inherited
                     );
 
@@ -481,6 +558,10 @@ public class EventChestConfigService {
 
             /*
              * NEW TEAMS
+             * chestNo == null because:
+             *   unscored existing → cleared above
+             *   inherited → set above, not null
+             *   scored → never cleared, not null
              */
             Map<String,
                     List<MemberEventItem>>
@@ -548,13 +629,10 @@ public class EventChestConfigService {
             ) {
 
                 while (
-
                         usedNumbers.contains(
                                 currentNo
                         )
-
                 ) {
-
                     currentNo++;
                 }
 
@@ -562,11 +640,8 @@ public class EventChestConfigService {
                         currentNo;
 
                 for (
-
                         MemberEventItem member
-
                         : entry.getValue()
-
                 ) {
 
                     member.setMemberChestNo(
@@ -587,10 +662,10 @@ public class EventChestConfigService {
 
             /*
              * INDIVIDUAL MEMBERS
+             * chestNo == null sufficient
+             * after memory clear above
              */
-            List<MemberEventItem>
-
-                    individualMembers =
+            List<MemberEventItem> individualMembers =
 
                     members.stream()
 
@@ -616,21 +691,15 @@ public class EventChestConfigService {
                             .toList();
 
             for (
-
                     MemberEventItem member
-
                     : individualMembers
-
             ) {
 
                 while (
-
                         usedNumbers.contains(
                                 currentNo
                         )
-
                 ) {
-
                     currentNo++;
                 }
 
@@ -649,42 +718,62 @@ public class EventChestConfigService {
                 currentNo++;
             }
 
-            if (
-
-                    !toUpdate.isEmpty()
-
-            ) {
+            if (!toUpdate.isEmpty()) {
 
                 memberEventItemRepository
                         .saveAll(
-                                toUpdate
+                                new ArrayList<>(toUpdate)
                         );
             }
         }
     }
-    
+
     private boolean hasScores(MemberEventItem member) {
 
-	    return
+        return
 
-	        (member.getMemberEventScore() != null
-	                && member.getMemberEventScore() > 0)
+            (member.getMemberEventScore() != null
+                    && member.getMemberEventScore() > 0)
 
-	        ||
+            ||
 
-	        (member.getMemberScore1() != null
-	                && member.getMemberScore1() > 0)
+            (member.getMemberScore1() != null
+                    && member.getMemberScore1() > 0)
 
-	        ||
+            ||
 
-	        (member.getMemberScore2() != null
-	                && member.getMemberScore2() > 0)
+            (member.getMemberScore2() != null
+                    && member.getMemberScore2() > 0)
 
-	        ||
+            ||
 
-	        (member.getMemberScore3() != null
-	                && member.getMemberScore3() > 0);
+            (member.getMemberScore3() != null
+                    && member.getMemberScore3() > 0)
+        
+            ||
+
+            (member.getMemberEventGrade() != null);
+        
+        
+    }
+    
+    
+    private boolean eligibleForGeneration(
+	        MemberEventItem member,
+	        boolean regenerate
+	) {
+
+	    if (hasScores(member)) {
+	        return false;
+	    }
+
+	    if (regenerate) {
+	        return true;
+	    }
+
+	    return member.getMemberChestNo() == null;
 	}
+    
     
     
     

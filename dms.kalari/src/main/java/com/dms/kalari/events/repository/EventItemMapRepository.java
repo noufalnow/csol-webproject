@@ -36,6 +36,8 @@ public interface EventItemMapRepository extends BaseRepository<EventItemMap, Lon
 
 	// Alternative naming convention that would work without @Query
 	List<EventItemMap> findByEvent_EventId(Long eventId);
+	
+	List<EventItemMap> findByEvent_EventIdOrderByItem_EvitemNameAsc(Long eventId);
 
 	/*
 	 * @Modifying

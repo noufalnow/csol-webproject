@@ -22,6 +22,12 @@
             <input type="hidden"
                    th:name="${_csrf.parameterName}"
                    th:value="${_csrf.token}" />
+				   
+				   
+		   <input type="hidden" 
+		          id="regenerateFlag" 
+		          name="regenerateFlag" 
+		          value="false" />
 
             <!-- EMPTY -->
             <div th:if="${matrix == null or #maps.isEmpty(matrix)}">
@@ -143,16 +149,63 @@
 
         <button type="button"
                 class="btn btn-primary"
-                onclick="submitHtmlForm('chestConfigForm')">
+                onclick="customeSubmit('chestConfigForm')">
 
             <i class="fas fa-save me-1"></i>
-            Save Configuration
+            Generate Chest No.
 
         </button>
+		
+		<button type="button"
+		        th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants_rechestno'')')}"
+				style="background: orange;"
+		        class="btn btn-primary"
+		        onclick="customeSubmit('chestConfigForm', 'true')">
 
+		    <i class="fas fa-sync me-1"></i>
+		    Re-Generate Chest No.
+
+		</button>
     </div>
 
 </div>
+
+<script>
+
+	function customeSubmit(formId, regenerateFlag) {
+
+	    if (regenerateFlag === 'true') {
+
+			Swal.fire({
+			    title: 'Re-Generate Chest Numbers?',
+			    text: 'This will reassign and overwrite chest numbers for all unscored participants. The already generated chest number sheet will become obsolete. Score entry must be based on the new chest number sheet only.',
+			    icon: 'warning',
+			    showCancelButton: true,
+			    confirmButtonColor: '#d33',
+			    cancelButtonColor: '#6c757d',
+			    confirmButtonText: 'Yes, Re-Generate',
+			    cancelButtonText: 'Cancel'
+			}).then((result) => {
+
+	            if (result.isConfirmed) {
+
+	                document.getElementById('regenerateFlag')
+	                        .value = 'true';
+
+	                submitHtmlForm(formId);
+	            }
+	        });
+
+	    } else {
+
+	        document.getElementById('regenerateFlag')
+	                .value = 'false';
+
+	        submitHtmlForm(formId);
+	    }
+	}
+
+</script>
 
 
 <style>

@@ -1245,46 +1245,59 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 
     @PostMapping("/participants_chestno/{eventid}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> updateChestConfig(@PathVariable("eventid") Long mEventId,
-	    @RequestParam Map<String, String> params) {
+    public ResponseEntity<Map<String, Object>> updateChestConfig(
+            @PathVariable("eventid") Long mEventId,
+            @RequestParam Map<String, String> params,
+            @RequestParam(value = "regenerateFlag", defaultValue = "false") boolean regenerate
+    ) {
 
-	Long eventId = XorMaskHelper.unmask(mEventId);
+        Long eventId = XorMaskHelper.unmask(mEventId);
 
-	List<EventChestConfigDTO> rows = new ArrayList<>();
+        List<EventChestConfigDTO> rows = new ArrayList<>();
 
-	// matches both maleChest[303] and femaleChest[303]
-	java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^(male|female)Chest\\[(\\d+)\\]$");
+        // matches both maleChest[303] and femaleChest[303]
+        java.util.regex.Pattern pattern =
+                java.util.regex.Pattern.compile(
+                        "^(male|female)Chest\\[(\\d+)\\]$"
+                );
 
-	params.forEach((key, value) -> {
-	    if (value == null || value.isBlank())
-		return;
+        params.forEach((key, value) -> {
 
-	    java.util.regex.Matcher m = pattern.matcher(key);
-	    if (!m.matches())
-		return;
+            if (value == null || value.isBlank()) return;
 
-	    String gender = m.group(1); // "male" or "female"
-	    Long eimId = Long.valueOf(m.group(2));
+            java.util.regex.Matcher m = pattern.matcher(key);
 
-	    EventChestConfigDTO dto = new EventChestConfigDTO();
-	    dto.setEventItemMapId(eimId);
-	    dto.setGender(gender.equals("male") ? CoreUser.Gender.MALE : CoreUser.Gender.FEMALE);
-	    dto.setCurrentNo(Long.valueOf(value));
-	    dto.setStartNo(Long.valueOf(value));
-	    rows.add(dto);
-	});
+            if (!m.matches()) return;
 
-	eventChestConfigService.updateChestConfigs(eventId, rows);
+            String gender = m.group(1);
+            Long eimId = Long.valueOf(m.group(2));
 
-	eventChestConfigService.regenerateChestNumbers(eventId);
+            EventChestConfigDTO dto = new EventChestConfigDTO();
+            dto.setEventItemMapId(eimId);
+            dto.setGender(
+                    gender.equals("male")
+                            ? CoreUser.Gender.MALE
+                            : CoreUser.Gender.FEMALE
+            );
+            dto.setCurrentNo(Long.valueOf(value));
+            dto.setStartNo(Long.valueOf(value));
+            rows.add(dto);
+        });
 
-	Map<String, Object> body = new HashMap<>();
+        eventChestConfigService.updateChestConfigs(eventId, rows);
 
-	body.put("message", "Chest No. updated successfully");
+        eventChestConfigService.regenerateChestNumbers(eventId, regenerate);
 
-	body.put("target", "modal2");
-	body.put("status", "success");
-	return ResponseEntity.ok(body);
+        Map<String, Object> body = new HashMap<>();
+        body.put("message",
+                regenerate
+                        ? "Chest No. regenerated successfully"
+                        : "Chest No. updated successfully"
+        );
+        body.put("target", "modal2");
+        body.put("status", "success");
+
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping("/participants_judge_score/{eventid}")
