@@ -53,6 +53,7 @@ import java.io.FileInputStream;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.Security;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -387,9 +388,140 @@ public class CertificateService {
 	data.put("certificatePlace", certificateDistrict);
 
 	// Certificate date
-	data.put("certificateDate",
+	LocalDate start =
+	        mei.getMemberEvent()
+	                .getEventPeriodStart();
 
-		mei.getMemberEvent().getEventPeriodEnd());
+	LocalDate end =
+	        mei.getMemberEvent()
+	                .getEventPeriodEnd();
+
+	String certificateDate;
+
+	if (
+	        start == null
+	        ||
+	        end == null
+	) {
+
+	    certificateDate = null;
+
+	}
+	else if (
+	        start.equals(end)
+	) {
+
+	    certificateDate =
+	            start.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd MMM yyyy"
+	                    )
+	            );
+
+	}
+	else if (
+
+	        start.getYear()
+	        ==
+	        end.getYear()
+
+	        &&
+
+	        start.getMonth()
+	        ==
+	        end.getMonth()
+
+	) {
+
+	    List<String> days =
+	            start
+	                    .datesUntil(
+	                            end.plusDays(1)
+	                    )
+	                    .map(
+	                            d ->
+	                            String.valueOf(
+	                                    d.getDayOfMonth()
+	                            )
+	                    )
+	                    .toList();
+
+	    certificateDate =
+	            String.join(
+	                    ", ",
+	                    days
+	            )
+
+	            +
+
+	            " "
+
+	            +
+
+	            end.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "MMM yyyy"
+	                    )
+	            );
+
+	}
+	else if (
+
+	        start.getYear()
+	        ==
+	        end.getYear()
+
+	) {
+
+	    certificateDate =
+
+	            start.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd MMM"
+	                    )
+	            )
+
+	            +
+
+	            " - "
+
+	            +
+
+	            end.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd MMM yyyy"
+	                    )
+	            );
+
+	}
+	else {
+
+	    certificateDate =
+
+	            start.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd MMM yyyy"
+	                    )
+	            )
+
+	            +
+
+	            " - "
+
+	            +
+
+	            end.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd MMM yyyy"
+	                    )
+	            );
+
+	}
+
+	data.put(
+	        "certificateDate",
+	        certificateDate
+	);
 
 	/*
 	 * ====================================== MEDAL
@@ -644,28 +776,26 @@ public class CertificateService {
 	return signedPdf.toByteArray();
     }
 
+
+    
     private String resolveNodeLogoPath(Node node) {
 
 	    if (node == null || node.getPhotoFile() == null) {
 	        return null;
 	    }
 
-	    CoreFile file =
-	            fileRepository
-	                    .findById(
-	                            node.getPhotoFile()
-	                    )
-	                    .orElse(null);
+	    CoreFile file = fileRepository
+	            .findById(node.getPhotoFile())
+	            .orElse(null);
 
 	    if (file == null || file.getFilePath() == null) {
 	        return null;
 	    }
 
-	    File originalFile =
-	            new File(
-	                    BASE_PATH,
-	                    file.getFilePath()
-	            );
+	    File originalFile = new File(
+	            BASE_PATH,
+	            file.getFilePath()
+	    );
 
 	    if (!originalFile.exists()
 	            || !originalFile.isFile()
@@ -674,23 +804,9 @@ public class CertificateService {
 	        return null;
 	    }
 
-	    File thumbnailFile =
-	            new File(
-	                    originalFile.getParentFile(),
-	                    "thumbnails/"
-	                    + file.getFileId()
-	                    + ".jpg"
-	            );
-
-	    String uri =
-	            "file:"
-	            + (
-	                thumbnailFile.exists()
-	                ? thumbnailFile
-	                : originalFile
-	            )
+	    String uri = originalFile
 	            .toURI()
-	            .getPath();
+	            .toString();
 
 	    System.out.println(
 	            node.getNodeName()

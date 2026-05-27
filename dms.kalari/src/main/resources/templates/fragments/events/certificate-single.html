@@ -6,23 +6,20 @@
 	<style>
 		@page {
 			size: A4 landscape;
-			margin: 1mm;
+			margin: 0mm;
 		}
 
 		body {
 			font-family: 'Times New Roman', serif;
 			margin: 0;
 			padding: 0;
-			background-color: #f9f3e0;
+			background-color:#e8f0f6;
 		}
 
 		.certificate-page {
 			width: 100%;
-			/* FIX: use min-height instead of height to avoid blank space */
 			min-height: 100vh;
-			background-color: #fff;
-			border: 12px double #d0b152;
-			box-sizing: border-box;
+			background-color: #e8f0f6;
 			padding: 0;
 			position: relative;
 			overflow: hidden;
@@ -33,14 +30,16 @@
 			width: 100%;
 			display: table;
 			table-layout: fixed;
-			margin-bottom: 10mm;
+			/* CHANGE 1: no bottom margin — logos sit flush at top */
+			margin-bottom: 6mm;
 		}
 
 		.affiliation-top {
 			text-align: center;
 			color: #2c3e50;
 			width: 100%;
-			padding-top: 7mm;
+			/* CHANGE 1: remove top padding so logos touch the very top */
+			padding-top: 0;
 		}
 
 		.affiliation-top .federation-row {
@@ -57,30 +56,40 @@
 		}
 
 		.affiliation-top .federation-text {
-			font-size: 22pt;
+			font-size: 15pt;
 			font-weight: bold;
 			text-transform: uppercase;
 			line-height: 1.1;
+			margin-bottom: 3mm;
+		}
+
+		.affiliation-top .affiliation-text {
+			font-size: 13pt;
+			font-style: italic;
+			line-height: 1.4;
+			margin-top: 0;
+			margin-bottom: 5mm;
 		}
 
 		.affiliation-top .federation-text-medium {
-			font-size: 12pt;
+			font-size: 15pt;
 			font-weight: bold;
 			text-transform: uppercase;
 			margin-top: 2mm;
 		}
 
 		.affiliation-top .federation-text-small {
-			font-size: 12pt;
+			font-size: 15pt;
 			font-weight: bold;
 			text-transform: uppercase;
 			margin-top: 1mm;
 		}
 
+		/* CHANGE 1: logo-strip — flush to top, no top margin */
 		.logo-container {
 			width: 100%;
 			text-align: center;
-			margin: 6mm 0 8mm;
+			margin: 0 0 8mm;
 		}
 
 		.affiliation-top .logo-small {
@@ -88,19 +97,9 @@
 			width: auto;
 			display: inline-block;
 		}
-		
-		
-		
-		.affiliation-top .affiliation-text {
-			font-size: 11pt;
-			font-style: italic;
-			line-height: 1.4;
-			margin-top: 2mm;
-			margin-bottom: 2mm;
-		}
 
 		.certificate-title {
-		    font-size: 13pt;
+		    font-size: 16pt;
 		    font-weight: bold;
 		    color: #2c3e50;
 		    text-transform: uppercase;
@@ -109,11 +108,11 @@
 		}
 
 		.certificate-subtitle {
-		    font-size: 20pt;        /* big like a title */
+		    font-size: 24pt;
 		    font-weight: bold;
 		    color: #8b0000;
 		    text-transform: uppercase;
-		    margin-top: 3mm;        /* gap between the two */
+		    margin-top: 3mm;
 		    margin-bottom: 2mm;
 		    letter-spacing: 2px;
 		}
@@ -133,8 +132,6 @@
 			max-height: 25mm;
 			width: auto;
 		}
-		
-		
 
 		.title-container .title {
 			font-size: 22pt;
@@ -163,7 +160,7 @@
 		}
 
 		.event-description {
-			font-size: 14pt;
+			font-size: 16pt;
 			color: #2c3e50;
 			margin-bottom: 8mm;
 			width: 85%;
@@ -175,7 +172,7 @@
 
 		.certificate-number {
 			margin-left: 8mm;
-			font-size: 9pt;
+			font-size: 11pt;
 			text-align: right;
 		}
 
@@ -183,7 +180,7 @@
 		.signatories {
 			margin-top: 0;
 			padding-top: 0;
-			font-size: 12pt;
+			font-size: 14pt;
 			color: #2c3e50;
 			width: 100%;
 			display: table;
@@ -194,11 +191,28 @@
 			display: table-cell;
 			text-align: center;
 			padding: 0 5mm;
+			vertical-align: top;
 		}
 
 		.signatory i {
-			font-size: 10pt;
+			font-size: 12pt;
 			color: gray;
+		}
+
+		/* signature image block — centred above name */
+		.sig-img-wrap {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 20mm;
+			width: 100%;
+			margin-bottom: 2mm;
+		}
+
+		.sig-img-wrap img {
+			height: 20mm;
+			width: 38mm;
+			object-fit: contain;
 		}
 
 		/* === FOOTER === */
@@ -227,7 +241,6 @@
 		}
 
 		/* === BOTTOM BAR === */
-		/* FIX: remove absolute positioning to stay with content flow */
 		.bottom-bar {
 			width: 100%;
 			display: flex;
@@ -250,8 +263,8 @@
 			height: 100px;
 		}
 
-		/* === PLACE/DATE + BOTTOM-BAR COMBINED ROW === */
-		/* FIX: wrapper to put place/date left and bottom-bar right on same level */
+		/* === PLACE + BOTTOM-BAR ROW === */
+		/* CHANGE 2: place-date-block now only shows Place (date moved to transcript) */
 		.info-and-bottom-row {
 			display: table;
 			width: 95%;
@@ -273,18 +286,16 @@
 			display: table-cell;
 			width: 68%;
 			text-align: right;
-			/*vertical-align: top;*/
 		}
 
-		/* subheading row: medal left, text centered on page */
+		/* subheading row */
 		.subheading-row {
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			position: relative;
-
-			margin-top: -8mm;
-			margin-bottom: -2mm;
+			margin-top: 4mm;
+			margin-bottom: 4mm;
 		}
 
 		.subheading-row .medal-left {
@@ -296,46 +307,49 @@
 		.subheading-row .subheading-text {
 			text-align: center;
 		}
-		
-		.logo-strip{
-		    width:100%;
-		    text-align:center;
-		    margin:5mm 0;
+
+		/* logo-strip — flush to top, same background as page */
+		.logo-strip {
+		    width: 100%;
+		    text-align: center;
+		    margin: 0 0 8mm 0;
+		    padding: 4mm 0 4mm;
+		    background-color: #e8f0f6;
 		}
 
-		/* one single rule */
-		.logo-strip img{
-		    display:inline-block;
-		    vertical-align:middle;
-
-		    /* increase horizontal spacing */
-		    margin-left:18mm;
-		    margin-right:18mm;
-
-		    /* same size for all */
-		    height:22mm;
-		    width:auto;
+		/* pipe separator between logos */
+		.logo-sep {
+		    display: inline-block;
+		    vertical-align: middle;
+		    width: 1px;
+		    height: 18mm;
+		    background-color: #2c3e50;
+		    opacity: 0.35;
+		    margin: 0 4mm;
 		}
 
-		/* remove special sizing */
+		.logo-strip img {
+		    display: inline-block;
+		    vertical-align: middle;
+		    margin-left: 6mm;
+		    margin-right: 6mm;
+		    height: 22mm;
+		    width: auto;
+		}
+
 		.federation-logo,
-		.main-logo{
-		    height:22mm;
-		    width:auto;
+		.main-logo {
+		    height: 22mm;
+		    width: auto;
 		}
 
-		@media (max-width:768px){
-
-		    .logo-strip img{
-		        height:18mm;
-
-		        /* reduce spacing for mobile */
-		        margin-left:8mm;
-		        margin-right:8mm;
+		@media (max-width: 768px) {
+		    .logo-strip img {
+		        height: 18mm;
+		        margin-left: 8mm;
+		        margin-right: 8mm;
 		    }
 		}
-		
-		
 	</style>
 </head>
 
@@ -344,6 +358,31 @@
 
 	    <div class="top-bar">
 	        <div class="affiliation-top">
+
+	            <!-- CHANGE 1: logo-strip is now the very first element, flush to top -->
+	            <div class="logo-strip">
+	                <img
+	                    th:if="${stateLogo != null}"
+	                    th:src="${stateLogo}"
+	                    class="federation-logo"
+	                    alt="State Logo"/>
+
+	                <span class="logo-sep" th:if="${stateLogo != null and districtLogo != null}"></span>
+
+	                <img
+	                    th:if="${districtLogo != null}"
+	                    th:src="${districtLogo}"
+	                    class="federation-logo main-logo"
+	                    alt="District Logo"/>
+
+	                <span class="logo-sep" th:if="${districtLogo != null and nationalLogo != null}"></span>
+
+	                <img
+	                    th:if="${nationalLogo != null}"
+	                    th:src="${nationalLogo}"
+	                    class="federation-logo"
+	                    alt="National Logo"/>
+	            </div>
 
 	            <!-- Association Name -->
 	            <div class="federation-text" th:text="${districtName}">
@@ -355,88 +394,42 @@
 	                Affiliated to the District Sports Council, Thiruvananthapuram
 	            </div>
 
-				<div class="logo-strip" style="margin-bottom: 20mm;">
-
-				    <!-- Left -->
-				    <img
-				        th:if="${stateLogo != null}"
-				        th:src="${stateLogo}"
-				        class="federation-logo"
-				        alt="State Logo"/>
-
-				    <!-- Middle -->
-				    <img
-				        th:if="${districtLogo != null}"
-				        th:src="${districtLogo}"
-				        class="federation-logo main-logo"
-				        alt="District Logo"/>
-
-				    <!-- Right -->
-				    <img
-				        th:if="${nationalLogo != null}"
-				        th:src="${nationalLogo}"
-				        class="federation-logo"
-				        alt="National Logo"/>
-
-				</div>
-
 	            <!-- Championship + Medal badge row -->
 	            <div class="subheading-row">
 
-	                <!-- Medal: hidden for PARTICIPATION -->
+	                <!-- Participant Photo -->
 	                <img
-	                    class="medal-left"
+	                    class="participant-right"
 	                    style="
-	                        height: 25mm;
-	                        width: auto;
-	                        position: absolute;
-	                        left: 25mm;
-	                        top: 8mm;
-	                        align-self: flex-start;
+	                        height:40mm;
+	                        width:auto;
+	                        position:absolute;
+	                        right:15mm;
+	                        top:-10mm;
+	                        align-self:flex-start;
+	                        border:1px solid #c9b26d;
+	                        padding:1mm;
+	                        background:#fff;
 	                    "
-	                    th:if="${medalType != 'PARTICIPATION'}"
-	                    th:src="${medalImage}"
-	                    th:alt="${medalType} + ' Medal'" />
-						
-						
-						<!-- Participant Photo -->
-						<img
-						    class="participant-right"
-						    style="
-						        height:40mm;
-						        width:auto;
-
-						        position:absolute;
-								right:15mm;
-								top:-10mm;
-
-						        align-self:flex-start;
-
-						        border:1px solid #c9b26d;
-						        padding:1mm;
-
-						        background:#fff;
-						    "
-						    th:if="${participantPhoto != null}"
-						    th:src="${participantPhoto}"
-						    alt="Participant Photo"/>
+	                    th:if="${participantPhoto != null}"
+	                    th:src="${participantPhoto}"
+	                    alt="Participant Photo"/>
 
 	                <div class="subheading-text">
 	                    <div class="certificate-title">District Championship</div>
-	                    <!-- Title switches based on medalType -->
 	                    <div class="certificate-subtitle"
-	                         th:text="${medalType == 'PARTICIPATION'} ? 'Certificate of Participation' : 'Merit Certificate'">
-	                        Merit Certificate
+	                         th:text="${medalType == 'PARTICIPATION'} ? 'Certificate of Participation' : 'Certificate of Merit'">
+	                        Certificate of Merit
 	                    </div>
 	                </div>
-					
-					
+
 	            </div>
 
 	        </div>
 	    </div>
 
 	    <!-- Event description: MERIT (GOLD/SILVER/BRONZE) -->
+	    <!-- CHANGE 2: date now embedded in the transcript text ("held on <date>") -->
 	    <div class="event-description"
 	         th:if="${medalType != 'PARTICIPATION'}"
 	         style="line-height: 1.6;">
@@ -452,7 +445,6 @@
 	            Place in the
 	            <b th:text="${certificateDistrict}">District</b>
 	            District Kalarippayattu Competitions
-	            <b th:text="${certificateYear}">2026</b>
 	        </div>
 
 	        <div>
@@ -460,11 +452,18 @@
 	            <b th:text="${certificateCategory}">SENIOR MALE</b>
 	            Category in the
 	            <b th:text="${certificateItem}">Chuvadukal</b>
-	            event.
+	            event,
+	            held at
+	            <b th:text="${certificatePlace}">Thiruvananthapuram</b>
+	            on
+				<b th:text="${certificateDate}">
+				    23 May 2026
+				</b>
 	        </div>
 	    </div>
 
 	    <!-- Event description: PARTICIPATION -->
+	    <!-- CHANGE 2: date now embedded in the transcript text ("held on <date>") -->
 	    <div class="event-description"
 	         th:if="${medalType == 'PARTICIPATION'}"
 	         style="line-height: 1.6;">
@@ -478,7 +477,6 @@
 	            participated in the
 	            <b th:text="${certificateDistrict}">District</b>
 	            District Kalarippayattu Competitions
-	            <b th:text="${certificateYear}">2026</b>
 	        </div>
 
 	        <div>
@@ -486,23 +484,21 @@
 	            <b th:text="${certificateCategory}">SENIOR MALE</b>
 	            Category in the
 	            <b th:text="${certificateItem}">Chuvadukal</b>
-	            event.
+	            event,
+	            held at
+	            <b th:text="${certificatePlace}">Thiruvananthapuram</b>
+	            on
+	            <b th:text="${#temporals.format(certificateDate,'dd MMM yyyy')}">23 May 2026</b>.
 	        </div>
 	    </div>
 
 
-	    <!-- Place/date LEFT + bottom-bar RIGHT — unchanged -->
+	    <!-- CHANGE 2: place-date-block removed; only QR / cert-no / verification remain -->
 	    <div class="info-and-bottom-row" style="margin-top:18mm;">
 
+	        <!-- Empty cell to keep layout balanced -->
 	        <div class="place-date-block" style="margin-top:5mm;">
-	            <div>
-	                <b>Place:</b>
-	                <span th:text="${certificatePlace}">Thiruvananthapuram</span>
-	            </div>
-	            <div>
-	                <b>Date:</b>
-	                <span th:text="${#temporals.format(certificateDate,'dd MMM yyyy')}">23 May 2026</span>
-	            </div>
+	            <!-- date intentionally removed from here -->
 	        </div>
 
 	        <div class="verification-block">
@@ -513,16 +509,16 @@
 	                </div>
 
 	                <div class="certificate-number" style="position:relative; top:-8mm;">
-						Certificate No:
-						<span th:text="${certificateNo}"></span>
+	                    Certificate No:
+	                    <span th:text="${certificateNo}"></span>
 	                </div>
 
-					<div style="position:relative; top:-8mm; font-size:9px; color:#777; opacity:0.65;">
-					    <i>
-					        Verification ID:
-					        <span th:text="${verificationIdMasked}"></span>
-					    </i>
-					</div>
+	                <div style="position:relative; top:-8mm; font-size:9px; color:#777; opacity:0.65;">
+	                    <i>
+	                        Verification ID:
+	                        <span th:text="${verificationIdMasked}"></span>
+	                    </i>
+	                </div>
 
 	            </div>
 	        </div>
@@ -532,44 +528,38 @@
 
 	    <div class="signatories" style="margin-top: -5mm; margin-bottom: 3mm;">
 
-	        <!-- President — unchanged -->
+	        <!-- Observer -->
 	        <div class="signatory">
-				<div style="height:20mm; width:38mm; overflow:hidden; display:flex; justify-content:center; align-items:center; margin-bottom:1mm; margin-left:10mm;">
-				    <img
-				        th:if="${signatories.size() > 0 and signatories[0].signature != null}"
-				        th:src="${signatories[0].signature}"
-				        style="height:20mm; width:38mm;"
-				        alt="Signature"/>
-				    <div th:unless="${signatories.size() > 0 and signatories[0].signature != null}"
-				         style="height:20mm;"></div>
-				</div>
+	            <div class="sig-img-wrap"></div>
+	            <div>Observer</div>
+	            <i>District Sports Council,</i>
+	            <div><i th:text="${certificatePlace}">Branch</i></div>
+	        </div>
+
+	        <!-- President -->
+	        <div class="signatory">
+	            <div class="sig-img-wrap">
+	                <img
+	                    th:if="${signatories.size() > 0 and signatories[0].signature != null}"
+	                    th:src="${signatories[0].signature}"
+	                    alt="Signature"/>
+	            </div>
 	            <div th:text="${signatories.size() > 0 ? signatories[0].name : ''}">R. Sreedharan Nair</div>
 	            <i th:text="${signatories.size() > 0 ? signatories[0].designation : ''}">President</i>
 	            <div><i th:text="${districtName}">Branch</i></div>
 	        </div>
 
-	        <!-- Secretary — unchanged -->
+	        <!-- Secretary -->
 	        <div class="signatory">
-				<div style="height:20mm; width:38mm; overflow:hidden; display:flex; justify-content:center; align-items:center; margin-bottom:1mm; margin-left:10mm;">
-				    <img
-				        th:if="${signatories.size() > 1 and signatories[1].signature != null}"
-				        th:src="${signatories[1].signature}"
-				        style="height:20mm; width:38mm;"
-				        alt="Signature"/>
-				    <div th:unless="${signatories.size() > 1 and signatories[1].signature != null}"
-				         style="height:20mm;"></div>
-				</div>
+	            <div class="sig-img-wrap">
+	                <img
+	                    th:if="${signatories.size() > 1 and signatories[1].signature != null}"
+	                    th:src="${signatories[1].signature}"
+	                    alt="Signature"/>
+	            </div>
 	            <div th:text="${signatories.size() > 1 ? signatories[1].name : ''}">G. Radhakrishnan</div>
 	            <i th:text="${signatories.size() > 1 ? signatories[1].designation : ''}">Secretary</i>
 	            <div><i th:text="${districtName}">Branch</i></div>
-	        </div>
-
-	        <!-- Observer — unchanged -->
-	        <div class="signatory">
-	            <div style="height:18mm;"></div>
-	            <div>Observer</div>
-	            <i>District Sports Council,</i>
-	            <div><i th:text="${certificatePlace}">Branch</i></div>
 	        </div>
 
 	    </div>
