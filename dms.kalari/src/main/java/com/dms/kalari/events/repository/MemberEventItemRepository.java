@@ -83,11 +83,11 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		      AND (:category IS NULL OR mei.memberEventCategory = :category)
 		      AND (:memberNode IS NULL OR n.nodeId = :memberNode)
 
-                      ORDER BY
-                      CASE
-                          WHEN :viewType = 'tabsheet'
-                          THEN mei.memberEventScore
-                      END DESC NULLS LAST,
+                    ORDER BY
+                        CASE
+                            WHEN :viewType IN ('tabsheet', 'finallist')
+                            THEN mei.memberEventScore
+                        END DESC NULLS LAST,
                     
                       mei.memberChestNo ASC,
 		      n.nodeName ASC,

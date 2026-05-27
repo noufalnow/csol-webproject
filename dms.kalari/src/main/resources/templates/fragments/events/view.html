@@ -144,9 +144,11 @@
 
 
 
+				
+
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
 				   href="javascript:void(0);"
-				   class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center px-2 py-1"
+				   class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 
 				   th:onclick="'openParticipantView(\'chestcard\','
 				       + ${xorMaskHelper.mask(event.eventId)}
@@ -165,7 +167,7 @@
 
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
 				   href="javascript:void(0);"
-				   class="btn btn-sm btn-outline-success d-flex align-items-center justify-content-center px-2 py-1"
+				   class="btn btn-outline-success d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 
 				   th:onclick="'openParticipantView(\'judgecard\','
 				       + ${xorMaskHelper.mask(event.eventId)}
@@ -185,7 +187,7 @@
 
 
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_judge_score'')')}"
-					class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 py-1"
+					class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 					th:onclick="'handleButtonAction(\'/champ_judge_score\', ' + ${xorMaskHelper.mask(event.eventId)} + ')'">
 					<i class="fas fa-chart-line fa-sm me-1"></i>
 					<span>Judge Score</span>
@@ -195,7 +197,7 @@
 
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
 				   href="javascript:void(0);"
-				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
+				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 
 				   th:onclick="'openParticipantView(\'tabsheet\','
 				       + ${xorMaskHelper.mask(event.eventId)}
@@ -218,7 +220,7 @@
 
 				<!-- 🟩 Score Card Button -->
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_certificate_approve'')')}"
-					class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 py-1"
+					class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 					th:onclick="'handleButtonAction(\'/champ_participants_score\', ' + ${xorMaskHelper.mask(event.eventId)} + ')'">
 					<i class="fas fa-chart-line fa-sm me-1"></i>
 					<span>Score Card</span>
@@ -227,7 +229,7 @@
 				
 				<!-- 🟢 Verify & Approve Button -->
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_certificate_approve'')')}"
-					class="btn btn-success btn-sm d-flex align-items-center justify-content-center px-2 py-1"
+					class="btn btn-success btn-sm d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 					th:onclick="'handleButtonAction(\'/champ_certificate_approve\', ' + ${xorMaskHelper.mask(event.eventId)} + ')'">
 					<i class="fas fa-check-double fa-sm me-1"></i>
 					<span>Verify &amp; Approve</span>
@@ -236,7 +238,7 @@
 				
 				<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants'')')}"
 				   href="javascript:void(0);"
-				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1"
+				   class="btn btn-sm btn-outline-warning d-flex align-items-center justify-content-center px-2 py-1 success-action-buttons"
 
 				   th:onclick="'openParticipantView(\'finallist\','
 				       + ${xorMaskHelper.mask(event.eventId)}
@@ -251,6 +253,10 @@
 				    </span>
 
 				</a>
+				
+				
+			
+
 
 
 
@@ -386,7 +392,104 @@
 	        windowFeatures
 	    );
 	}
+	
+	
 
+	
+	
+	function showSuccessActionPopup(message) {
+
+	    let buttons = '';
+
+	    document
+	        .querySelectorAll('.success-action-buttons')
+	        .forEach(btn => {
+
+	            buttons += `
+	                <div>
+	                    ${btn.outerHTML}
+	                </div>
+	            `;
+
+	        });
+
+	    Swal.fire({
+
+	        title: 'Success',
+
+	        icon: 'success',
+
+	        width: '900px',
+
+	        showConfirmButton: false,
+
+	        showCloseButton: true,
+
+	        allowOutsideClick: false,
+
+	        html: `
+
+	            ${
+	                message
+	                ? `
+	                    <div
+	                        class="alert alert-success mb-3 text-start">
+
+	                        ${message}
+
+	                    </div>
+	                  `
+	                : ''
+	            }
+
+	            <div class="next-action-grid">
+
+	                ${buttons}
+
+	            </div>
+
+	        `,
+
+	        didOpen: () => {
+
+	            const popup =
+	                Swal.getPopup();
+
+	            popup
+	                .querySelectorAll(
+	                    '.success-action-buttons'
+	                )
+	                .forEach(btn => {
+
+	                    btn.addEventListener(
+	                        'click',
+	                        function () {
+
+	                            const action =
+	                                this.getAttribute(
+	                                    'onclick'
+	                                ) || '';
+
+	                            if (
+	                                !action.includes(
+	                                    'openParticipantView'
+	                                )
+	                            ) {
+
+	                                Swal.close();
+
+	                            }
+
+	                        }
+	                    );
+
+	                });
+
+	        }
+
+	    });
+
+	}	
 
 
 
@@ -515,5 +618,17 @@
 
 	.modal-dialog {
 		max-width: 90% !important;
+	}
+	
+	
+	.next-action-grid{
+	    display:grid;
+	    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+	    gap:10px;
+	}
+
+	.next-action-grid .btn{
+	    width:100%;
+	    min-height:55px;
 	}
 </style>

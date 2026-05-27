@@ -949,7 +949,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	Map<String, Object> body = new HashMap<>();
 	body.put("message", "Scores updated successfully");
 	body.put("status", "success");
-	body.put("loadnext", "champ_participants_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("loadnextbtns", "champ_participants_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
 	body.put("target", "modal2");
 
 	return ResponseEntity.ok(body);
@@ -1015,7 +1015,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	Map<String, Object> body = new HashMap<>();
 	body.put("message", "Score and Grade Verified and Approved Successfully");
 	body.put("status", "success");
-	body.put("loadnext", "champ_certificate_approve/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("loadnextbtns", "champ_certificate_approve/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
 	body.put("target", "modal2");
 
 	return ResponseEntity.ok(body);
@@ -1438,7 +1438,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	body.put("message", "Judge scores updated successfully");
 	body.put("status", "success");
 
-	body.put("loadnext", "champ_judge_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
+	body.put("loadnextbtns", "champ_judge_score/" + mEventId + (pageParams != null ? "?" + pageParams : ""));
 
 	body.put("target", "modal2");
 

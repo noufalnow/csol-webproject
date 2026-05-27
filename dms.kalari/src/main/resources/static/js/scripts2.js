@@ -137,31 +137,40 @@ $(document).ready(function() {
 					else if(dynamicModal){
 						dynamicModal.hide();
 					}
+					
+					
 
+					if (response.loadnextbtns) {
+
+					    showSuccessActionPopup(response.message);
+
+					} else {
 
 					
-	                Swal.fire({
-	                    title: 'Success',
-	                    html: response.message,
-	                    icon: 'success',
-	                    confirmButtonText: 'Ok',
-	                    allowOutsideClick: false
-	                }).then((result) => {
-	                    if (result.isConfirmed) {
-	                        if (response.loadnext) {
-	                            if (response.loadnext === 'reload') {
-	                                window.location.reload();
-	                                return;
-	                            }
-	                            if (response.target === 'modal' || response.target === 'modal2') {
-	                                loadContent(response.loadnext, response.target);
-	                            } else {
-	                                loadContent(response.loadnext, '#' + (response.target || 'content'));
-	                                form.parent().html('');
-	                            }
-	                        }
-	                    }
-	                });
+		                Swal.fire({
+		                    title: 'Success',
+		                    html: response.message,
+		                    icon: 'success',
+		                    confirmButtonText: 'Ok',
+		                    allowOutsideClick: false
+		                }).then((result) => {
+		                    if (result.isConfirmed) {
+		                        if (response.loadnext) {
+		                            if (response.loadnext === 'reload') {
+		                                window.location.reload();
+		                                return;
+		                            }
+		                            if (response.target === 'modal' || response.target === 'modal2') {
+		                                loadContent(response.loadnext, response.target);
+		                            } else {
+		                                loadContent(response.loadnext, '#' + (response.target || 'content'));
+		                                form.parent().html('');
+		                            }
+		                        }
+		                    }
+		                });
+					
+					}
 	            }
 	        },
 	        error: function(xhr) {
