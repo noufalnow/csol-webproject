@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.xhtmlrenderer.pdf.ITextRenderer;
+/*import org.xhtmlrenderer.pdf.ITextRenderer;*/
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,7 +71,7 @@ public class PdfGenerationService {
     }
     
     
-    public byte[] generateSingleCertificate(Map<String, Object> data) throws Exception {
+    /*public byte[] generateSingleCertificate(Map<String, Object> data) throws Exception {
         Long meiId = (Long) data.get("meiId");
 
         // Generate PDF-friendly QR bytes (100x100 px PNG)
@@ -113,7 +113,7 @@ public class PdfGenerationService {
         Files.deleteIfExists(tempQrFile);
 
         return outputStream.toByteArray();
-    }
+    }*/
 
 
 }

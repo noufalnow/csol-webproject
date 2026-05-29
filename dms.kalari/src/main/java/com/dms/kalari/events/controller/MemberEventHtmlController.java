@@ -16,7 +16,7 @@ import com.dms.kalari.events.repository.EventItemRepository;
 import com.dms.kalari.events.service.EventItemService;
 import com.dms.kalari.events.service.EventService;
 import com.dms.kalari.events.service.MemberEventService;
-import com.lowagie.text.pdf.AcroFields.Item;
+/*import com.lowagie.text.pdf.AcroFields.Item;*/
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

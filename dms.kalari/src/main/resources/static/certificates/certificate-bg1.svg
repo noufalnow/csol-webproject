@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+    width="297mm"
+    height="210mm"
+    viewBox="0 0 1122 794"
+    xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Parchment base -->
+    <rect width="1122" height="794" fill="#fdf8ef"/>
+
+    <!-- Top header band (behind logo area) -->
+    <rect x="11" y="11" width="1100" height="105" fill="#ede3c8"/>
+    <line x1="11"  y1="116" x2="1111" y2="116" stroke="#7a5c10" stroke-width="2"/>
+    <line x1="11"  y1="120" x2="1111" y2="120" stroke="#c9a84c" stroke-width="0.7"/>
+
+
+
+    <!-- Outer border -->
+    <rect x="11" y="11" width="1100" height="772" fill="none" stroke="#7a5c10" stroke-width="2.5"/>
+    <!-- Inner border -->
+    <rect x="18" y="18" width="1086" height="758" fill="none" stroke="#c9a84c" stroke-width="1"/>
+    <!-- Innermost thin -->
+    <rect x="23" y="23" width="1076" height="748" fill="none" stroke="#d4b060" stroke-width="0.4"/>
+
+    <!-- Corner ornaments -->
+    <!-- TL -->
+    <g transform="translate(11,11)">
+        <rect x="-1" y="-1" width="46" height="46" fill="#ede3c8"/>
+        <circle cx="0" cy="0" r="19" fill="none" stroke="#7a5c10" stroke-width="1.8"/>
+        <circle cx="0" cy="0" r="12" fill="none" stroke="#c9a84c" stroke-width="1"/>
+        <circle cx="0" cy="0" r="5"  fill="#8b6914"/>
+        <line x1="-19" y1="0"   x2="19"  y2="0"   stroke="#8b6914" stroke-width="1"/>
+        <line x1="0"   y1="-19" x2="0"   y2="19"  stroke="#8b6914" stroke-width="1"/>
+        <line x1="-13" y1="-13" x2="13"  y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="13"  y1="-13" x2="-13" y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+    </g>
+    <!-- TR -->
+    <g transform="translate(1111,11)">
+        <rect x="-45" y="-1" width="46" height="46" fill="#ede3c8"/>
+        <circle cx="0" cy="0" r="19" fill="none" stroke="#7a5c10" stroke-width="1.8"/>
+        <circle cx="0" cy="0" r="12" fill="none" stroke="#c9a84c" stroke-width="1"/>
+        <circle cx="0" cy="0" r="5"  fill="#8b6914"/>
+        <line x1="-19" y1="0"   x2="19"  y2="0"   stroke="#8b6914" stroke-width="1"/>
+        <line x1="0"   y1="-19" x2="0"   y2="19"  stroke="#8b6914" stroke-width="1"/>
+        <line x1="-13" y1="-13" x2="13"  y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="13"  y1="-13" x2="-13" y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+    </g>
+    <!-- BL -->
+    <g transform="translate(11,783)">
+        <rect x="-1" y="-45" width="46" height="46" fill="#ede3c8"/>
+        <circle cx="0" cy="0" r="19" fill="none" stroke="#7a5c10" stroke-width="1.8"/>
+        <circle cx="0" cy="0" r="12" fill="none" stroke="#c9a84c" stroke-width="1"/>
+        <circle cx="0" cy="0" r="5"  fill="#8b6914"/>
+        <line x1="-19" y1="0"   x2="19"  y2="0"   stroke="#8b6914" stroke-width="1"/>
+        <line x1="0"   y1="-19" x2="0"   y2="19"  stroke="#8b6914" stroke-width="1"/>
+        <line x1="-13" y1="-13" x2="13"  y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="13"  y1="-13" x2="-13" y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+    </g>
+    <!-- BR -->
+    <g transform="translate(1111,783)">
+        <rect x="-45" y="-45" width="46" height="46" fill="#ede3c8"/>
+        <circle cx="0" cy="0" r="19" fill="none" stroke="#7a5c10" stroke-width="1.8"/>
+        <circle cx="0" cy="0" r="12" fill="none" stroke="#c9a84c" stroke-width="1"/>
+        <circle cx="0" cy="0" r="5"  fill="#8b6914"/>
+        <line x1="-19" y1="0"   x2="19"  y2="0"   stroke="#8b6914" stroke-width="1"/>
+        <line x1="0"   y1="-19" x2="0"   y2="19"  stroke="#8b6914" stroke-width="1"/>
+        <line x1="-13" y1="-13" x2="13"  y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="13"  y1="-13" x2="-13" y2="13"  stroke="#c9a84c" stroke-width="0.8"/>
+    </g>
+
+    <!-- Mid-edge diamonds -->
+    <rect x="553" y="4"    width="16" height="16" transform="rotate(45,561,12)"   fill="#8b6914"/>
+    <rect x="556" y="7"    width="10" height="10" transform="rotate(45,561,12)"   fill="#fdf8ef"/>
+    <rect x="553" y="776"  width="16" height="16" transform="rotate(45,561,784)"  fill="#8b6914"/>
+    <rect x="556" y="779"  width="10" height="10" transform="rotate(45,561,784)"  fill="#fdf8ef"/>
+    <rect x="4"   y="389"  width="16" height="16" transform="rotate(45,12,397)"   fill="#8b6914"/>
+    <rect x="7"   y="392"  width="10" height="10" transform="rotate(45,12,397)"   fill="#fdf8ef"/>
+    <rect x="1102" y="389" width="16" height="16" transform="rotate(45,1110,397)" fill="#8b6914"/>
+    <rect x="1105" y="392" width="10" height="10" transform="rotate(45,1110,397)" fill="#fdf8ef"/>
+
+    <!-- Watermark mandala — very faint, stroke reduced to near-invisible -->
+    <g transform="translate(561,430)" fill="none" stroke="#c8b060" opacity="0.10">
+        <circle cx="0" cy="0" r="155" stroke-width="8"/>
+        <circle cx="0" cy="0" r="115" stroke-width="4"/>
+        <circle cx="0" cy="0" r="75"  stroke-width="2.5"/>
+        <circle cx="0" cy="0" r="38"  stroke-width="1.5"/>
+        <line x1="0"    y1="-155" x2="0"    y2="155"  stroke-width="2"/>
+        <line x1="-155" y1="0"    x2="155"  y2="0"    stroke-width="2"/>
+        <line x1="-110" y1="-110" x2="110"  y2="110"  stroke-width="1.2"/>
+        <line x1="110"  y1="-110" x2="-110" y2="110"  stroke-width="1.2"/>
+        <line x1="-59"  y1="-144" x2="59"   y2="144"  stroke-width="0.8"/>
+        <line x1="59"   y1="-144" x2="-59"  y2="144"  stroke-width="0.8"/>
+        <line x1="-144" y1="-59"  x2="144"  y2="59"   stroke-width="0.8"/>
+        <line x1="144"  y1="-59"  x2="-144" y2="59"   stroke-width="0.8"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(45)"  stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(90)"  stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(135)" stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(180)" stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(225)" stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(270)" stroke-width="1"/>
+        <ellipse cx="0" cy="-96" rx="16" ry="35" transform="rotate(315)" stroke-width="1"/>
+    </g>
+
+</svg>

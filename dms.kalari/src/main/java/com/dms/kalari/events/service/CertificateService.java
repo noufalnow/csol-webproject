@@ -7,7 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.xhtmlrenderer.pdf.ITextRenderer;
+/*import org.xhtmlrenderer.pdf.ITextRenderer;*/
+
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,10 +31,10 @@ import com.dms.kalari.core.repository.CoreFileRepository;
 import com.dms.kalari.util.QrCodeUtil;
 import com.dms.kalari.util.SimpleBase64;
 import com.itextpdf.kernel.geom.Rectangle;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
 import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import com.itextpdf.signatures.BouncyCastleDigest;
 import com.itextpdf.signatures.DigestAlgorithms;
@@ -41,13 +44,9 @@ import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PrivateKeySignature;
 
-import net.coobird.thumbnailator.Thumbnails;
-
 import com.dms.kalari.events.dto.CertificateGenerationResultDTO;
 import com.dms.kalari.events.entity.MemberEventItem;
 import com.dms.kalari.events.repository.MemberEventItemRepository;
-import com.dms.kalari.events.service.event.CertificateGenerateEvent;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
@@ -56,12 +55,9 @@ import java.security.Security;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.net.URI;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.springframework.core.io.ClassPathResource;
@@ -708,31 +704,58 @@ public class CertificateService {
     }
 
     // Generate unsigned PDF from HTML template
+
+
+    
+
     private byte[] generatePdfFromTemplate(Map<String, Object> data) throws Exception {
-	Context context = new Context();
-	context.setVariables(data);
 
-	String baseUrl = ResourceUtils.getURL("classpath:static/").toString();
-	String htmlContent = templateEngine.process("fragments/events/certificate-single", context);
+        Context context = new Context();
+        context.setVariables(data);
 
-	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	ITextRenderer renderer = new ITextRenderer();
-	renderer.getSharedContext().setBaseURL(baseUrl);
-	renderer.setDocumentFromString(htmlContent, baseUrl);
-	renderer.layout();
-	renderer.createPDF(outputStream);
-	renderer.finishPDF();
+        String htmlContent =
+                templateEngine.process(
+                        "fragments/events/certificate-single",
+                        context
+                );
 
-	// Cleanup QR temp file
-	if (data.get("qrImagePath") != null) {
-	    try {
-		Path qrPath = Path.of(new URI(data.get("qrImagePath").toString()));
-		Files.deleteIfExists(qrPath);
-	    } catch (Exception ignored) {
-	    }
-	}
+        /*Files.writeString(
+                Path.of("/tmp/certificate.html"),
+                htmlContent
+        );*/
 
-	return outputStream.toByteArray();
+        ByteArrayOutputStream outputStream =
+                new ByteArrayOutputStream();
+
+        PdfRendererBuilder builder =
+                new PdfRendererBuilder();
+
+        builder.useFastMode();
+        builder.useSVGDrawer(new BatikSVGDrawer());  // ← only change
+
+        builder.withHtmlContent(
+                htmlContent,
+                ResourceUtils.getURL("classpath:static/").toString()
+        );
+
+        builder.toStream(outputStream);
+        builder.run();
+
+        if (data.get("qrImagePath") != null) {
+            try {
+                Path qrPath =
+                        Path.of(
+                                new URI(
+                                        data.get("qrImagePath")
+                                                .toString()
+                                )
+                        );
+                Files.deleteIfExists(qrPath);
+            } catch (Exception ignored) {
+            }
+        }
+
+        return outputStream.toByteArray();
     }
 
     // Sign a PDF using PKCS12 private key
