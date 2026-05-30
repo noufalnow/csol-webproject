@@ -184,6 +184,24 @@
             font-style: italic;
             color: #666666;
         }
+		
+		/* ── Watermark ── */
+		.watermark {
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%) rotate(-35deg);
+		    font-family: 'Times New Roman', serif;
+		    font-size: 52pt;
+		    font-weight: bold;
+		    color: rgba(139, 0, 0, 0.12);
+		    letter-spacing: 4px;
+		    text-transform: uppercase;
+		    white-space: nowrap;
+		    z-index: 10;
+		    pointer-events: none;
+		    user-select: none;
+		}
 
     /*]]>*/</style>
 </head>
@@ -199,6 +217,8 @@
 
 
     <div class="cert-body">
+		
+		<div class="watermark">PREVIEW ONLY</div>
 
         <!-- LOGO STRIP -->
         <div class="logo-strip">

@@ -141,18 +141,28 @@
 							        </div>
 
 							        <!-- APPROVED -->
-							        <div th:if="${mei.verificationStatus?.name() == 'APPROVED'
-							                     and mei.certificateStatus?.name() != 'GENERATED'}">
+									<div th:if="${mei.verificationStatus?.name() == 'APPROVED'
+									             and mei.certificateStatus?.name() != 'GENERATED'}">
 
-							            <div class="d-flex align-items-center gap-3 flex-wrap">
-							                <span class="fw-bold"
-							                      th:text="${mei.memberEventScore}">0.00</span>
+									    <div class="d-flex align-items-center gap-3 flex-wrap">
+									        <span class="fw-bold"
+									              th:text="${mei.memberEventScore}">0.00</span>
 
-							                <span th:text="${mei.memberEventGrade?.name()}">Grade</span>
+									        <span th:text="${mei.memberEventGrade?.name()}">Grade</span>
 
-							                <span class="badge bg-success">Approved</span>
-							            </div>
-							        </div>
+									        <span class="badge bg-success">Approved</span>
+
+									        <!-- Preview eye button -->
+											<a th:if="${#authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}"
+											   th:href="@{/champ_participants_certificate/{id}(id=${xorMaskHelper.mask(mei.meiId)})}"
+											   onclick="openCertificatePreview(this.href); return false;"
+											   class="badge bg-warning  p-1"
+											   title="Preview Certificate"
+											   style="padding: 0.5em 0.75em !important;">
+											    <i class="fas fa-medal me-1"></i> Preview
+											</a>
+									    </div>
+									</div>
 
 							        <!-- EDITABLE -->
 							        <div th:if="${mei.verificationStatus?.name() != 'APPROVED'}"
