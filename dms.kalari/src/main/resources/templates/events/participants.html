@@ -610,7 +610,7 @@
 			            <th width="90" class="text-center">Team</th>
 			            <th>Kalari</th>
 			            <th width="80" class="text-center">Score</th>
-			            <th width="90" class="text-center">Grade</th>
+			            <th width="110" class="text-center">Grade</th>
 			        </tr>
 			    </thead>
 
@@ -658,6 +658,7 @@
 						       download
 						       class="grade-pill text-decoration-none">
 						        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+								<i class="fa fa-download me-1"></i>
 						    </a>
 
 						    <!-- APPROVED (not yet generated): preview link -->
@@ -668,6 +669,7 @@
 							   onclick="openCertificatePreview(this.href); return false;"
 							   class="grade-pill text-decoration-none">
 							    <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+								<i class="fa fa-eye me-1"></i>
 							</a>
 
 						    <!-- OTHERWISE: plain grade pill -->
@@ -726,25 +728,37 @@
 		        </div>
 
 		        <!-- SCORE / GRADE -->
-		        <div class="pc-pills">
+				<div>
+				    <span class="pc-pill-label">Grade</span>
 
-		            <div>
-		                <span class="pc-pill-label">Score</span>
+				    <!-- GENERATED: downloadable certificate -->
+				    <a th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
+				       th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
+				       download
+				       class="grade-pill text-decoration-none">
+				        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+						<i class="fa fa-download me-1"></i>
+				    </a>
 
-		                <span class="score-pill"
-		                      th:text="${mei.memberEventScore != 0 ? mei.memberEventScore : '-'}">
-		                </span>
-		            </div>
+				    <!-- APPROVED (not yet generated): preview certificate -->
+				    <a th:if="${mei.certificateStatus?.name() != 'GENERATED'
+				               and mei.verificationStatus?.name() == 'APPROVED'
+				               and #authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}"
+				       th:href="@{/champ_participants_certificate/{id}(id=${xorMaskHelper.mask(mei.meiId)})}"
+				       onclick="openCertificatePreview(this.href); return false;"
+				       class="grade-pill text-decoration-none">
+				        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+						<i class="fa fa-eye me-1"></i>
+				    </a>
 
-		            <div>
-		                <span class="pc-pill-label">Grade</span>
+				    <!-- OTHERWISE: plain grade -->
+				    <span th:if="${mei.certificateStatus?.name() != 'GENERATED'
+				                  and mei.verificationStatus?.name() != 'APPROVED'}"
+				          class="grade-pill"
+				          th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
+				    </span>
 
-		                <span class="grade-pill"
-		                      th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
-		                </span>
-		            </div>
-
-		        </div>
+				</div>
 
 		    </div>
 
