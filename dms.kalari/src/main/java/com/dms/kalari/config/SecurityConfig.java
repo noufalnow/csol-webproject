@@ -52,7 +52,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .authorizeHttpRequests(auth -> auth
             	.requestMatchers("/logout").permitAll() 	
-                .requestMatchers("/", "/public/**","/branch_public/**","/image_public/**", "/login", "/login-error", "/verify/**", 
+                .requestMatchers("/", "/public/**","/branch_public/**","/image_public/**","/image_public_raw/**", "/login", "/login-error", "/verify/**", 
                         "/error","auth-error","/access-denied", "/health", "/actuator/health").permitAll()
                 .requestMatchers("/files/download/*").authenticated()
                 .requestMatchers("/files/certificate/*").authenticated()

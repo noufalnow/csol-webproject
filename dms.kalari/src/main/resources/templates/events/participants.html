@@ -652,17 +652,27 @@
 
 						<td class="text-center">
 
-						    <!-- Downloadable grade pill when certificate is generated -->
+						    <!-- GENERATED: downloadable grade pill -->
 						    <a th:if="${mei.certificateStatus?.name() == 'GENERATED'}"
 						       th:href="@{'/files/certificate/' + ${xorMaskHelper.mask(mei.meiId)}}"
 						       download
 						       class="grade-pill text-decoration-none">
-
 						        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
 						    </a>
 
-						    <!-- Normal grade pill otherwise -->
-						    <span th:unless="${mei.certificateStatus?.name() == 'GENERATED'}"
+						    <!-- APPROVED (not yet generated): preview link -->
+						    <a th:if="${mei.certificateStatus?.name() != 'GENERATED'
+						               and mei.verificationStatus?.name() == 'APPROVED'
+						               and #authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}"
+						       th:href="@{/champ_participants_certificate/{id}(id=${xorMaskHelper.mask(mei.meiId)})}"
+						       target="_blank"
+						       class="grade-pill text-decoration-none">
+						        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+						    </a>
+
+						    <!-- OTHERWISE: plain grade pill -->
+						    <span th:if="${mei.certificateStatus?.name() != 'GENERATED'
+						                  and mei.verificationStatus?.name() != 'APPROVED'}"
 						          class="grade-pill"
 						          th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}">
 						    </span>

@@ -1049,28 +1049,23 @@ public class EventsController extends BaseController<EventDTO, EventService> {
     }
 
     @GetMapping("/participants_certificate/{mMeiId}")
-    public ResponseEntity<byte[]> generateSignedCertificate(@PathVariable Long mMeiId) throws Exception {
+    public ResponseEntity<String> previewCertificate(
+            @PathVariable Long mMeiId) throws Exception {
 
-	// Unmask ID
-	Long meiId = XorMaskHelper.unmask(mMeiId);
+        Long meiId = XorMaskHelper.unmask(mMeiId);
 
-	// Validate MemberEventItem exists
-	MemberEventItem mei = memberEventItemService.findById(meiId)
-		.orElseThrow(() -> new IllegalArgumentException("Invalid meiId: " + meiId));
+        MemberEventItem mei = memberEventItemService.findById(meiId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid meiId: " + meiId));
 
-	// Delegate all work to service
-	byte[] signedPdf = certificateService.generateOrGetSignedCertificate1(mei);
+        String html = certificateService.previewCertificateHtml(mei);
 
-	// Prepare response headers
-	HttpHeaders headers = new HttpHeaders();
-	headers.setContentType(MediaType.APPLICATION_PDF);
-	headers.setContentDispositionFormData("filename",
-		"certificate_" + mei.getMemberEventMember().getUserFname() + ".pdf");
-
-	return ResponseEntity.ok().headers(headers).body(signedPdf);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
     }
 
-    private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
+    /*private byte[] compressPdf(byte[] pdfBytes) throws java.io.IOException {
 	try {
 	    try (ByteArrayInputStream bais = new ByteArrayInputStream(pdfBytes);
 		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1086,7 +1081,7 @@ public class EventsController extends BaseController<EventDTO, EventService> {
 	} catch (IOException e) {
 	    throw new RuntimeException("Failed to compress PDF", e);
 	}
-    }
+    }*/
 
     @GetMapping("/html/listparticipants")
     public String listParticipants(@RequestParam(name = "eventId", required = false) Long eventId, Model model) {

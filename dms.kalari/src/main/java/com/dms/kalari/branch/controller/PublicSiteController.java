@@ -116,6 +116,31 @@ public class PublicSiteController {
 	    return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
 	}
 	
+	@CrossOrigin(origins = "*")
+	@GetMapping("image_public_raw/{id}")
+	public ResponseEntity<InputStreamResource> viewRaw(@PathVariable Long id) throws IOException {
+
+	    if (id == null) {
+	        return ResponseEntity.notFound().build();
+	    }
+
+	    CoreFile file = fileRepository.findById(id).orElse(null);
+
+	    if (file == null || file.getFilePath() == null) {
+	        return ResponseEntity.notFound().build();
+	    }
+
+	    File originalFile = new File(file.getFilePath()); // ← no BASE_PATH, same as viewFile
+
+	    if (!originalFile.exists() || !originalFile.isFile()) {
+	        return ResponseEntity.notFound().build();
+	    }
+
+	    MediaType mediaType = detectMimeType(originalFile);
+
+	    return buildResponse(originalFile, mediaType != null ? mediaType : MediaType.APPLICATION_OCTET_STREAM);
+	}
+	
 	private ResponseEntity<InputStreamResource> buildResponse(File file, MediaType mediaType) throws IOException {
 	    InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 

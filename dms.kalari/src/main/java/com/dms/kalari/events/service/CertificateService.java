@@ -21,6 +21,7 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Map;
 
+import com.dms.kalari.admin.entity.CoreUser.Gender;
 import com.dms.kalari.admin.entity.CoreUser.UserType;
 import com.dms.kalari.admin.repository.CoreUserRepository;
 //Add these imports at the top of CertificateService.java
@@ -35,6 +36,7 @@ import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
 import java.util.List;
+import java.util.Base64;
 import java.util.HashMap;
 import com.itextpdf.signatures.BouncyCastleDigest;
 import com.itextpdf.signatures.DigestAlgorithms;
@@ -169,541 +171,249 @@ public class CertificateService {
 	        : value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
 	}
 
-    // Prepare all certificate data for the template
-    private Map<String, Object> prepareCertificateData(MemberEventItem mei, String fileName) throws Exception {
+	private Map<String, Object> prepareCertificateData(MemberEventItem mei, String fileName) throws Exception {
 
-	Map<String, Object> data = new HashMap<>();
+	    Map<String, Object> data = new HashMap<>();
 
-	data.put("meiId", mei.getMeiId());
+	    data.put("meiId", mei.getMeiId());
 
-	String firstName = mei.getMemberEventMember().getUserFname();
-	String lastName = mei.getMemberEventMember().getUserLname();
+	    String firstName = mei.getMemberEventMember().getUserFname();
+	    String lastName  = mei.getMemberEventMember().getUserLname();
 
-	data.put(
-	    "participantName",
-	    firstName.toUpperCase() + " " + lastName.toUpperCase()
-	);
+	    data.put("participantName", firstName.toUpperCase() + " " + lastName.toUpperCase());
+	    data.put("eventName",       mei.getMemberEvent().getEventName());
+	    data.put("hostName",        mei.getMemberEventHost().getNodeName());
+	    data.put("resultDate",      mei.getApproveDateTime());
+	    data.put("medalType",       mei.getMemberEventGrade().name());
+	    data.put("itemName",        mei.getMemberEventItemName());
+	    data.put("certificateNo",   mei.getMeiCertificateNo());
 
-	data.put("eventName", mei.getMemberEvent().getEventName());
+	    /*
+	     * ======================================
+	     * NODE HIERARCHY
+	     * ======================================
+	     */
 
-	data.put("hostName", mei.getMemberEventHost().getNodeName());
+	    Node eventNode = mei.getMemberEventHost();
 
-	data.put("resultDate", mei.getApproveDateTime());
+	    data.put("eventNodeName",    eventNode.getNodeName());
+	    data.put("branchCertTagLine", eventNode.getBranchCertTagLine());
 
-	data.put("medalType", mei.getMemberEventGrade().name());
+	    Node district = null, state = null, national = null;
 
-	data.put("itemName", mei.getMemberEventItemName());
-	
-	
-	data.put(
-		    "certificateNo",
-		    mei.getMeiCertificateNo()
-		);
+	    switch (eventNode.getNodeType()) {
 
-	/*
-	 * ====================================== NODE HIERARCHY
-	 * ======================================
-	 */
+	        case DISTRICT -> {
+	            district = eventNode;
+	            if (district.getParent() != null) {
+	                state = nodeRepository.findByIdAndNotDeleted(district.getParent().getNodeId()).orElse(null);
+	            }
+	            if (state != null && state.getParent() != null) {
+	                national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
+	            }
+	        }
 
-	Node eventNode = mei.getMemberEventHost();
+	        case STATE -> {
+	            state = eventNode;
+	            if (state.getParent() != null) {
+	                national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId()).orElse(null);
+	            }
+	        }
 
-	data.put("eventNodeName", eventNode.getNodeName());
-	
-	data.put("branchCertTagLine", eventNode.getBranchCertTagLine());
-	
-	
-
-	String districtName = null;
-	String stateName = null;
-	String nationalName = null;
-
-	String districtLogo = null;
-	String stateLogo = null;
-	String nationalLogo = null;
-
-	switch (eventNode.getNodeType()) {
-
-	case NATIONAL:
-
-	    nationalName = eventNode.getNodeName();
-
-	    nationalLogo = resolveNodeLogoPath(eventNode);
-
-	    break;
-
-	case STATE:
-
-	    stateName = eventNode.getNodeName();
-
-	    stateLogo = resolveNodeLogoPath(eventNode);
-
-	    if (eventNode.getParent() != null) {
-
-		Node national = nodeRepository.findByIdAndNotDeleted(eventNode.getParent().getNodeId()).orElse(null);
-
-		if (national != null) {
-
-		    nationalName = national.getNodeName();
-
-		    nationalLogo = resolveNodeLogoPath(national);
-		}
+	        case NATIONAL -> national = eventNode;
 	    }
 
-	    break;
+	    // Names
+	    data.put("districtName", district != null ? district.getNodeName() : null);
+	    data.put("stateName",    state    != null ? state.getNodeName()    : null);
+	    data.put("nationalName", national != null ? national.getNodeName() : null);
 
-	case DISTRICT:
+	    // File paths (used by PDF renderer)
+	    data.put("districtLogo", resolveNodeLogoPath(district));
+	    data.put("stateLogo",    resolveNodeLogoPath(state));
+	    data.put("nationalLogo", resolveNodeLogoPath(national));
 
-	    districtName = eventNode.getNodeName();
+	    // File IDs (used by preview template → /image_public/{id})
+	    data.put("districtLogoId", district != null ? district.getPhotoFile() : null);
+	    data.put("stateLogoId",    state    != null ? state.getPhotoFile()    : null);
+	    data.put("nationalLogoId", national != null ? national.getPhotoFile() : null);
 
-	    districtLogo = resolveNodeLogoPath(eventNode);
+	    /*
+	     * ======================================
+	     * CERTIFICATE TRANSCRIPT DATA
+	     * ======================================
+	     */
 
-	    if (eventNode.getParent() != null) {
+	    // Mr / Ms
+	    String salutation = "Mr";
+	    if (mei.getMemberEventGender() != null && mei.getMemberEventGender() == Gender.FEMALE) {
+	        salutation = "Ms";
+	    }
+	    data.put("participantTitle", salutation);
 
-		Node state = nodeRepository.findByIdAndNotDeleted(eventNode.getParent().getNodeId()).orElse(null);
+	    // Medal → Place
+	    String securedPlace = null;
+	    if (mei.getMemberEventGrade() != null) {
+	        switch (mei.getMemberEventGrade()) {
+	            case GOLD   -> securedPlace = "First";
+	            case SILVER -> securedPlace = "Second";
+	            case BRONZE -> securedPlace = "Third";
+	            default     -> securedPlace = mei.getMemberEventGrade().name();
+	        }
+	    }
+	    data.put("securedPlace", securedPlace);
 
-		if (state != null) {
+	    data.put("representing", mei.getMemberEventMember().getUserFname());
 
-		    stateName = state.getNodeName();
+	    String certificateDistrict = district != null ? district.getNodeName() : null;
+	    if (eventNode.getAddressLine3() != null) {
+	        certificateDistrict = eventNode.getAddressLine3();
+	    }
+	    data.put("certificateDistrict", certificateDistrict);
+	    data.put("certificatePlace",    certificateDistrict);
+	    data.put("certificateYear",     mei.getMemberEvent().getEventYear());
 
-		    stateLogo = resolveNodeLogoPath(state);
+	    String certificateCategory = "";
+	    if (mei.getMemberEventCategory() != null && mei.getMemberEventGender() != null) {
+	        certificateCategory = toProperCase(mei.getMemberEventCategory().name()) + " "
+	                            + toProperCase(mei.getMemberEventGender().name());
+	    }
+	    data.put("certificateCategory", certificateCategory);
+	    data.put("certificateItem",     mei.getMemberEventItemName());
 
-		    if (state.getParent() != null) {
+	    // Certificate date
+	    data.put("certificateDate", resolveCertificateDate(
+	            mei.getMemberEvent().getEventPeriodStart(),
+	            mei.getMemberEvent().getEventPeriodEnd()
+	    ));
 
-			Node national = nodeRepository.findByIdAndNotDeleted(state.getParent().getNodeId())
-				.orElse(null);
+	    /*
+	     * ======================================
+	     * PARTICIPANT PHOTO
+	     * file path  → PDF renderer
+	     * file ID    → preview template
+	     * ======================================
+	     */
 
-			if (national != null) {
+	    data.put("participantPhotoId", mei.getMemberEventMember().getPhotoFile());
 
-			    nationalName = national.getNodeName();
+	    String participantPhoto = null;
 
-			    nationalLogo = resolveNodeLogoPath(national);
-			}
-		    }
-		}
+	    if (mei.getMemberEventMember().getPhotoFile() != null) {
+
+	        CoreFile pf = fileRepository.findById(mei.getMemberEventMember().getPhotoFile()).orElse(null);
+
+	        if (pf != null && pf.getFilePath() != null) {
+
+	            File photoFile = new File(BASE_PATH, pf.getFilePath());
+
+	            if (photoFile.exists()) {
+
+	                File thumbnailFile = new File(
+	                        photoFile.getParentFile(),
+	                        "thumbnails/" + pf.getFileId() + ".jpg"
+	                );
+
+	                participantPhoto = (thumbnailFile.exists() ? thumbnailFile : photoFile)
+	                        .toURI().toString();
+	            }
+	        }
 	    }
 
-	    break;
+	    data.put("participantPhoto", participantPhoto);
 
-	default:
-	    break;
+	    /*
+	     * ======================================
+	     * SIGNATORIES
+	     * signature     → file:// path for PDF
+	     * signatureFileId → ID for preview
+	     * ======================================
+	     */
+
+	    List<Map<String, Object>> signatories = coreUserRepository
+	            .findBranchSignatories(eventNode.getNodeId(), UserType.OFFICIAL)
+	            .stream()
+	            .map(u -> {
+
+	                Map<String, Object> m = new HashMap<>();
+
+	                m.put("id",          u.getUserId());
+	                m.put("name",        ((u.getUserFname() != null ? u.getUserFname() : "")
+	                                   + (u.getUserLname()  != null ? " " + u.getUserLname() : "")).trim());
+	                m.put("designation", u.getDesignation() != null ? u.getDesignation().getDesigName() : null);
+	                m.put("phone",       u.getMobileNumber());
+	                m.put("offdesc",     u.getOfficialDescription());
+	                m.put("email",       u.getUserEmail());
+
+	                // ID for preview
+	                m.put("signatureFileId", u.getSignatureFile());
+
+	                // file:// path for PDF
+	                String signature = null;
+	                if (u.getSignatureFile() != null) {
+	                    CoreFile sf = fileRepository.findById(u.getSignatureFile()).orElse(null);
+	                    if (sf != null && sf.getFilePath() != null) {
+	                        File signatureFile = new File(BASE_PATH, sf.getFilePath());
+	                        if (signatureFile.exists()) {
+	                            signature = signatureFile.toURI().toString();
+	                        }
+	                    }
+	                }
+	                m.put("signature", signature);
+
+	                return m;
+	            })
+	            .toList();
+
+	    data.put("signatories", signatories);
+
+	    /*
+	     * ======================================
+	     * QR CODE
+	     * ======================================
+	     */
+
+	    Long meiId = mei.getMeiId();
+
+	    String maskedId = SimpleBase64.encode(meiId, fileName);
+
+	    byte[] qrBytes = QrCodeUtil.generateQrCodeBytes(
+	            "https://app.indiankalaripayattufederation.com/verify?id=" + maskedId);
+
+	    Path tempQrFile = Files.createTempFile("qr-" + meiId, ".png");
+	    Files.write(tempQrFile, qrBytes);
+
+	    data.put("verificationIdMasked", maskedId);
+	    data.put("qrImagePath",          tempQrFile.toUri().toString());
+
+	    return data;
 	}
-
-	data.put("districtName", districtName);
-	data.put("districtLogo", districtLogo);
-
-	data.put("stateName", stateName);
-	data.put("stateLogo", stateLogo);
-
-	data.put("nationalName", nationalName);
-	data.put("nationalLogo", nationalLogo);
-
-	/*
-	 * ====================================== CERTIFICATE TRANSCRIPT DATA
-	 * ======================================
-	 */
-
-	// Mr / Ms
-	String salutation = "Mr";
-
-	if (mei.getMemberEventGender() != null) {
-
-	    switch (mei.getMemberEventGender()) {
-
-	    case FEMALE:
-		salutation = "Ms";
-		break;
-
-	    default:
-		salutation = "Mr";
-		break;
-	    }
-	}
-
-	data.put("participantTitle", salutation);
-
-	// Medal → Place
-	String securedPlace = null;
-
-	if (mei.getMemberEventGrade() != null) {
-
-	    switch (mei.getMemberEventGrade()) {
-
-	    case GOLD:
-		securedPlace = "First";
-		break;
-
-	    case SILVER:
-		securedPlace = "Second";
-		break;
-
-	    case BRONZE:
-		securedPlace = "Third";
-		break;
-
-	    default:
-		securedPlace = mei.getMemberEventGrade().name();
-	    }
-	}
-
-	data.put("securedPlace", securedPlace);
-
-	// Representing
-	data.put("representing", mei.getMemberEventMember().getUserFname());
-
-	// District
-	String certificateDistrict = districtName;
-
-	if (eventNode != null && eventNode.getAddressLine3() != null) {
-
-	    certificateDistrict = eventNode.getAddressLine3();
-	}
-
-	data.put("certificateDistrict", certificateDistrict);
-
-	// Event year
-	data.put("certificateYear", mei.getMemberEvent().getEventYear());
-
-	// Category
-	String certificateCategory = "";
-
-
-
-	if (mei.getMemberEventCategory() != null && mei.getMemberEventGender() != null) {
-
-	    certificateCategory =
-	        toProperCase(mei.getMemberEventCategory().name()) + " " +
-	        toProperCase(mei.getMemberEventGender().name());
-	}
-
-	data.put("certificateCategory", certificateCategory);
-
-	// Event item
-	data.put("certificateItem", mei.getMemberEventItemName());
-
-	// Place
-	data.put("certificatePlace", certificateDistrict);
-
-	// Certificate date
-	LocalDate start =
-	        mei.getMemberEvent()
-	                .getEventPeriodStart();
-
-	LocalDate end =
-	        mei.getMemberEvent()
-	                .getEventPeriodEnd();
-
-	String certificateDate;
-
-	if (
-	        start == null
-	        ||
-	        end == null
-	) {
-
-	    certificateDate = null;
-
-	}
-	else if (
-	        start.equals(end)
-	) {
-
-	    certificateDate =
-	            start.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "dd MMM yyyy"
-	                    )
-	            );
-
-	}
-	else if (
-
-	        start.getYear()
-	        ==
-	        end.getYear()
-
-	        &&
-
-	        start.getMonth()
-	        ==
-	        end.getMonth()
-
-	) {
-
-	    List<String> days =
-	            start
-	                    .datesUntil(
-	                            end.plusDays(1)
-	                    )
-	                    .map(
-	                            d ->
-	                            String.valueOf(
-	                                    d.getDayOfMonth()
-	                            )
-	                    )
-	                    .toList();
-
-	    certificateDate =
-	            String.join(
-	                    ", ",
-	                    days
-	            )
-
-	            +
-
-	            " "
-
-	            +
-
-	            end.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "MMM yyyy"
-	                    )
-	            );
-
-	}
-	else if (
-
-	        start.getYear()
-	        ==
-	        end.getYear()
-
-	) {
-
-	    certificateDate =
-
-	            start.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "dd MMM"
-	                    )
-	            )
-
-	            +
-
-	            " - "
-
-	            +
-
-	            end.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "dd MMM yyyy"
-	                    )
-	            );
-
-	}
-	else {
-
-	    certificateDate =
-
-	            start.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "dd MMM yyyy"
-	                    )
-	            )
-
-	            +
-
-	            " - "
-
-	            +
-
-	            end.format(
-	                    DateTimeFormatter.ofPattern(
-	                            "dd MMM yyyy"
-	                    )
-	            );
-
-	}
-
-	data.put(
-	        "certificateDate",
-	        certificateDate
-	);
-
-	/*
-	 * ====================================== MEDAL
-	 * ======================================
-	 */
-
-	//data.put("medalImage", "/static/images/" + mei.getMemberEventGrade().name() + ".png");
 	
-	if (mei.getMemberEventGrade() != MemberEventItem.Grade.PARTICIPATION) {
+	private String resolveCertificateDate(LocalDate start, LocalDate end) {
 
-	    ClassPathResource resource =
-	            new ClassPathResource(
-	                    "static/images/"
-	                    + mei.getMemberEventGrade().name()
-	                    + ".png"
-	            );
+	    if (start == null || end == null) return null;
 
-	    Path temp = Files.createTempFile(
-	            "medal-",
-	            ".png"
-	    );
-
-	    try (InputStream in = resource.getInputStream()) {
-
-	        Files.copy(
-	                in,
-	                temp,
-	                StandardCopyOption.REPLACE_EXISTING
-	        );
+	    if (start.equals(end)) {
+	        return start.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 	    }
 
-	    data.put(
-	            "medalImage",
-	            temp.toUri().toString()
-	    );
+	    if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
+	        List<String> days = start.datesUntil(end.plusDays(1))
+	                .map(d -> String.valueOf(d.getDayOfMonth()))
+	                .toList();
+	        return String.join(", ", days) + " " + end.format(DateTimeFormatter.ofPattern("MMM yyyy"));
+	    }
 
-	} else {
+	    if (start.getYear() == end.getYear()) {
+	        return start.format(DateTimeFormatter.ofPattern("dd MMM"))
+	             + " - "
+	             + end.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
+	    }
 
-	    data.put(
-	            "medalImage",
-	            null
-	    );
+	    return start.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+	         + " - "
+	         + end.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 	}
-
-	/*
-	 * ====================================== QR
-	 * ======================================
-	 */
-
-	/*
-	 * ====================================== SIGNATORIES
-	 * ======================================
-	 */
-
-	List<Map<String, Object>> signatories = coreUserRepository
-		.findBranchSignatories(eventNode.getNodeId(), UserType.OFFICIAL).stream()
-
-		.map(u -> {
-
-		    Map<String, Object> m = new HashMap<>();
-
-		    m.put("id", u.getUserId());
-
-		    m.put("name", (u.getUserFname() != null ? u.getUserFname() : "")
-			    + (u.getUserLname() != null ? " " + u.getUserLname() : ""));
-
-		    m.put("designation",
-
-			    u.getDesignation() != null ? u.getDesignation().getDesigName() : null);
-
-		    m.put("phone", u.getMobileNumber());
-
-		    m.put("offdesc", u.getOfficialDescription());
-
-		    m.put("email", u.getUserEmail());
-
-		    /*
-		     * Signature
-		     */
-
-		    String signature = null;
-
-		    if (u.getSignatureFile() != null) {
-			
-
-			CoreFile sf = fileRepository.findById(u.getSignatureFile()).orElse(null);
-
-			if (sf != null && sf.getFilePath() != null) {
-
-			    File signatureFile = new File(BASE_PATH, sf.getFilePath());
-
-			    if (signatureFile.exists()) {
-
-				//signature = "file:" + signatureFile.toURI().getPath();
-				 signature = signatureFile.toURI().toString();
-			    }
-			}
-		    }
-
-		    m.put("signature", signature);
-
-		    return m;
-
-		})
-
-		.toList();
-
-	data.put("signatories", signatories);
-	
-	
-	/*
-	 * ======================================
-	 * PARTICIPANT PHOTO
-	 * ======================================
-	 */
-
-	String participantPhoto = null;
-
-	if (mei.getMemberEventMember() != null
-	        && mei.getMemberEventMember().getPhotoFile() != null) {
-
-	    CoreFile pf =
-	            fileRepository
-	                    .findById(
-	                            mei.getMemberEventMember().getPhotoFile()
-	                    )
-	                    .orElse(null);
-
-	    if (pf != null && pf.getFilePath() != null) {
-			
-		    File photoFile =
-		            new File(
-		                    BASE_PATH,
-		                    pf.getFilePath()
-		            );
-
-		    if (photoFile.exists()) {
-
-		        File thumbnailFile =
-		                new File(
-		                        photoFile.getParentFile(),
-		                        "thumbnails/"
-		                        + pf.getFileId()
-		                        + ".jpg"
-		                );
-
-		        /*participantPhoto =
-		                "file:"
-		                + (
-		                    thumbnailFile.exists()
-		                    ? thumbnailFile
-		                    : photoFile
-		                )
-		                .toURI()
-		                .getPath();*/
-		        
-		        participantPhoto = (thumbnailFile.exists() ? thumbnailFile : photoFile)
-		                .toURI().toString(); 
-		    }
-		}
-	}
-
-	data.put(
-	        "participantPhoto",
-	        participantPhoto
-	);
-
-	Long meiId = mei.getMeiId();
-
-	String maskedId = SimpleBase64.encode(meiId, fileName);
-
-	byte[] qrBytes = QrCodeUtil
-		.generateQrCodeBytes("https://app.indiankalaripayattufederation.com/verify?id=" + maskedId);
-
-	Path tempQrFile = Files.createTempFile("qr-" + meiId, ".png");
-
-	Files.write(tempQrFile, qrBytes);
-
-	data.put("verificationIdMasked", maskedId);
-
-	data.put("qrImagePath", tempQrFile.toUri().toString());
-
-	return data;
-    }
-
-    // Generate unsigned PDF from HTML template
 
 
     
@@ -879,5 +589,26 @@ public class CertificateService {
 
 	return signedPdf;
     }
+    
+    
+    public String previewCertificateHtml(MemberEventItem mei) throws Exception {
+	    LocalDateTime timestamp = mei.getTModified() != null ? mei.getTModified() : mei.getTCreated();
+	    String formattedTimestamp = timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS"));
+
+	    Map<String, Object> data = prepareCertificateData(mei, formattedTimestamp + ".pdf");
+
+	    if (data.get("qrImagePath") != null) {
+	        Path qrPath = Path.of(new URI(data.get("qrImagePath").toString()));
+	        byte[] qrBytes = Files.readAllBytes(qrPath);
+	        String base64Qr = Base64.getEncoder().encodeToString(qrBytes);
+	        data.put("qrImagePath", "data:image/png;base64," + base64Qr);
+	        Files.deleteIfExists(qrPath);
+	    }
+
+	    Context context = new Context();
+	    context.setVariables(data);
+
+	    return templateEngine.process("fragments/events/certificate-single-preview", context);
+	}
 
 }
