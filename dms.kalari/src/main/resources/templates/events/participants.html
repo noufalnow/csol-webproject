@@ -661,14 +661,14 @@
 						    </a>
 
 						    <!-- APPROVED (not yet generated): preview link -->
-						    <a th:if="${mei.certificateStatus?.name() != 'GENERATED'
-						               and mei.verificationStatus?.name() == 'APPROVED'
-						               and #authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}"
-						       th:href="@{/champ_participants_certificate/{id}(id=${xorMaskHelper.mask(mei.meiId)})}"
-						       target="_blank"
-						       class="grade-pill text-decoration-none">
-						        <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
-						    </a>
+							<a th:if="${mei.certificateStatus?.name() != 'GENERATED'
+							           and mei.verificationStatus?.name() == 'APPROVED'
+							           and #authorization.expression('hasAuthority(''PRIV_champ_participants_certificate'')')}"
+							   th:href="@{/champ_participants_certificate/{id}(id=${xorMaskHelper.mask(mei.meiId)})}"
+							   onclick="openCertificatePreview(this.href); return false;"
+							   class="grade-pill text-decoration-none">
+							    <span th:text="${mei.memberEventGrade != null ? mei.memberEventGrade : '-'}"></span>
+							</a>
 
 						    <!-- OTHERWISE: plain grade pill -->
 						    <span th:if="${mei.certificateStatus?.name() != 'GENERATED'
