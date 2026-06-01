@@ -26,7 +26,8 @@ public class CertificateBatchService {
     public int processCertificateBatch(Long eventId) {
 
         List<MemberEventItem> participants = memberEventItemRepository.findByEventIdWhereGradeNotEmpty(eventId,
-        		MemberEventItem.VerificationStatus.APPROVED
+        		MemberEventItem.VerificationStatus.APPROVED, 
+        		MemberEventItem.CertificateStatus.GENERATED
         		);
 
         if (participants.isEmpty()) return 0;

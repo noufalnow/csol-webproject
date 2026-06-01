@@ -113,13 +113,17 @@ public interface MemberEventItemRepository extends BaseRepository<MemberEventIte
 		    JOIN FETCH mei.memberEventMember mem
 		    WHERE me.eventId = :eventId
 		      AND mei.memberEventGrade IS NOT NULL
-		      AND mei.certificateStatus IS NULL
+		      AND (
+		            mei.certificateStatus IS NULL
+		            OR mei.certificateStatus <> :certificateStatus
+		          )
 		      AND mei.verificationStatus = :verification
 		      AND mei.deleted = false
 		""")
 		List<MemberEventItem> findByEventIdWhereGradeNotEmpty(
 		    @Param("eventId") Long eventId,
-		    @Param("verification") MemberEventItem.VerificationStatus verification
+		    @Param("verification") MemberEventItem.VerificationStatus verification,
+		    @Param("certificateStatus") MemberEventItem.CertificateStatus certificateStatus
 		);
 
 
