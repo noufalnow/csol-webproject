@@ -20,3 +20,8 @@ dms.kalari/.classpath
 dms.kalari/src/main/resources/.application-dev.properties.swp
 
 dms.kalari/src/main/resources/application-dev.properties
+
+
+.env
+.env.*
+!.env.example
