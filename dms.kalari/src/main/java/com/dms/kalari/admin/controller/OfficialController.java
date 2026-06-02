@@ -31,6 +31,7 @@ import com.dms.kalari.exception.ResourceNotFoundException;
 import com.dms.kalari.security.CustomUserPrincipal;
 import com.dms.kalari.util.XorMaskHelper;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -51,6 +52,9 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 	private final CoreUserRepository coreUserRepository; // Add this
 	private final CoreUserMapper coreUserMapper; // Add this
 	private final NodeRepository nodeRepository;
+	
+	    @Value("${app.host.url-path}")
+	    private String HOST_URL;
 
 	// Inject both services via constructor
 	public OfficialController(CoreUserService coreUserService, MisDesignationService designationService,
@@ -128,6 +132,8 @@ public class OfficialController extends BaseController<CoreUserDTO, CoreUserServ
 		
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
+		
+		model.addAttribute("HOST_URL", HOST_URL);
 
 		return "fragments/manage/officials/bynode";
 	}

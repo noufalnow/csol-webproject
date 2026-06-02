@@ -1,6 +1,7 @@
 package com.dms.kalari.core.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
@@ -42,6 +43,9 @@ public class PdfGenerationService {
     private final TemplateEngine templateEngine;
     private final ResourceLoader resourceLoader;
     
+    @Value("${app.host.url-path}")
+    private String HOST_URL;
+    
     public String generateQrCodeBase64(String text) {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -76,7 +80,7 @@ public class PdfGenerationService {
 
         // Generate PDF-friendly QR bytes (100x100 px PNG)
         byte[] qrBytes = QrCodeUtil.generateQrCodeBytes(
-                "https://app.indiankalaripayattufederation.com/verify?id=" + meiId
+                "<<<<>>>>/verify?id=" + meiId
         );
 
         // Use a temporary file for the QR to pass to Thymeleaf/ITextRenderer

@@ -208,12 +208,11 @@
 <body>
 <div class="cert-page">
 
-    <!-- BACKGROUND SVG — inline so browser renders it without file:// -->
 	
 	<img
 	    class="bg-image"
-	    src="https://app.indiankalaripayattufederation.com/public/images/certificate-bg-classic.svg"
-	    alt=""/>
+	    th:src="${HOST_URL + 'public/images/certificate-bg-classic.svg'}"
+	    alt="" />
 
 
     <div class="cert-body">
@@ -223,15 +222,15 @@
         <!-- LOGO STRIP -->
         <div class="logo-strip">
             <img th:if="${stateLogoId != null}"
-                 th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${stateLogoId}}"
+                 th:src="${HOST_URL + 'image_public_raw/' + stateLogoId}"
                  alt="State Logo"/>
             <span class="logo-sep" th:if="${stateLogoId != null and districtLogoId != null}"></span>
             <img th:if="${districtLogoId != null}"
-                 th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${districtLogoId}}"
+                 th:src="${HOST_URL + 'image_public_raw/' + districtLogoId}"
                  alt="District Logo"/>
             <span class="logo-sep" th:if="${districtLogoId != null and nationalLogoId != null}"></span>
             <img th:if="${nationalLogoId != null}"
-                 th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${nationalLogoId}}"
+                 th:src="${HOST_URL + 'image_public_raw/' + nationalLogoId}"
                  alt="National Logo"/>
         </div>
 
@@ -289,7 +288,7 @@
                 <td style="width:14%; text-align:right; vertical-align:top; padding-right:10mm; padding-top:1mm;">
                     <img class="participant-photo"
                          th:if="${participantPhotoId != null}"
-                         th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${participantPhotoId}}"
+                         th:src="${HOST_URL + 'image_public/' + participantPhotoId}"
                          alt="Participant Photo"/>
                 </td>
             </tr>
@@ -354,7 +353,7 @@
                 <td class="sig-cell">
 					<img class="sig-img"
 					     th:if="${signatories.size() > 0 and signatories[0].signatureFileId != null}"
-					     th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${signatories[0].signatureFileId}}"
+					     th:src="${HOST_URL + 'image_public_raw/' + signatories[0].signatureFileId}"
 					     alt="Signature"
 					     >
                     <svg style="display:block; margin:0 auto 1.5mm; width:38mm; height:1.5mm;"
@@ -369,7 +368,7 @@
                 <td class="sig-cell">
                     <img class="sig-img"
                          th:if="${signatories.size() > 1 and signatories[1].signatureFileId != null}"
-                         th:src="@{'https://app.indiankalaripayattufederation.com/image_public_raw/' + ${signatories[1].signatureFileId}}"
+                         th:src="${HOST_URL + 'image_public_raw/' + signatories[1].signatureFileId}"
                          alt="Signature"/>
                     <svg style="display:block; margin:0 auto 1.5mm; width:38mm; height:1.5mm;"
                          viewBox="0 0 144 2" xmlns="http://www.w3.org/2000/svg">

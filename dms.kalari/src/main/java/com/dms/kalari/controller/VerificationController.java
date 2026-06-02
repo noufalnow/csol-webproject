@@ -1,5 +1,6 @@
 package com.dms.kalari.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import org.springframework.ui.Model;
@@ -31,6 +32,11 @@ public class VerificationController {
     private final CoreUserRepository coreUserRepository;
     private final NodeRepository nodeRepository;
     private final MemberEventItemRepository memberEventItemRepository;
+    
+    @Value("${app.host.url-path}")
+    private String HOST_URL;
+    
+    
 
     private Long decodeVerificationId(String encodedId) {
 
@@ -76,6 +82,8 @@ public class VerificationController {
 	    model.addAttribute("verification", data);
 
 	    model.addAttribute("success", true);
+	    
+	    model.addAttribute("HOST_URL", HOST_URL);
 
 	    return "fragments/manage/members/profile/verification-result";
 

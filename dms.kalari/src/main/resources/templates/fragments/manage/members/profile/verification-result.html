@@ -258,7 +258,7 @@
 						    <div class="col-3 text-center">
 						        <img
 						            th:if="${verification.stateLogoId != null}"
-						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.stateLogoId}|}"
+						            <img th:src="@{|${HOST_URL}image_public/${verification.stateLogoId}|}"
 						            onerror="this.style.display='none'"
 						            class="authority-logo side-logo"
 						            alt="State">
@@ -268,7 +268,7 @@
 						    <div class="col-6 text-center">
 						        <img
 						            th:if="${verification.districtLogoId != null}"
-						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.districtLogoId}|}"
+						            <img th:src="@{|${HOST_URL}image_public/${verification.districtLogoId}|}"
 						            onerror="this.style.display='none'"
 						            class="authority-logo main-logo"
 						            alt="Host">
@@ -278,7 +278,7 @@
 						    <div class="col-3 text-center">
 						        <img
 						            th:if="${verification.nationalLogoId != null}"
-						            th:src="@{|https://app.indiankalaripayattufederation.com/image_public/${verification.nationalLogoId}|}"
+						            <img th:src="@{|${HOST_URL}image_public/${verification.nationalLogoId}|}"
 						            onerror="this.style.display='none'"
 						            class="authority-logo side-logo"
 						            alt="National">
@@ -302,11 +302,11 @@
 
                         <!-- PHOTO -->
                         <div class="col-md-3 text-center">
-                            <img
-                                th:src="'https://app.indiankalaripayattufederation.com/image_public/' + ${verification.participantPhotoId}"
-                                onerror="this.src='/images/default-user.png'"
-                                class="member-photo"
-                                alt="Participant">
+							<img
+							    th:src="@{|${HOST_URL}image_public/${verification.participantPhotoId}|}"
+							    onerror="this.src='/images/default-user.png'"
+							    class="member-photo"
+							    alt="Participant">
                         </div>
 
                         <!-- DETAILS -->

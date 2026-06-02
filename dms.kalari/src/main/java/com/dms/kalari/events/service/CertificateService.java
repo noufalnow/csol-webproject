@@ -83,6 +83,9 @@ public class CertificateService {
 
     @Value("${app.upload.base-path}")
     private String BASE_PATH;
+    
+    @Value("${app.host.url-path}")
+    private String HOST_URL;
 
     private static final Logger log = LoggerFactory.getLogger(CertificateService.class);
 
@@ -378,7 +381,7 @@ public class CertificateService {
 	    String maskedId = SimpleBase64.encode(meiId, fileName);
 
 	    byte[] qrBytes = QrCodeUtil.generateQrCodeBytes(
-	            "https://app.indiankalaripayattufederation.com/verify?id=" + maskedId);
+		    HOST_URL+"verify?id=" + maskedId);
 
 	    Path tempQrFile = Files.createTempFile("qr-" + meiId, ".png");
 	    Files.write(tempQrFile, qrBytes);
@@ -607,6 +610,8 @@ public class CertificateService {
 
 	    Context context = new Context();
 	    context.setVariables(data);
+	    
+	    context.setVariable("HOST_URL", HOST_URL);
 
 	    return templateEngine.process("fragments/events/certificate-single-preview", context);
 	}

@@ -144,7 +144,7 @@
 			                    <div class="me-3 flex-shrink-0">
 
 			                        <img
-			                            th:src="'https://app.indiankalaripayattufederation.com/image_public/' + ${user.photoFile}"
+										th:src="|${HOST_URL}image_public/${user.photoFile}|"
 			                            onerror="this.src='/images/default-user.png'"
 			                            class="official-photo"
 			                            alt="Official Photo">

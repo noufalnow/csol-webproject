@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,6 +65,9 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 	private final CoreUserRepository coreUserRepository;
 	private final CoreUserMapper coreUserMapper;
 	private final NodeRepository nodeRepository;
+	
+	    @Value("${app.host.url-path}")
+	    private String HOST_URL;
 
 	public MemberController(MemberUserService memberUserService, MisDesignationService designationService,
 			CoreUserRepository coreUserRepository, CoreUserMapper coreUserMapper, NodeService nodeService,
@@ -133,6 +137,8 @@ public class MemberController extends BaseController<MemberAddDTO, MemberUserSer
 		model.addAttribute("parentId", XorMaskHelper.mask(nodeId));
 		model.addAttribute("users", users);
 		model.addAttribute("target", "users_target");
+		
+		model.addAttribute("HOST_URL", HOST_URL);
 
 		return "fragments/manage/members/bynode";
 	}

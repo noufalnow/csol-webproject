@@ -1,8 +1,9 @@
 package com.dms.kalari.branch.controller;
 
+import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +29,9 @@ public class PublicSiteController {
 	private CoreFileRepository fileRepository;
 	
 	private static final String DEFAULT_FILE_PATH = "/opt/app/uploads/default.jpg"; 
-	private static final String BASE_PATH = "/opt/kalari";
+
+	@Value("${app.upload.base-path}")
+	private String BASE_PATH;
 	
 
 	public PublicSiteController(NodeService nodeService, CoreFileRepository fileRepository) {
@@ -54,15 +58,16 @@ public class PublicSiteController {
 	    ));
 	}
 	
+
+	
 	@CrossOrigin(origins = "*")
 	@GetMapping("image_public/{id}")
 	public ResponseEntity<InputStreamResource> viewThumbnail(@PathVariable Long id) throws IOException {
-		
 
 	    if (id == null) {
 	        return ResponseEntity.badRequest().build();
 	    }
-
+    
 	    CoreFile file = fileRepository.findById(id).orElse(null);
 
 	    File originalFile = (file != null && file.getFilePath() != null)
@@ -73,7 +78,6 @@ public class PublicSiteController {
 	        originalFile = new File(DEFAULT_FILE_PATH);
 	    }
 
-	    // 🔥 Key fix here
 	    File parentDir = originalFile.getParentFile();
 	    File thumbnailDir = new File(parentDir, "thumbnails");
 
@@ -81,12 +85,33 @@ public class PublicSiteController {
 	        thumbnailDir.mkdirs();
 	    }
 
-	    File thumbnailFile = new File(thumbnailDir, id + ".jpg");
+	    String extension = FilenameUtils.getExtension(originalFile.getName());
 
-	    // ✅ Return cached
+	    if (extension == null || extension.isBlank()) {
+	        extension = "jpg";
+	    }
+
+	    extension = extension.toLowerCase();
+
+	    // Thumbnailator may not support all formats
+	    if (!List.of("jpg", "jpeg", "png", "gif", "bmp").contains(extension)) {
+	        extension = "jpg";
+	    }
+
+	    File thumbnailFile = new File(
+	            thumbnailDir,
+	            id + "." + extension
+	    );
+
+	    // Return cached thumbnail
 	    if (thumbnailFile.exists()) {
-	        //log.info("Returning cached thumbnail");
-	        return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
+	        MediaType thumbnailType = detectMimeType(thumbnailFile);
+
+	        if (thumbnailType == null) {
+	            thumbnailType = MediaType.IMAGE_JPEG;
+	        }
+
+	        return buildResponse(thumbnailFile, thumbnailType);
 	    }
 
 	    synchronized (id.toString().intern()) {
@@ -96,24 +121,34 @@ public class PublicSiteController {
 	            MediaType mediaType = detectMimeType(originalFile);
 
 	            if (mediaType == null || !mediaType.toString().startsWith("image")) {
-	                //log.warn("Not an image, returning original");
 	                return buildResponse(originalFile, mediaType);
 	            }
 
-	            //log.info("Generating thumbnail...");
-
 	            try {
+
 	                Thumbnails.of(originalFile)
 	                        .size(200, 200)
-	                        .outputFormat("jpg")
+	                        .outputFormat(extension)
 	                        .toFile(thumbnailFile);
+
 	            } catch (Exception e) {
-	                throw new RuntimeException("Thumbnail generation failed for: " + originalFile.getAbsolutePath(), e);
+
+	                throw new RuntimeException(
+	                        "Thumbnail generation failed for: "
+	                                + originalFile.getAbsolutePath(),
+	                        e
+	                );
 	            }
 	        }
 	    }
 
-	    return buildResponse(thumbnailFile, MediaType.IMAGE_JPEG);
+	    MediaType thumbnailType = detectMimeType(thumbnailFile);
+
+	    if (thumbnailType == null) {
+	        thumbnailType = MediaType.IMAGE_JPEG;
+	    }								
+
+	    return buildResponse(thumbnailFile, thumbnailType);
 	}
 	
 	@CrossOrigin(origins = "*")

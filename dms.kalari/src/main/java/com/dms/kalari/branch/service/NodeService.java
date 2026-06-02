@@ -1,6 +1,7 @@
 package com.dms.kalari.branch.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -47,6 +48,9 @@ public class NodeService implements BaseService<NodeDTO> {
 	private final CoreFileRepository coreFileRepository;
 	private final CoreUserRepository coreUserRepository;
 	private final EventRepository eventRepository;
+	
+	@Value("${app.host.url-path}")
+	private String HOST_URL;
 
 	@Autowired
 	public NodeService(NodeRepository nodeRepository, NodeMapper nodeMapper, CoreFileRepository coreFileRepository,CoreUserRepository coreUserRepository,EventRepository eventRepository) {
@@ -428,7 +432,7 @@ public class NodeService implements BaseService<NodeDTO> {
     	            // ✅ photo (real file mapping)
     	            if (u.getPhotoFile() != null) {
     	                coreFileRepository.findById(u.getPhotoFile())
-    	                        .ifPresent(file -> m.put("photo", "https://app.indiankalaripayattufederation.com/image_public/" + file.getFileId()));
+    	                        .ifPresent(file -> m.put("photo", HOST_URL+"image_public/" + file.getFileId()));
     	            } else {
     	                m.put("photo", null);
     	            }
@@ -524,7 +528,7 @@ public class NodeService implements BaseService<NodeDTO> {
 
         // ✅ Optional extras (safe)
         branchMap.put("registerNumber", branch.getRegisterNumber());
-        branchMap.put("photo", "https://app.indiankalaripayattufederation.com/image_public/" +branch.getPhotoFile());
+        branchMap.put("photo", HOST_URL+"image_public/" +branch.getPhotoFile());
 
         response.put("branch", branchMap);
 

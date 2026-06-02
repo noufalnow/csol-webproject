@@ -5,6 +5,7 @@ import com.dms.kalari.events.repository.MemberEventItemRepository;
 import com.dms.kalari.events.service.event.CertificateGenerateEvent;
 import com.dms.kalari.events.service.kafka.CertificateProducer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,9 @@ public class CertificateBatchService {
 
     private final MemberEventItemRepository memberEventItemRepository;
     private final CertificateProducer certificateProducer;
+    
+@Value("${app.host.url-path}")
+private String HOST_URL;
 
     public CertificateBatchService(MemberEventItemRepository memberEventItemRepository,
                                    CertificateProducer certificateProducer) {
@@ -48,7 +52,7 @@ public class CertificateBatchService {
                     item.getApproveDateTime() != null ? item.getApproveDateTime().toString() : null, // resultDate
                     item.getTCreated() != null ? item.getTCreated().toString() : null, 
                     item.getTModified() != null ? item.getTModified().toString() : null, 
-                    "https://app.indiankalaripayattufederation.com/verify?id=" + item.getMeiId() // verificationUrl
+                    HOST_URL+"verify?id=" + item.getMeiId() // verificationUrl
             );
 
             certificateProducer.sendCertificateEvent(event);
