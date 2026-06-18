@@ -44,6 +44,19 @@ $(document).ready(function() {
 		// Proceed with AJAX load
 		loadContent($clickedLink.attr('href'), '#content');
 	});
+	
+	
+	function serializeFormSafe(formEl) {
+	    var fd = new FormData(formEl);
+	    var pairs = [];
+	    fd.forEach(function(value, key) {
+	        if (typeof value === 'string') {
+	            pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+	        }
+	    });
+	    return pairs.join('&');
+	}
+	
 	// Form submission with AJAX
 	window.submitHtmlForm = function(formId) {
 	    console.log('Button clicked');
@@ -83,7 +96,7 @@ $(document).ready(function() {
 			dataToSend.append('pageParams', pageParams);
 	    } else {
 	        // --- Otherwise, serialize normal form data ---
-	        dataToSend = form.serialize();
+	        dataToSend = serializeFormSafe(formElement);  
 	        processData = true;
 	        contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
 			dataToSend += '&pageParams=' + encodeURIComponent(pageParams);
